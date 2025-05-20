@@ -10,4 +10,13 @@
     <ProjectReference Include="..\DPTS.Infrastructures\DPTS.Infrastructures.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+    <Folder Include="Implements\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="9.0.8" />
+  </ItemGroup>
+
 </Project>
