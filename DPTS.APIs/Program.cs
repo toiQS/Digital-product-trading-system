@@ -1,7 +1,7 @@
-using Sys.Application;
+using DPTS.Applications;
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Initialize()
+builder.Services.Initalize(builder.Configuration);
 var app = builder.Build();
 
 app.MapGet("/", () => "Hello World!");
