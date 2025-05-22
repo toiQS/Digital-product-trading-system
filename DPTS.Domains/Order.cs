@@ -12,12 +12,6 @@ namespace DPTS.Domains
         [Column("buyer_id")]
         public string BuyerId { get; set; } = string.Empty ;
 
-        [Column("product_id")]
-        public string ProductId { get; set; } = string.Empty;
-
-        [Column("quantity")]
-        public int Quantity { get; set; } = 1;
-
         [Column("total_amount")]
         public decimal TotalAmount { get; set; }
 
@@ -31,7 +25,6 @@ namespace DPTS.Domains
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual User Buyer { get; set; } = null!;
-        public virtual Product Product { get; set; } = null!;
         public virtual Escrow Escrow { get; set; } = null!;
         public virtual ICollection<Complaint> Complaints { get; set; } = new List<Complaint>();
         public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
