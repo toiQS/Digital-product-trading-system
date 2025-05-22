@@ -24,7 +24,6 @@
     <ProjectReference Include="..\DPTS.Applications\DPTS.Applications.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Models\" />
   </ItemGroup>
 
