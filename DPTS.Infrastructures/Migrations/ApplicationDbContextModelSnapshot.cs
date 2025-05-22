@@ -108,9 +108,9 @@ namespace DPTS.Infrastructures.Migrations
 
             modelBuilder.Entity("DPTS.Domains.Image", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("ImageId")
                         .HasColumnType("text")
-                        .HasColumnName("id");
+                        .HasColumnName("image_id");
 
                     b.Property<string>("ImagePath")
                         .IsRequired()
@@ -122,7 +122,7 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("product_id");
 
-                    b.HasKey("Id");
+                    b.HasKey("ImageId");
 
                     b.HasIndex("ProductId");
 
@@ -215,13 +215,7 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("product_id");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer")
-                        .HasColumnName("quantity");
+                        .HasColumnType("text");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -243,6 +237,39 @@ namespace DPTS.Infrastructures.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("Orders");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.OrderItem", b =>
+                {
+                    b.Property<string>("OrderItemId")
+                        .HasColumnType("text")
+                        .HasColumnName("order_item_id");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("order_id");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_amount");
+
+                    b.HasKey("OrderItemId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Product", b =>
@@ -583,13 +610,28 @@ namespace DPTS.Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DPTS.Domains.Product", "Product")
+                    b.HasOne("DPTS.Domains.Product", null)
                         .WithMany("Orders")
+                        .HasForeignKey("ProductId");
+
+                    b.Navigation("Buyer");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.OrderItem", b =>
+                {
+                    b.HasOne("DPTS.Domains.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DPTS.Domains.Product", "Product")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Buyer");
+                    b.Navigation("Order");
 
                     b.Navigation("Product");
                 });
