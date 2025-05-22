@@ -6,8 +6,8 @@ namespace DPTS.Domains
     public class Image
     {
         [Key]
-        [Column("id")]
-        public string Id { get; set; } = string.Empty;
+        [Column("image_id")]
+        public string ImageId { get; set; } = string.Empty;
 
         [Required]
         [Column("product_id")]
