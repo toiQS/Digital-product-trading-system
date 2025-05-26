@@ -15,8 +15,11 @@ namespace DPTS.Domains
         [Column("total_amount")]
         public decimal TotalAmount { get; set; }
 
-        [Column("status")]
-        public string Status { get; set; } = string.Empty;
+        //[Column("status")]
+        //public string Status { get; set; } = string.Empty;
+
+        [Column("Is Paied")]
+        public bool isPaied { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

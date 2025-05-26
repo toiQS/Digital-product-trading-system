@@ -46,6 +46,8 @@ namespace DPTS.Domains
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        [Column(name:"image_url")]
+        public string ImageUrl { get; set; } = string.Empty;
 
         public virtual Role Role { get; set; } = null!;
         public virtual Wallet Wallet { get; set; } = null!;

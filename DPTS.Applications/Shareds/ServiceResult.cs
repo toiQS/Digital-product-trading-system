@@ -56,5 +56,6 @@
                 Status = StatusResult.Errored
             };
         }
+        //public static ServiceResult<T> f
     }
 }

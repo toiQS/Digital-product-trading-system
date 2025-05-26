@@ -1,5 +1,4 @@
-﻿using DPTS.Applications.Dtos;
-using DPTS.Applications.Dtos.users;
+﻿using DPTS.Applications.Dtos.users;
 using DPTS.Applications.Shareds;
 using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
@@ -18,75 +17,7 @@ namespace DPTS.Applications.Implements
             _logger = logger;
         }
 
-        /// <summary>
-        /// Returns the number of users associated with a specific role.
-        /// </summary>
-        /// <param name="roleKey">Role name or ID</param>
-        /// <param name="isById">True if roleKey is a Role ID, false if it's a Role Name</param>
-        private async Task<ServiceResult<StatisticsNumberOfUserModel>> GetMembersByRoleAsync(string roleKey, bool isById = false)
-        {
-            if (string.IsNullOrWhiteSpace(roleKey))
-                return ServiceResult<StatisticsNumberOfUserModel>.Error("Input value is invalid.");
-
-            try
-            {
-                _logger.LogInformation("Retrieving users for role: {RoleKey}", roleKey);
-
-                string roleId = roleKey;
-
-                if (!isById)
-                {
-                    var role = await _unitOfWork.Repository<Role>().GetOneAsync("RoleName", roleKey);
-                    if (role == null)
-                        return ServiceResult<StatisticsNumberOfUserModel>.Success(null!);
-
-                    roleId = role.RoleId;
-                }
-
-                var users = await _unitOfWork.Repository<User>().GetManyAsync("RoleId", roleId);
-
-                var result = new StatisticsNumberOfUserModel
-                {
-                    Quantity = users.Count(),
-                    RoleName = roleKey
-                };
-
-                return ServiceResult<StatisticsNumberOfUserModel>.Success(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to retrieve users for role: {RoleKey}", roleKey);
-                return ServiceResult<StatisticsNumberOfUserModel>.Error("An error occurred while retrieving users.");
-            }
-        }
-
-        public Task<ServiceResult<StatisticsNumberOfUserModel>> GetMembersInAdminRole() =>
-            GetMembersByRoleAsync("Admin");
-
-        public Task<ServiceResult<StatisticsNumberOfUserModel>> GetMembersInBuyerRole() =>
-            GetMembersByRoleAsync("Buyer");
-
-        public Task<ServiceResult<StatisticsNumberOfUserModel>> GetMembersInSellerRole() =>
-            GetMembersByRoleAsync("Seller");
-
-        /// <summary>
-        /// Gets the member statistics of Admin, Buyer, and Seller roles.
-        /// </summary>
-        public async Task<ServiceResult<IEnumerable<StatisticsNumberOfUserModel>>> GetMembersAsync()
-        {
-            var admin = await GetMembersInAdminRole();
-            var seller = await GetMembersInSellerRole();
-            var buyer = await GetMembersInBuyerRole();
-
-            var resultList = new List<StatisticsNumberOfUserModel>();
-
-            if (admin.Data != null) resultList.Add(admin.Data);
-            if (seller.Data != null) resultList.Add(seller.Data);
-            if (buyer.Data != null) resultList.Add(buyer.Data);
-
-            return ServiceResult<IEnumerable<StatisticsNumberOfUserModel>>.Success(resultList);
-        }
-
+        
         /// <summary>
         /// Retrieves user detail information by user ID.
         /// </summary>

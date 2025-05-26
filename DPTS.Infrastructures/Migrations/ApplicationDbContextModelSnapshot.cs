@@ -22,6 +22,23 @@ namespace DPTS.Infrastructures.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DPTS.Domains.Category", b =>
+                {
+                    b.Property<string>("CategoryId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Quantity")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CategoryId");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("DPTS.Domains.Complaint", b =>
                 {
                     b.Property<string>("ComplaintId")
@@ -89,19 +106,28 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("order_id");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("SellerId")
                         .IsRequired()
                         .HasColumnType("text")
+                        .HasColumnName("seller_id");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
                         .HasColumnName("status");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("EscrowId");
 
                     b.HasIndex("OrderId")
                         .IsUnique();
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Escrows");
                 });
@@ -217,11 +243,6 @@ namespace DPTS.Infrastructures.Migrations
                     b.Property<string>("ProductId")
                         .HasColumnType("text");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric")
                         .HasColumnName("total_amount");
@@ -229,6 +250,10 @@ namespace DPTS.Infrastructures.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
+
+                    b.Property<bool>("isPaied")
+                        .HasColumnType("boolean")
+                        .HasColumnName("Is Paied");
 
                     b.HasKey("OrderId");
 
@@ -278,7 +303,7 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("product_id");
 
-                    b.Property<string>("Category")
+                    b.Property<string>("CategoryId")
                         .HasColumnType("text")
                         .HasColumnName("category");
 
@@ -303,9 +328,8 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("seller_id");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
                         .HasColumnName("status");
 
                     b.Property<string>("Title")
@@ -318,6 +342,8 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnName("updated_at");
 
                     b.HasKey("ProductId");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("SellerId");
 
@@ -553,7 +579,13 @@ namespace DPTS.Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DPTS.Domains.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Order");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Image", b =>
@@ -638,11 +670,17 @@ namespace DPTS.Infrastructures.Migrations
 
             modelBuilder.Entity("DPTS.Domains.Product", b =>
                 {
+                    b.HasOne("DPTS.Domains.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
+
                     b.HasOne("DPTS.Domains.User", "Seller")
                         .WithMany("Products")
                         .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("Seller");
                 });

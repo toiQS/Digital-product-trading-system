@@ -12,6 +12,19 @@ namespace DPTS.Infrastructures.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    CategoryId = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Quantity = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.CategoryId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -82,7 +95,7 @@ namespace DPTS.Infrastructures.Migrations
                     description = table.Column<string>(type: "text", nullable: true),
                     price = table.Column<decimal>(type: "numeric", nullable: false),
                     category = table.Column<string>(type: "text", nullable: true),
-                    status = table.Column<string>(type: "text", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     is_circulate = table.Column<bool>(type: "boolean", nullable: false)
@@ -90,6 +103,11 @@ namespace DPTS.Infrastructures.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Products", x => x.product_id);
+                    table.ForeignKey(
+                        name: "FK_Products_Categories_category",
+                        column: x => x.category,
+                        principalTable: "Categories",
+                        principalColumn: "CategoryId");
                     table.ForeignKey(
                         name: "FK_Products_Users_seller_id",
                         column: x => x.seller_id,
@@ -146,7 +164,7 @@ namespace DPTS.Infrastructures.Migrations
                     order_id = table.Column<string>(type: "text", nullable: false),
                     buyer_id = table.Column<string>(type: "text", nullable: false),
                     total_amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    status = table.Column<string>(type: "text", nullable: false),
+                    IsPaied = table.Column<bool>(name: "Is Paied", type: "boolean", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ProductId = table.Column<string>(type: "text", nullable: true)
@@ -255,10 +273,12 @@ namespace DPTS.Infrastructures.Migrations
                 {
                     escrow_id = table.Column<string>(type: "text", nullable: false),
                     order_id = table.Column<string>(type: "text", nullable: false),
+                    seller_id = table.Column<string>(type: "text", nullable: false),
                     amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    status = table.Column<string>(type: "text", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -269,6 +289,11 @@ namespace DPTS.Infrastructures.Migrations
                         principalTable: "Orders",
                         principalColumn: "order_id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Escrows_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "user_id");
                 });
 
             migrationBuilder.CreateTable(
@@ -349,6 +374,11 @@ namespace DPTS.Infrastructures.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Escrows_UserId",
+                table: "Escrows",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Images_product_id",
                 table: "Images",
                 column: "product_id");
@@ -402,6 +432,11 @@ namespace DPTS.Infrastructures.Migrations
                 name: "IX_ProductReviews_user_id",
                 table: "ProductReviews",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_category",
+                table: "Products",
+                column: "category");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_seller_id",
@@ -460,6 +495,9 @@ namespace DPTS.Infrastructures.Migrations
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "Users");

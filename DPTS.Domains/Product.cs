@@ -25,10 +25,10 @@ namespace DPTS.Domains
         public decimal Price { get; set; }
 
         [Column("category")]
-        public string? Category { get; set; }
+        public string? CategoryId { get; set; }
 
         [Column("status")]
-        public string Status { get; set; } = "pending";
+        public StatusEntity Status { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -40,6 +40,7 @@ namespace DPTS.Domains
         public bool IsCirculate { get; set; }
 
         public virtual User Seller { get; set; } = null!;
+        public virtual Category Category { get; set; } = null!;
         public virtual ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
     }
