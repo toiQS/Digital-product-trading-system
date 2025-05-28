@@ -3,7 +3,7 @@ using DPTS.Infrastructures.Data;
 
 namespace DPTS.Applications.Shareds.Implements
 {
-    public class UnitOfWork 
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly ApplicationDbContext _context;
         private readonly Dictionary<Type, object> _repositories = new();

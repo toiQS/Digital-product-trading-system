@@ -24,6 +24,9 @@ namespace DPTS.Domains
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        [Column("likes")]
+        public int Likes { get; set; } = 0;
+
         public virtual Product Product { get; set; } = null!;
         public virtual User User { get; set; } = null!;
     }

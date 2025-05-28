@@ -1,4 +1,6 @@
-﻿namespace DPTS.Applications.Shareds
+﻿using System.Reflection.Metadata.Ecma335;
+
+namespace DPTS.Applications.Shareds
 {
     public enum StatusResult
     {
@@ -20,12 +22,15 @@
             {
                 bool hasData = enumerable.Cast<object>().Any();
 
-                return new ServiceResult<T>
+                var result = new ServiceResult<T>
                 {
                     Status = hasData ? StatusResult.Success : StatusResult.Warning,
                     Data = data,
-                    MessageResult = hasData ? nameof(StatusResult.Success) : "Not Found"
+                    
                 };
+                result.MessageResult = result.Status == StatusResult.Success ? $"{ServiceResultHandle(result.Status)}":  $"{ServiceResultHandle(result.Status)}: Không tìm thấy bất cứ dữ liệu nào.";
+                
+                return result;
             }
 
             
@@ -35,7 +40,7 @@
                 {
                     Status = StatusResult.Failed,
                     Data = default!,
-                    MessageResult = "Not Found"
+                    MessageResult = $"{ServiceResultHandle(StatusResult.Failed)}: Không tìm thấy dữ liệu."
                 };
             }
 
@@ -43,7 +48,7 @@
             {
                 Status = StatusResult.Success,
                 Data = data,
-                MessageResult = nameof(StatusResult.Success)
+                MessageResult = ServiceResultHandle(StatusResult.Success)
             };
         }
 
@@ -52,10 +57,25 @@
             return new ServiceResult<T>
             {
                 Data = default,
-                MessageResult = message,
+                MessageResult = $"{ServiceResultHandle(StatusResult.Errored)}: {message}",
                 Status = StatusResult.Errored
             };
         }
-        //public static ServiceResult<T> f
+        private static string ServiceResultHandle(Enum @enum)
+        {
+            switch(@enum)
+            {
+                case StatusResult.Success:
+                    return "Thành công.";
+                case StatusResult.Failed:
+                    return "Thất bại";
+                case StatusResult.Errored:
+                    return "Xảy ra lỗi";
+                case StatusResult.Warning:
+                    return "Cảnh báo";
+                default:
+                    return "Không xác định.";
+            }    
+        }
     }
 }

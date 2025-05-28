@@ -17,7 +17,7 @@ namespace DPTS.Applications.Implements
             _unitOfWork = unitOfWork;
             _logger = logger;
         }
-       public async Task<ServiceResult<IEnumerable<IndexCategoryModel>>> GetCategoriesAsync()
+        public async Task<ServiceResult<IEnumerable<IndexCategoryModel>>> GetCategoriesAsync()
         {
             try
             {

@@ -1,4 +1,5 @@
 ﻿using DPTS.Applications.Dtos.statisticals;
+using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
 using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
@@ -6,12 +7,12 @@ using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Implements.statictis
 {
-    public class AdminService
+    public class StatictisAdminService : IStatictisAdminService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ILogger<AdminService> _logger;
+        private readonly ILogger<StatictisAdminService> _logger;
 
-        public AdminService(IUnitOfWork unitOfWork, ILogger<AdminService> logger)
+        public StatictisAdminService(IUnitOfWork unitOfWork, ILogger<StatictisAdminService> logger)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;

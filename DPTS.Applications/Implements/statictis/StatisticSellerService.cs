@@ -1,4 +1,5 @@
 ﻿using DPTS.Applications.Dtos.statisticals;
+using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
 using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
@@ -11,12 +12,12 @@ namespace DPTS.Applications.Implements.statictis;
 /// <summary>
 /// Dịch vụ thống kê dành cho người bán.
 /// </summary>
-public class SellerService
+public class StatisticSellerService : IStatisticSellerService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<SellerService> _logger;
+    private readonly ILogger<StatisticSellerService> _logger;
 
-    public SellerService(IUnitOfWork unitOfWork, ILogger<SellerService> logger)
+    public StatisticSellerService(IUnitOfWork unitOfWork, ILogger<StatisticSellerService> logger)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
