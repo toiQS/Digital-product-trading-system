@@ -1,4 +1,5 @@
-﻿using DPTS.Applications.Implements.statictis;
+﻿using DPTS.Applications.Implements;
+using DPTS.Applications.Implements.statictis;
 using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds.Implements;
 using DPTS.Applications.Shareds.Interfaces;
@@ -27,6 +28,12 @@ namespace DPTS.Applications
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IStatisticSellerService, StatisticSellerService>();
             services.AddScoped<IStatictisAdminService, StatictisAdminService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IUserService, UserService>();
+
         }
     }
 }

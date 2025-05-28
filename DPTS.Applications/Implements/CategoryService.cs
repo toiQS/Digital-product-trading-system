@@ -1,4 +1,5 @@
 ﻿using DPTS.Applications.Dtos.categories;
+using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
 using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DPTS.Applications.Implements
 {
-    public class CategoryService
+    public class CategoryService : ICategoryService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CategoryService> _logger;

@@ -1,4 +1,5 @@
 ﻿using DPTS.Applications.Dtos.auths;
+using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
 using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
@@ -13,7 +14,7 @@ using System.Text;
 
 namespace DPTS.Applications.Implements
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<AuthService> _logger;

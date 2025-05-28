@@ -1,4 +1,5 @@
 ﻿using DPTS.Applications.Dtos.users;
+using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
 using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Implements
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UserService> _logger;

@@ -1,4 +1,5 @@
 ﻿using DPTS.Applications.Dtos.orders;
+using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
 using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DPTS.Applications.Implements
 {
-    public class OrderService
+    public class OrderService : IOrderService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<OrderService> _logger;

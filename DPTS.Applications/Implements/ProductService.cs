@@ -2,6 +2,7 @@
 using DPTS.Applications.Dtos.products;
 using DPTS.Applications.Dtos.reviews;
 using DPTS.Applications.Dtos.statisticals;
+using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
 using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace DPTS.Applications.Implements
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<ProductService> _logger;
