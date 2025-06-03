@@ -1,5 +1,5 @@
-﻿using DPTS.Applications.Dtos.auths;
-using DPTS.Applications.Interfaces;
+﻿using DPTS.Applications.Interfaces;
+using DPTS.APIs.Models;
 using DPTS.Applications.Shareds;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,49 +10,48 @@ namespace DPTS.APIs.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
         public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
 
-        /// <summary>
-        /// Đăng ký tài khoản mới.
-        /// </summary>
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        public async Task<IActionResult> Register([FromBody] RegistrationModel model, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
-                return BadRequest("Dữ liệu đăng ký không hợp lệ.");
+            if (model.Password != model.PasswordComfirmed)
+                return BadRequest("Mật khẩu xác nhận không khớp.");
 
-            var result = await _authService.RegisterAsync(model);
-            return APIResult.From(result);
+            var result = await _authService.RegisterAsync(model.Email, model.Password, model.PasswordComfirmed, true, cancellationToken);
+
+            return HandleServiceResult(result);
         }
 
-        /// <summary>
-        /// Đăng nhập tài khoản (có thể trả về yêu cầu xác thực 2FA).
-        /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        public async Task<IActionResult> Login([FromBody] LoginModel model, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
-                return BadRequest("Thông tin đăng nhập không hợp lệ.");
+            var result = await _authService.LoginAsync(model.Email, model.Password, cancellationToken);
 
-            var result = await _authService.LoginAsync(model);
-            return APIResult.From(result);
+            return HandleServiceResult(result);
         }
 
-        /// <summary>
-        /// Xác thực hai yếu tố (2FA).
-        /// </summary>
         [HttpPost("2fa")]
-        public async Task<IActionResult> Authenticate2FA([FromBody] Auth2FAModel model)
+        public async Task<IActionResult> Auth2FA([FromBody] Auth2FAModel model, CancellationToken cancellationToken)
         {
-            if (!ModelState.IsValid)
-                return BadRequest("Mã xác thực không hợp lệ.");
+            var result = await _authService.Auth2FAAsync(model.Email, model.TwoFactorSecret, cancellationToken);
 
-            var result = await _authService.Auth2FAAsync(model);
-            return APIResult.From(result);
+            return HandleServiceResult(result);
+        }
+
+        private IActionResult HandleServiceResult(ServiceResult<string> result)
+        {
+            return result.Status switch
+            {
+                StatusResult.Success => Ok(new { result.MessageResult, result.Data }),
+                StatusResult.Warning => Ok(new { result.MessageResult, result.Data }),
+                StatusResult.Failed => NotFound(result.MessageResult),
+                StatusResult.Errored => StatusCode(500, result.MessageResult),
+                _ => BadRequest("Trạng thái không xác định.")
+            };
         }
     }
 }

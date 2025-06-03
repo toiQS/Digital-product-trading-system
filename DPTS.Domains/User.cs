@@ -33,7 +33,7 @@ namespace DPTS.Domains
         public string? Phone { get; set; }
 
         [Column("address")]
-        public string? Address { get; set; }
+        public Address Address { get; set; } = null!;
 
         [Column("two_factor_enabled")]
         public bool TwoFactorEnabled { get; set; } = false;
@@ -58,6 +58,7 @@ namespace DPTS.Domains
         public virtual ICollection<Message> SentMessages { get; set; } = new List<Message>();
         public virtual ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
         public virtual ICollection<Log> Logs { get; set; } = new List<Log>();
+        public virtual ICollection<Trade> Trades { get; set; } = new List<Trade>();
     }
 
 }

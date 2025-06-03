@@ -1,106 +1,171 @@
-﻿using DPTS.Applications.Dtos.users;
+﻿using DPTS.Applications.Dtos;
 using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
-using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
+using DPTS.Infrastructures.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Implements
 {
     public class UserService : IUserService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<UserService> _logger;
 
-        public UserService(IUnitOfWork unitOfWork, ILogger<UserService> logger)
+        public UserService(ApplicationDbContext context, ILogger<UserService> logger)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _logger = logger;
         }
 
-        
         /// <summary>
-        /// Retrieves user detail information by user ID.
+        /// Lấy thông tin hồ sơ người dùng chi tiết theo UserId.
         /// </summary>
-        public async Task<ServiceResult<UserDetailModel>> GetUser(string userId)
+        public async Task<ServiceResult<ProfileDto>> GetUserAsync(string userId)
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                return ServiceResult<UserDetailModel>.Error("User ID is required.");
+            _logger.LogInformation("Lấy thông tin người dùng với ID: {UserId}", userId);
+            var user = await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(x => x.UserId == userId);
+            if (user == null) return ServiceResult<ProfileDto>.Error("Người dùng không tồn tại.");
 
-            try
+            var profile = new ProfileDto()
             {
-                _logger.LogInformation("Retrieving user with ID: {UserId}", userId);
-
-                var user = await _unitOfWork.Repository<User>().GetOneAsync("UserId", userId);
-                if (user == null)
-                    return ServiceResult<UserDetailModel>.Error("User not found.");
-
-                var role = await _unitOfWork.Repository<Role>().GetOneAsync("RoleId", user.RoleId);
-                if (role == null)
-                    return ServiceResult<UserDetailModel>.Error("Role not found.");
-
-                var response = new UserDetailModel
+                UserId = userId,
+                FullName = user.FullName!,
+                Address = new AddressDto
                 {
-                    UserId = userId,
-                    NumberPhone = user.Phone ?? "",
-                    FullName = user.FullName ?? "",
-                    RoleName = role.RoleName,
-                    UserName = user.Username,
-                    Address = user.Address ?? "",
-                    Email = user.Email
-                };
-
-                return ServiceResult<UserDetailModel>.Success(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while retrieving user details.");
-                return ServiceResult<UserDetailModel>.Error("Failed to retrieve user details.");
-            }
+                    City = user.Address.City,
+                    Country = user.Address.Country,
+                    District = user.Address.District,
+                    PostalCode = user.Address.PostalCode,
+                    Street = user.Address.Street,
+                },
+                NumberPhone = user.Phone!,
+                Email = user.Email,
+            };
+            return ServiceResult<ProfileDto>.Success(profile);
         }
 
         /// <summary>
-        /// Updates the role of a given user by either role name or ID.
+        /// Lấy thông tin hồ sơ rút gọn theo UserId.
         /// </summary>
-        public async Task<ServiceResult<UserDetailModel>> PatchRoleOfUser(string userId, string roleKey, bool isId = false)
+        public async Task<ServiceResult<MiniProfileDto>> GetMiniProfileAsync(string userId)
         {
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(roleKey))
-                return ServiceResult<UserDetailModel>.Error("User ID and Role are required.");
+            _logger.LogInformation("Lấy mini profile của người dùng {UserId}", userId);
+            var user = await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(x => x.UserId == userId);
+            if (user == null) return ServiceResult<MiniProfileDto>.Error("Người dùng không tồn tại.");
+
+            var profile = new MiniProfileDto()
+            {
+                UserId = user.UserId,
+                FullName = user.FullName!,
+                Email = user.Email,
+                Image = user.ImageUrl
+            };
+            return ServiceResult<MiniProfileDto>.Success(profile);
+        }
+
+        /// <summary>
+        /// Cập nhật vai trò của người dùng bởi quản trị viên.
+        /// </summary>
+        public async Task<ServiceResult<string>> PatchRoleOfUserAsync(string adminUserId, string userId, bool isBuyer = true, bool isAdmin = false, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation("Admin {AdminId} cập nhật vai trò người dùng {UserId}", adminUserId, userId);
+
+            var admin = await _context.Users.FindAsync(adminUserId);
+            if (admin == null) return ServiceResult<string>.Error("Admin không tồn tại.");
+
+            var roleAdmin = await _context.Roles.FindAsync(admin.RoleId);
+            if (roleAdmin?.RoleName != "Admin") return ServiceResult<string>.Error("Không có quyền cập nhật.");
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return ServiceResult<string>.Error("Người dùng không tồn tại.");
+
+            var targetRoleName = isAdmin ? "Admin" : (isBuyer ? "Buyer" : "Seller");
+            var targetRole = await _context.Roles.FirstOrDefaultAsync(x => x.RoleName == targetRoleName, cancellationToken);
+            if (targetRole == null) return ServiceResult<string>.Error("Vai trò không hợp lệ.");
 
             try
             {
-                _logger.LogInformation("Updating role for user ID: {UserId}", userId);
+                using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-                string roleId = roleKey;
+                user.RoleId = targetRole.RoleId;
+                _context.Entry(user).State = EntityState.Modified;
+                await _context.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync();
 
-                if (!isId)
-                {
-                    var role = await _unitOfWork.Repository<Role>().GetOneAsync("RoleName", roleKey);
-                    if (role == null)
-                        return ServiceResult<UserDetailModel>.Error("Role not found.");
-
-                    roleId = role.RoleId;
-                }
-
-                var user = await _unitOfWork.Repository<User>().GetOneAsync("UserId", userId);
-                if (user == null)
-                    return ServiceResult<UserDetailModel>.Error("User not found.");
-
-                var patchData = new Dictionary<string, object>
-                {
-                    { nameof(User.RoleId), roleId }
-                };
-
-                await _unitOfWork.ExecuteTransactionAsync(() =>
-                    _unitOfWork.Repository<User>().PatchAsync(user, patchData));
-
-                return await GetUser(userId);
+                var logContent = isAdmin
+                    ? $"Người dùng {userId} {user.FullName} được cập nhật thành Admin."
+                    : $"Người dùng {userId} {user.FullName} được cập nhật thành {(isBuyer ? "Buyer" : "Seller")}.";
+                await AddLogAsync(userId, logContent);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while updating user role.");
-                return ServiceResult<UserDetailModel>.Error("Failed to update user role.");
+                _logger.LogError(ex, "Lỗi khi cập nhật vai trò người dùng.");
+                return ServiceResult<string>.Error("Cập nhật vai trò thất bại.");
             }
+
+            return ServiceResult<string>.Success("Cập nhật vai trò thành công.");
+        }
+
+        /// <summary>
+        /// Thay đổi mật khẩu người dùng.
+        /// </summary>
+        public async Task<ServiceResult<string>> ChangePasswordAsync(string userId, string oldPassword, string newPassword, string newPasswordComfirmed)
+        {
+            if (newPassword != newPasswordComfirmed)
+                return ServiceResult<string>.Error("Mật khẩu xác nhận không khớp.");
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return ServiceResult<string>.Error("Người dùng không tồn tại.");
+
+            if (!BCrypt.Net.BCrypt.Verify(oldPassword, user.PasswordHash))
+                return ServiceResult<string>.Error("Mật khẩu cũ không chính xác.");
+
+            try
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                _context.Entry(user).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi thay đổi mật khẩu.");
+                return ServiceResult<string>.Error("Đổi mật khẩu thất bại.");
+            }
+
+            return ServiceResult<string>.Success("Đổi mật khẩu thành công.");
+        }
+
+        /// <summary>
+        /// Ghi log hành động của người dùng.
+        /// </summary>
+        private async Task<ServiceResult<string>> AddLogAsync(string userId, string content)
+        {
+            var log = new Log
+            {
+                LogId = Guid.NewGuid().ToString(),
+                Action = content,
+                UserId = userId,
+                CreatedAt = DateTime.Now,
+            };
+
+            try
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                _context.Logs.Add(log);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi ghi log.");
+                return ServiceResult<string>.Error("Không thể ghi log.");
+            }
+
+            return ServiceResult<string>.Success("Đã ghi log.");
         }
     }
 }

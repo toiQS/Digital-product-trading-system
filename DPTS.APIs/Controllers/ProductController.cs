@@ -1,5 +1,6 @@
 ﻿using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
+using DPTS.APIs.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DPTS.APIs.Controllers
@@ -15,78 +16,89 @@ namespace DPTS.APIs.Controllers
             _productService = productService;
         }
 
-        /// <summary>
-        /// Lấy toàn bộ sản phẩm.
-        /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAllProducts()
+        public async Task<IActionResult> GetProducts([FromQuery] PagingModel model)
         {
-            var result = await _productService.GetProductsAsync();
-            return APIResult.From(result);
+            var result = await _productService.GetProductsAsync(
+                model.PageNumber > 0 ? model.PageNumber : 1,
+                model.PageSize > 0 ? model.PageSize : 10);
+
+            return HandleResult(result);
         }
 
-        /// <summary>
-        /// Lấy sản phẩm theo người bán.
-        /// </summary>
-        [HttpGet("seller/{sellerId}")]
-        public async Task<IActionResult> GetProductsBySeller(string sellerId)
+        [HttpGet("seller")]
+        public async Task<IActionResult> GetProductsOfSeller([FromQuery] GetProductOfSellerModel model)
         {
-            if (string.IsNullOrWhiteSpace(sellerId))
-                return BadRequest("Mã người bán không hợp lệ.");
+            if (string.IsNullOrWhiteSpace(model.SellerId))
+                return BadRequest("SellerId không được để trống.");
 
-            var result = await _productService.GetProductsBySellerId(sellerId);
-            return APIResult.From(result);
+            var result = await _productService.GetProductsBySellerIdAsync(
+                model.SellerId,
+                model.PageNumber > 0 ? model.PageNumber : 1,
+                model.PageSize > 0 ? model.PageSize : 10);
+
+            return HandleResult(result);
         }
 
-        /// <summary>
-        /// Lấy danh sách sản phẩm bán chạy.
-        /// </summary>
-        [HttpGet("bestsellers")]
-        public async Task<IActionResult> GetBestSellers()
+        [HttpGet("bestsale")]
+        public async Task<IActionResult> GetBestSellingProducts([FromQuery] PagingModel model)
         {
-            var result = await _productService.ProductBestSellerAsync();
-            return APIResult.From(result);
+            var result = await _productService.GetProductsBestSaleAsync(
+                model.PageNumber > 0 ? model.PageNumber : 1,
+                model.PageSize > 0 ? model.PageSize : 10);
+
+            return HandleResult(result);
         }
 
-        /// <summary>
-        /// Lấy chi tiết sản phẩm theo mã.
-        /// </summary>
-        [HttpGet("{productId}")]
-        public async Task<IActionResult> GetProductDetail(string productId)
+        [HttpGet("detail")]
+        public async Task<IActionResult> GetProductDetail([FromQuery] GetDetailProductModel model)
         {
-            if (string.IsNullOrWhiteSpace(productId))
-                return BadRequest("Mã sản phẩm không hợp lệ.");
+            if (string.IsNullOrWhiteSpace(model.ProductId))
+                return BadRequest("ProductId không được để trống.");
 
-            var result = await _productService.DetailProductAsync(productId);
-            return APIResult.From(result);
+            var result = await _productService.GetProductByIdAsync(model.ProductId);
+            return HandleResult(result);
         }
 
-        /// <summary>
-        /// Lọc sản phẩm theo danh mục và đánh giá sao.
-        /// </summary>
-        [HttpGet("filter")]
-        public async Task<IActionResult> FilterByCategoryAndRating(
-            [FromQuery] string categoryId,
-            [FromQuery] int rating)
+        [HttpGet("by-category-rating")]
+        public async Task<IActionResult> GetProductsByCategoryAndRating([FromQuery] GetProductsByCategoryAndRatingModel model)
         {
-            if (string.IsNullOrWhiteSpace(categoryId) || rating < 0)
-                return BadRequest("Tham số lọc không hợp lệ.");
+            if (string.IsNullOrWhiteSpace(model.CategoryId))
+                return BadRequest("CategoryId không được để trống.");
 
-            var result = await _productService.GetProductsByCategoryIdAndRating(categoryId, rating);
-            return APIResult.From(result);
+            var result = await _productService.GetProductsByCategoryIdAndRating(
+                model.CategoryId,
+                model.Rating,
+                model.PageNumber > 0 ? model.PageNumber : 1,
+                model.PageSize > 0 ? model.PageSize : 10);
+
+            return HandleResult(result);
         }
 
-        /// <summary>
-        /// Gợi ý sản phẩm có thể thích trong cùng danh mục.
-        /// </summary>
-        [HttpGet("suggestions/{categoryId}")]
-        public async Task<IActionResult> GetSuggestions(string categoryId)
+        [HttpGet("can-be-liked")]
+        public async Task<IActionResult> GetProductsCanBeLiked([FromQuery] GetProductCanBeLike model)
         {
-            if (string.IsNullOrWhiteSpace(categoryId))
-                return BadRequest("Mã danh mục không hợp lệ.");
+            if (string.IsNullOrWhiteSpace(model.CategoryId))
+                return BadRequest("CategoryId không được để trống.");
 
-            var result = await _productService.CanBeLiked(categoryId);
-            return APIResult.From(result);
+            var result = await _productService.CanBeLikedAsync(
+                model.CategoryId,
+                model.PageNumber > 0 ? model.PageNumber : 1,
+                model.PageSize > 0 ? model.PageSize : 10);
+
+            return HandleResult(result);
+        }
+
+        private IActionResult HandleResult<T>(ServiceResult<T> result)
+        {
+            return result.Status switch
+            {
+                StatusResult.Success => Ok(new { result.MessageResult, result.Data }),
+                StatusResult.Warning => Ok(new { result.MessageResult, result.Data }),
+                StatusResult.Failed => NotFound(result.MessageResult),
+                StatusResult.Errored => StatusCode(500, result.MessageResult),
+                _ => BadRequest("Trạng thái không xác định.")
+            };
         }
     }
 }

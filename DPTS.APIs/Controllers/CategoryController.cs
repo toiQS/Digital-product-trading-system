@@ -1,5 +1,6 @@
 ﻿using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
+using DPTS.APIs.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DPTS.APIs.Controllers
@@ -15,14 +16,23 @@ namespace DPTS.APIs.Controllers
             _categoryService = categoryService;
         }
 
-        /// <summary>
-        /// Lấy danh sách tất cả danh mục.
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> GetCategories()
+        [HttpGet("get-categories")]
+        public async Task<IActionResult> GetCategories([FromQuery] PagingModel pagingModel)
         {
-            var result = await _categoryService.GetCategoriesAsync();
-            return APIResult.From(result);
+            // Default fallback if values not provided
+            var pageSize = pagingModel.PageSize > 0 ? pagingModel.PageSize : 10;
+            var pageNumber = pagingModel.PageNumber > 0 ? pagingModel.PageNumber : 1;
+
+            var result = await _categoryService.GetCategories(pageSize, pageNumber);
+
+            return result.Status switch
+            {
+                StatusResult.Success => Ok(new { result.MessageResult, result.Data }),
+                StatusResult.Warning => Ok(new { result.MessageResult, result.Data }),
+                StatusResult.Failed => NotFound(result.MessageResult),
+                StatusResult.Errored => StatusCode(500, result.MessageResult),
+                _ => BadRequest("Trạng thái không xác định.")
+            };
         }
     }
 }

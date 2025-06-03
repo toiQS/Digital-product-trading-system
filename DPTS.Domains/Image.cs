@@ -19,5 +19,7 @@ namespace DPTS.Domains
 
         [ForeignKey("ProductId")]
         public virtual Product Product { get; set; } = null!;
+        [Column("create_at")]
+        public DateTime CreateAt { get; set; }
     }
 }

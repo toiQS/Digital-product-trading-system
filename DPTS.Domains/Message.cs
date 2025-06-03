@@ -25,13 +25,11 @@ namespace DPTS.Domains
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        //[ForeignKey(nameof(SenderId))]
+       
         public virtual User Sender { get; set; } = null!;
 
-        //[ForeignKey(nameof(ReceiverId))]
         public virtual User Receiver { get; set; } = null!;
 
-        //[ForeignKey(nameof(OrderId))]
         public virtual Order? Order { get; set; }
     }
 }

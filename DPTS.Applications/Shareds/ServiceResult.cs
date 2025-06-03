@@ -61,6 +61,7 @@ namespace DPTS.Applications.Shareds
                 Status = StatusResult.Errored
             };
         }
+
         private static string ServiceResultHandle(Enum @enum)
         {
             switch(@enum)

@@ -16,10 +16,10 @@ namespace DPTS.Domains
         public string UserId { get; set; } = string.Empty;
 
         [Column("rating")]
-        public int? Rating { get; set; }
+        public int Rating { get; set; } = 0;
 
         [Column("comment")]
-        public string? Comment { get; set; }
+        public string Comment { get; set; } = string.Empty;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

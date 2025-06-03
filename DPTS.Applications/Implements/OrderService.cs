@@ -1,67 +1,74 @@
-﻿using DPTS.Applications.Dtos.orders;
+﻿using DPTS.Applications.Dtos;
 using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
-using DPTS.Applications.Shareds.Interfaces;
-using DPTS.Domains;
+using DPTS.Infrastructures.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+using System.Data;
 
 namespace DPTS.Applications.Implements
 {
     public class OrderService : IOrderService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<OrderService> _logger;
-        public OrderService(IUnitOfWork unitOfWork, ILogger<OrderService> logger)
+        public OrderService(ApplicationDbContext context, ILogger<OrderService> logger)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _logger = logger;
         }
 
-        public async Task<ServiceResult<IEnumerable<OrderIndexModel>>> GetOrdersBySellerId(string sellerId)
+        public async Task<ServiceResult<IEnumerable<OrderIndexDto>>> GetOrdersBySellerId(string sellerId, int pageNumber = 1, int pageSize = 10)
         {
-            try
-            {
-                _logger.LogInformation("");
-                var ecsrows = await _unitOfWork.Repository<Escrow>().GetManyAsync(nameof(Escrow.SellerId), sellerId);
-                if (!ecsrows.Any()) return ServiceResult<IEnumerable<OrderIndexModel>>.Success(null!);
-                var products = await _unitOfWork.Repository<Product>().GetManyAsync(nameof(Product.SellerId), sellerId);
-                if (!products.Any() && ecsrows.Any()) return ServiceResult<IEnumerable<OrderIndexModel>>.Error("");
-                List<OrderIndexModel> orderIndexModels = new List<OrderIndexModel>();
-                foreach (var ecs in ecsrows)
-                {
-                    var order = await _unitOfWork.Repository<Order>().GetOneAsync(nameof(Order.OrderId), ecs.OrderId);
-                    if (order == null) return ServiceResult<IEnumerable<OrderIndexModel>>.Error("");
-                    var buyer = await _unitOfWork.Repository<User>().GetOneAsync(nameof(User.UserId), order.BuyerId);
-                    if (buyer == null) return ServiceResult<IEnumerable<OrderIndexModel>>.Error("");
-                    var orderItems = await _unitOfWork.Repository<OrderItem>().GetManyAsync(nameof(OrderItem.OrderId), order.OrderId);
+            _logger.LogInformation("Fetching orders for seller {SellerId}, page {PageNumber}, size {PageSize}", sellerId, pageNumber, pageSize);
 
-                    var orderIndexModel = new OrderIndexModel()
-                    {
-                        BuyerName = buyer.FullName,
-                        Amount = ecs.Amount,
-                        Status = nameof(ecs.Status),
-                        OrderId = order.OrderId,
-                    };
-                    foreach (var orderItem in orderItems)
-                    {
-                        var product = await _unitOfWork.Repository<Product>().GetOneAsync(nameof(Product.ProductId), orderItem.ProductId);
-                        if (product == null) return ServiceResult<IEnumerable<OrderIndexModel>>.Error("");
-                        if (product.SellerId != sellerId) continue;
-                        //orderIndexModel.ProductionName.AppendLine($"{product.Title},");
-                        orderIndexModel.ProductionName.AppendLine(product.Title);
-                    }
-                    orderIndexModels.Add(orderIndexModel);
-                }
-                return ServiceResult<IEnumerable<OrderIndexModel>>.Success(orderIndexModels);
-            }
-            catch (Exception ex)
+            // Truy vấn Escrows liên quan đến Seller + Order + OrderItems + Product
+            var escrows = await _context.Escrows
+                .Where(e => e.SellerId == sellerId)
+                .Include(e => e.Order)
+                    .ThenInclude(o => o.OrderItems.Where(oi => oi.Product.SellerId == sellerId))
+                        .ThenInclude(oi => oi.Product)
+                .OrderBy(e => e.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            if (!escrows.Any())
             {
-                _logger.LogError("");
-                return ServiceResult<IEnumerable<OrderIndexModel>>.Error("");
+                return ServiceResult<IEnumerable<OrderIndexDto>>.Success(Enumerable.Empty<OrderIndexDto>());
             }
+
+            // Lấy toàn bộ buyerId cần dùng (tránh gọi từng user)
+            var buyerIds = escrows.Select(e => e.Order.BuyerId).Distinct().ToList();
+            var buyers = await _context.Users
+                .Where(u => buyerIds.Contains(u.UserId))
+                .ToDictionaryAsync(u => u.UserId);
+
+            var result = new List<OrderIndexDto>();
+            foreach (var escrow in escrows)
+            {
+                var buyerName = buyers.TryGetValue(escrow.Order.BuyerId, out var buyer)
+                    ? buyer.FullName ?? "N/A"
+                    : "N/A";
+
+                foreach (var item in escrow.Order.OrderItems)
+                {
+                    // Đảm bảo là của seller (phòng trường hợp Include không lọc hết)
+                    if (item.Product.SellerId != sellerId) continue;
+
+                    result.Add(new OrderIndexDto
+                    {
+                        OrderId = item.OrderId,
+                        ProductionName = item.Product.ProductName,
+                        BuyerName = buyerName,
+                        Amount = item.TotalAmount,
+                        Status = EnumHandle.HandleEscrowStatus(escrow.Status),
+                    });
+                }
+            }
+
+            return ServiceResult<IEnumerable<OrderIndexDto>>.Success(result);
         }
 
-        
     }
 }

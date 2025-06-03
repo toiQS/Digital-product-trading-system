@@ -19,7 +19,7 @@ namespace DPTS.Domains
         //public string Status { get; set; } = string.Empty;
 
         [Column("Is Paied")]
-        public bool isPaied { get; set; }
+        public bool IsPaied { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -31,6 +31,7 @@ namespace DPTS.Domains
         public virtual Escrow Escrow { get; set; } = null!;
         public virtual ICollection<Complaint> Complaints { get; set; } = new List<Complaint>();
         public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>(); 
     }
 
 }

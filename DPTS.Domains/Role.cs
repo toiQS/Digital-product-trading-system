@@ -15,7 +15,7 @@ namespace DPTS.Domains
         public string RoleName { get; set; } = string.Empty;
 
         [Column("description")]
-        public string? Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         public ICollection<User> Users { get; set; } = new List<User>();
     }

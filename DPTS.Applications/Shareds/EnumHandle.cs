@@ -1,43 +1,63 @@
 ﻿using DPTS.Domains;
+using System.Formats.Asn1;
+using System.Transactions;
 
-namespace DPTS.Applications.Shareds
+public static class EnumHandle
 {
-    public class EnumHandle
+    public static string HandleComplaintStatus(ComplaintStatus status)
     {
-        public EnumHandle() { }
-        public string ParseEnumToString(StatusEntity enumValue)
+        return status switch
         {
-            switch (enumValue)
-            {
-                case StatusEntity.None:
-                    return "Không chọn";
-                case StatusEntity.Newest:
-                    return "Mới nhất";
-                case StatusEntity.BestSeller:
-                    return "Bán chạy nhất";
-                case StatusEntity.Pending:
-                    return "Đang chờ";
-                case StatusEntity.Available:
-                    return "Cho phép";
-                case StatusEntity.Block:
-                    return "Chặn";
-                case StatusEntity.Done:
-                    return "Hoàn thành";
-                case StatusEntity.Comfirmed:
-                    return "Xác nhận thành công";
-                case StatusEntity.Cancel:
-                    return "Hủy";
-                case StatusEntity.Resolved:
-                    return "Đã giải quyết";
-                case StatusEntity.Complaint:
-                    return "Khiếu nại";
-                case StatusEntity.FundsInEscrow:
-                    return "Kinh phí trong ký quỹ";
-                case StatusEntity.Resolving:
-                    return "Đang giải quyết";
-                default:
-                    return "Không xác định";
-            }
-        }
+            ComplaintStatus.Pending => "Đang chờ xử lý",
+            ComplaintStatus.Unknown => "Không rõ",
+            ComplaintStatus.Resolved => "Đã xử lý",
+            _ => "Không xác định"
+        };
+    }
+
+    public static string HandleEscrowStatus(EscrowStatus status)
+    {
+        return status switch
+        {
+            EscrowStatus.Unknown => "Không rõ",
+            EscrowStatus.WaitingComfirm => "Chờ xác nhận",
+            EscrowStatus.Comfirmed => "Đã xác nhận",
+            EscrowStatus.Done => "Hoàn tất",
+            EscrowStatus.Canceled => "Đã hủy",
+            _ => "Không xác định"
+        };
+    }
+
+    public static string HandleProductStatus(ProductStatus status)
+    {
+        return status switch
+        {
+            ProductStatus.Unknown => "Không rõ",
+            ProductStatus.Newest => "Mới nhất",
+            ProductStatus.StopSelling => "Ngừng kinh doanh",
+            ProductStatus.Pending => "Chờ duyệt",
+            ProductStatus.Available => "Có sẵn",
+            ProductStatus.Blocked => "Bị chặn",
+            _ => "Không xác định"
+        };
+    }
+    public static string HandleWalletUnitCurrency(UnitCurrency unitCurrency)
+    {
+        return unitCurrency switch
+        {
+            UnitCurrency.USD => "USD",
+            UnitCurrency.VND => "VND",
+            _ => "Không xác định"
+        };
+    }
+    public static string HandleTradeStatus(TradeStatus status)
+    {
+        return status switch
+        {
+            TradeStatus.Done => "Hoàn thành",
+            TradeStatus.Resolving => "Đang xử lý",
+            TradeStatus.Errored => "Xảy ra vấn đề",
+            _ => "Không xác định"
+        };
     }
 }

@@ -1,13 +1,9 @@
 ﻿using DPTS.Applications.Implements;
-using DPTS.Applications.Implements.statictis;
 using DPTS.Applications.Interfaces;
-using DPTS.Applications.Shareds.Implements;
-using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Infrastructures.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace DPTS.Applications
 {
@@ -24,10 +20,8 @@ namespace DPTS.Applications
         }
         private static void InitializeService(this IServiceCollection services)
         {
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<IStatisticSellerService, StatisticSellerService>();
-            services.AddScoped<IStatictisAdminService, StatictisAdminService>();
+
+            services.AddScoped<IStatisticService, StatictisService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IOrderService, OrderService>();

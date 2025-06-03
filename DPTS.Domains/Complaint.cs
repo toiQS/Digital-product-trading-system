@@ -24,7 +24,7 @@ namespace DPTS.Domains
         public string Description { get; set; } = string.Empty;
 
         [Column("status")]
-        public string Status { get; set; } = "open";
+        public ComplaintStatus Status { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -34,6 +34,12 @@ namespace DPTS.Domains
 
         public virtual Order Order { get; set; } = null!;
         public virtual User User { get; set; } = null!;
+    }
+    public enum ComplaintStatus
+    {
+        Unknown,
+        Pending,
+        Resolved
     }
 
 }

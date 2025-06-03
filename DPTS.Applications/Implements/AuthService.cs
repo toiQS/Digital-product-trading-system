@@ -1,9 +1,9 @@
-﻿using DPTS.Applications.Dtos.auths;
-using DPTS.Applications.Interfaces;
+﻿using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
-using DPTS.Applications.Shareds.Interfaces;
 using DPTS.Domains;
+using DPTS.Infrastructures.Data;
 using MailKit.Net.Smtp;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -14,126 +14,168 @@ using System.Text;
 
 namespace DPTS.Applications.Implements
 {
+    /// <summary>
+    /// Service xử lý xác thực người dùng: đăng ký, đăng nhập, 2FA, gửi email, sinh JWT.
+    /// </summary>
     public class AuthService : IAuthService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ApplicationDbContext _context;
         private readonly ILogger<AuthService> _logger;
         private readonly IConfiguration _configuration;
 
-        public AuthService(IUnitOfWork unitOfWork, ILogger<AuthService> logger, IConfiguration configuration)
+        public AuthService(ApplicationDbContext context, ILogger<AuthService> logger, IConfiguration configuration)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _logger = logger;
             _configuration = configuration;
         }
 
         /// <summary>
-        /// Đăng ký tài khoản mới
+        /// Đăng ký người dùng mới và gửi mã xác thực 2FA qua email.
         /// </summary>
-        public async Task<ServiceResult<string>> RegisterAsync(RegisterModel model)
+        public async Task<ServiceResult<string>> RegisterAsync(string email, string password, string passwordComfirmed, bool isBuyer = true, CancellationToken cancellationToken = default)
         {
+            _logger.LogInformation("Registering new user with email: {Email}", email);
+
+            if (password != passwordComfirmed)
+                return ServiceResult<string>.Error("Mật khẩu xác nhận không khớp.");
+
+            if (await _context.Users.AnyAsync(u => u.Email == email, cancellationToken))
+                return ServiceResult<string>.Error("Email đã được sử dụng.");
+
+            var roleName = isBuyer ? "Buyer" : "Seller";
+            var role = await _context.Roles.FirstOrDefaultAsync(x => x.RoleName == roleName, cancellationToken);
+            if (role == null)
+                return ServiceResult<string>.Error("Không tìm thấy vai trò phù hợp.");
+
+            var newUser = new User
+            {
+                UserId = Guid.NewGuid().ToString(),
+                FullName = "Node",
+                Email = email,
+                Address = null!,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                RoleId = role.RoleId,
+                CreatedAt = DateTime.UtcNow,
+                TwoFactorSecret = new Random().Next(1000000, 9999999).ToString(),
+                TwoFactorEnabled = false
+            };
+
+            var log = new Log
+            {
+                LogId = Guid.NewGuid().ToString(),
+                Action = $"{newUser.FullName} vừa đăng ký tài khoản mới.",
+                CreatedAt = DateTime.UtcNow,
+                UserId = newUser.UserId
+            };
+
             try
             {
-                // Kiểm tra trùng email
-                var existingUser = await _unitOfWork.Repository<User>().GetOneAsync(nameof(User.Email), model.Email);
-                if (existingUser != null)
-                    return ServiceResult<string>.Error("Email already exists.");
+                await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-                // Tìm vai trò được yêu cầu
-                var role = await _unitOfWork.Repository<Role>().GetOneAsync(nameof(Role.RoleName), model.RoleName);
-                if (role == null)
-                    return ServiceResult<string>.Error("Invalid role.");
+                await _context.Users.AddAsync(newUser, cancellationToken);
+                await _context.Logs.AddAsync(log, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
 
-                // Tạo người dùng mới
-                var user = new User
-                {
-                    UserId = Guid.NewGuid().ToString(),
-                    Email = model.Email,
-                    Username = model.Email.Split('@')[0],
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                    RoleId = role.RoleId,
-                    TwoFactorEnabled = false,
-                    TwoFactorSecret = Guid.NewGuid().ToString()
-                };
+                await transaction.CommitAsync(cancellationToken);
 
-                // Lưu người dùng vào DB
-                await _unitOfWork.ExecuteTransactionAsync(async () =>
-                    await _unitOfWork.Repository<User>().AddAsync(user));
-
-                // Gửi email xác thực
-                var sendMailResult = SendMail(user.Email, user.TwoFactorSecret);
-                if (!sendMailResult)
-                    return ServiceResult<string>.Error("Failed to send confirmation email.");
-
-                return ServiceResult<string>.Success("User registered successfully.");
+                if (!SendMail(email, newUser.TwoFactorSecret))
+                    return ServiceResult<string>.Error("Gửi email xác nhận thất bại.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while registering user {Email}", model.Email);
-                return ServiceResult<string>.Error("Registration failed due to server error.");
+                _logger.LogError(ex, "Lỗi khi đăng ký người dùng.");
+                return ServiceResult<string>.Error("Đã xảy ra lỗi khi đăng ký.");
             }
+
+            return ServiceResult<string>.Success("Đăng ký thành công. Vui lòng kiểm tra email để xác thực.");
         }
 
         /// <summary>
-        /// Xác thực 2 bước bằng mã đã gửi về email
+        /// Xác thực mã 2FA được gửi qua email khi đăng ký.
         /// </summary>
-        public async Task<ServiceResult<string>> Auth2FAAsync(Auth2FAModel model)
+        public async Task<ServiceResult<string>> Auth2FAAsync(string email, string twoFactorSecret, CancellationToken cancellationToken = default)
         {
+            _logger.LogInformation("Xác thực 2FA cho email: {Email}", email);
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+            if (user == null)
+                return ServiceResult<string>.Error("Người dùng không tồn tại.");
+
+            if (user.TwoFactorSecret != twoFactorSecret)
+                return ServiceResult<string>.Error("Mã xác thực không đúng.");
+
+            var log = new Log
+            {
+                LogId = Guid.NewGuid().ToString(),
+                Action = $"{user.FullName} vừa xác thực 2FA.",
+                CreatedAt = DateTime.UtcNow,
+                UserId = user.UserId
+            };
+
             try
             {
-                var user = await _unitOfWork.Repository<User>().GetOneAsync(nameof(User.Email), model.Email);
-                if (user == null)
-                    return ServiceResult<string>.Error("User not found.");
-
-                if (user.TwoFactorSecret != model.TwoFactorSecret)
-                    return ServiceResult<string>.Error("Invalid two-factor authentication code.");
+                await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
                 user.TwoFactorEnabled = true;
-                user.UpdatedAt = DateTime.UtcNow;
+                _context.Entry(user).State = EntityState.Modified;
 
-                await _unitOfWork.ExecuteTransactionAsync(async () =>
-                    await _unitOfWork.Repository<User>().UpdateAsync(user));
+                await _context.Logs.AddAsync(log, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
 
-                return ServiceResult<string>.Success("Two-factor authentication enabled successfully.");
+                await transaction.CommitAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "2FA failed for {Email}", model.Email);
-                return ServiceResult<string>.Error("An error occurred during 2FA.");
+                _logger.LogError(ex, "Lỗi khi xác thực 2FA.");
+                return ServiceResult<string>.Error("Xác thực thất bại.");
             }
+
+            return ServiceResult<string>.Success("Xác thực 2FA thành công.");
         }
 
         /// <summary>
-        /// Đăng nhập người dùng
+        /// Đăng nhập người dùng, trả về JWT nếu thành công.
         /// </summary>
-        public async Task<ServiceResult<LoginResult>> LoginAsync(LoginModel model)
+        public async Task<ServiceResult<string>> LoginAsync(string email, string password, CancellationToken cancellationToken = default)
         {
+            var user = await _context.Users
+                                     .Include(x => x.Role)
+                                     .FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+                return ServiceResult<string>.Error("Email hoặc mật khẩu không đúng.");
+
+            var log = new Log
+            {
+                LogId = Guid.NewGuid().ToString(),
+                Action = $"{user.FullName} đã đăng nhập.",
+                CreatedAt = DateTime.UtcNow,
+                UserId = user.UserId
+            };
+
             try
             {
-                var user = await _unitOfWork.Repository<User>().GetOneAsync(nameof(User.Email), model.Email);
-                if (user == null)
-                    return ServiceResult<LoginResult>.Error("User not found.");
+                var token = GenerateToken(user);
 
-                if (!BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
-                    return ServiceResult<LoginResult>.Error("Invalid password.");
+                await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-                var loginResult = new LoginResult
-                {
-                    AccessToken = GenerateToken(user),
-                    Expiry = DateTime.UtcNow.AddMinutes(30)
-                };
+                await _context.Logs.AddAsync(log, cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
 
-                return ServiceResult<LoginResult>.Success(loginResult);
+                await transaction.CommitAsync(cancellationToken);
+
+                return ServiceResult<string>.Success(token);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Login failed for {Email}", model.Email);
-                return ServiceResult<LoginResult>.Error("An error occurred during login.");
+                _logger.LogError(ex, "Lỗi khi đăng nhập.");
+                return ServiceResult<string>.Error("Đăng nhập thất bại.");
             }
         }
 
         /// <summary>
-        /// Sinh JWT Token cho người dùng
+        /// Tạo JWT token chứa thông tin người dùng.
         /// </summary>
         private string GenerateToken(User user)
         {
@@ -152,13 +194,14 @@ namespace DPTS.Applications.Implements
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(30),
-                signingCredentials: credentials);
+                signingCredentials: credentials
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         /// <summary>
-        /// Gửi email xác nhận đăng ký
+        /// Gửi email xác thực chứa mã 2FA.
         /// </summary>
         private bool SendMail(string toAddress, string twoFactorSecret)
         {
@@ -183,7 +226,7 @@ namespace DPTS.Applications.Implements
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send email to {ToAddress}", toAddress);
+                _logger.LogError(ex, "Gửi email thất bại đến địa chỉ: {ToAddress}", toAddress);
                 return false;
             }
         }

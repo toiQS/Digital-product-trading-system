@@ -1,15 +1,15 @@
-﻿using DPTS.Applications.Dtos.products;
+﻿using DPTS.Applications.Dtos;
 using DPTS.Applications.Shareds;
 
 namespace DPTS.Applications.Interfaces
 {
     public interface IProductService
     {
-        Task<ServiceResult<IEnumerable<ProductIndexModel>>> GetProductsAsync();
-        Task<ServiceResult<IEnumerable<ProductIndexModel>>> GetProductsBySellerId(string sellerId);
-        Task<ServiceResult<IEnumerable<ProductIndexModel>>> ProductBestSellerAsync();
-        Task<ServiceResult<ProductDetailModel>> DetailProductAsync(string productId);
-        Task<ServiceResult<IEnumerable<ProductIndexModel>>> GetProductsByCategoryIdAndRating(string categoryId, int rating);
-        Task<ServiceResult<IEnumerable<ProductIndexModel>>> CanBeLiked(string categoryId);
+        Task<ServiceResult<IEnumerable<ProductIndexDto>>> GetProductsAsync(int pageNumber = 1, int pageSize = 10);
+        Task<ServiceResult<IEnumerable<ProductIndexDto>>> GetProductsBySellerIdAsync(string sellerId, int pageNumber = 1, int pageSize = 10);
+        Task<ServiceResult<IEnumerable<ProductIndexDto>>> GetProductsBestSaleAsync(int pageNumber = 1, int pageSize = 10);
+        Task<ServiceResult<ProductDetailDto>> GetProductByIdAsync(string productId);
+        Task<ServiceResult<IEnumerable<ProductIndexDto>>> GetProductsByCategoryIdAndRating(string categoryId, int rating, int pageNumber = 1, int pageSize = 10);
+        Task<ServiceResult<IEnumerable<ProductIndexDto>>> CanBeLikedAsync(string categoryId, int pageNumber = 1, int pageSize = 10);
     }
 }

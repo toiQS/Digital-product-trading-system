@@ -14,8 +14,8 @@ namespace DPTS.Domains
         public string SellerId { get; set; } = string.Empty;
 
         [Required]
-        [Column("title")]
-        public string Title { get; set; } = string.Empty;
+        [Column("product_name")]
+        public string ProductName { get; set; } = string.Empty;
 
         [Column("description")]
         public string? Description { get; set; }
@@ -25,10 +25,10 @@ namespace DPTS.Domains
         public decimal Price { get; set; }
 
         [Column("category")]
-        public string? CategoryId { get; set; }
+        public string CategoryId { get; set; }= string.Empty;   
 
         [Column("status")]
-        public StatusEntity Status { get; set; }
+        public ProductStatus Status { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -42,7 +42,17 @@ namespace DPTS.Domains
         public virtual User Seller { get; set; } = null!;
         public virtual Category Category { get; set; } = null!;
         public virtual ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
-        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+        public virtual ICollection<Image> Images { get; set; } = new List<Image>();
+    }
+    public enum ProductStatus
+    {
+        Unknown,
+        Newest,
+        BestSeller,
+        StopSelling,
+        Pending,
+        Available,
+        Blocked
     }
 
 }
