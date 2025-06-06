@@ -29,4 +29,9 @@ namespace DPTS.APIs.Models
         public string Email { get; set; } = string.Empty;
         public string TwoFactorSecret {  get; set; } = string.Empty;
     }
+    public class ForgotPasswordModel
+    {
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+    }
 }

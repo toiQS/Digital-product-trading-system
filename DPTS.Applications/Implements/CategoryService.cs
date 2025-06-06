@@ -32,8 +32,6 @@ namespace DPTS.Applications.Implements
             var categories = await _context.Categories
                 .OrderBy(c => c.CreateAt) 
                 .Include(c => c.Products) 
-                .Skip((pageNumber - 1) * pageSize) 
-                .Take(pageSize) 
                 .Select(c => new CategoryIndexDto
                 {
                     CategoryId = c.CategoryId,
@@ -43,7 +41,7 @@ namespace DPTS.Applications.Implements
                 })
                 .ToListAsync();
 
-            return ServiceResult<IEnumerable<CategoryIndexDto>>.Success(categories);
+            return ServiceResult<IEnumerable<CategoryIndexDto>>.Success(categories.Skip((pageNumber - 1) * pageSize).Take(pageSize));
         }
     }
 }

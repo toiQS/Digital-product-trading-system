@@ -16,90 +16,70 @@ namespace DPTS.APIs.Controllers
             _statisticService = statisticService;
         }
 
-        [HttpGet("sales-revenue")]
-        public async Task<IActionResult> SalesRevenue([FromQuery] StatisticOfSeller model)
+        // ---------------- Doanh thu ----------------
+        [HttpGet("revenue/day")]
+        public async Task<IActionResult> GetRevenueDay([FromQuery] StatisticOfSeller model)
         {
             if (string.IsNullOrWhiteSpace(model.SellerId))
                 return BadRequest("SellerId không được để trống.");
 
-            var result = await _statisticService.SalesRevenueInWeekAsync(
-                model.SellerId, model.PageNumber, model.PageSize);
-
+            var result = await _statisticService.SalesRevenueInDayAsync(model.SellerId);
             return HandleResult(result);
         }
 
-        [HttpGet("sold-orders")]
-        public async Task<IActionResult> SoldOrders([FromQuery] StatisticOfSeller model)
+        [HttpGet("revenue/week")]
+        public async Task<IActionResult> GetRevenueWeek([FromQuery] StatisticOfSeller model)
         {
             if (string.IsNullOrWhiteSpace(model.SellerId))
                 return BadRequest("SellerId không được để trống.");
 
-            var result = await _statisticService.SoldOrdersInWeekAsync(
-                model.SellerId, model.PageNumber, model.PageSize);
-
+            var result = await _statisticService.SalesRevenueInWeekAsync(model.SellerId);
             return HandleResult(result);
         }
 
-        [HttpGet("ratings")]
-        public async Task<IActionResult> Ratings([FromQuery] StatisticOfSeller model)
+        [HttpGet("revenue/month")]
+        public async Task<IActionResult> GetRevenueMonth([FromQuery] StatisticOfSeller model)
         {
             if (string.IsNullOrWhiteSpace(model.SellerId))
                 return BadRequest("SellerId không được để trống.");
 
-            var result = await _statisticService.RatingAsync(
-                model.SellerId, model.PageSize, model.PageNumber);
-
+            var result = await _statisticService.SalesRevenueInMonthAsync(model.SellerId);
             return HandleResult(result);
         }
 
-        [HttpGet("products-of-week")]
-        public async Task<IActionResult> ProductsOfSeller([FromQuery] StatisticOfSeller model)
+        [HttpGet("revenue/year")]
+        public async Task<IActionResult> GetRevenueYear([FromQuery] StatisticOfSeller model)
         {
             if (string.IsNullOrWhiteSpace(model.SellerId))
                 return BadRequest("SellerId không được để trống.");
 
-            var result = await _statisticService.ProductOfSellerInWeekAsync(
-                model.SellerId, model.PageSize, model.PageNumber);
-
+            var result = await _statisticService.SaleRevenueInYearAsync(model.SellerId);
             return HandleResult(result);
         }
 
-        [HttpGet("best-sell")]
-        public async Task<IActionResult> BestSell([FromQuery] StatisticOfSeller model)
+        // ---------------- Đánh giá ----------------
+        [HttpGet("rating")]
+        public async Task<IActionResult> GetRating([FromQuery] StatisticOfSeller model)
         {
             if (string.IsNullOrWhiteSpace(model.SellerId))
                 return BadRequest("SellerId không được để trống.");
 
-            var result = await _statisticService.BestSellAsync(
-                model.SellerId, model.PageSize, model.PageNumber);
-
+            var result = await _statisticService.RatingAsync(model.SellerId);
             return HandleResult(result);
         }
 
-        [HttpGet("recent-messages")]
-        public async Task<IActionResult> RecentMessages([FromQuery] StatisticOfSeller model)
+        // ---------------- Sản phẩm ----------------
+        [HttpGet("product/week")]
+        public async Task<IActionResult> GetProductStatisticOfWeek([FromQuery] StatisticOfSeller model)
         {
             if (string.IsNullOrWhiteSpace(model.SellerId))
                 return BadRequest("SellerId không được để trống.");
 
-            var result = await _statisticService.RecentMessageAsync(
-                model.SellerId, model.PageNumber, model.PageSize);
-
+            var result = await _statisticService.ProductOfSellerInWeekAsync(model.SellerId);
             return HandleResult(result);
         }
 
-        [HttpGet("recent-orders")]
-        public async Task<IActionResult> RecentOrders([FromQuery] StatisticOfSeller model)
-        {
-            if (string.IsNullOrWhiteSpace(model.SellerId))
-                return BadRequest("SellerId không được để trống.");
-
-            var result = await _statisticService.RecentOrderAsync(
-                model.SellerId, model.PageNumber, model.PageSize);
-
-            return HandleResult(result);
-        }
-
+        // ---------------- Shared Result Handler ----------------
         private IActionResult HandleResult<T>(ServiceResult<T> result)
         {
             return result.Status switch

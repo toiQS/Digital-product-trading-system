@@ -4,6 +4,7 @@ using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace DPTS.Applications.Implements
 {
@@ -18,8 +19,30 @@ namespace DPTS.Applications.Implements
 
         #region Seller
 
+        #region Doanh thu
+
+        // thống kê doanh thu so với ngày trước
+        public async Task<ServiceResult<StatisticSellerIndexDto>> SalesRevenueInDayAsync(string sellerId)
+        {
+            var escrows = await _context.Escrows
+                .Where(x => x.SellerId == sellerId && x.Status == EscrowStatus.Done)
+                .ToListAsync();
+
+            var salesRevenueToday = CalculateTotalAmount(escrows, DateTime.Today, DateTime.Today);
+            var salesRevenueYesterday = CalculateTotalAmount(escrows, DateTime.Today.AddDays(-1), DateTime.Today.AddDays(-1));
+
+            var percentage = salesRevenueYesterday == 0
+                ? (salesRevenueToday > 0 ? 100 : 0)
+                : (double)((salesRevenueToday - salesRevenueYesterday) * 100 / salesRevenueYesterday);
+            return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
+            {
+                StatisticName = "Doanh thu ngày",
+                Value = salesRevenueToday,
+                Infomation = $"{percentage} so với ngày trước."
+            });
+        }
         // Thống kê doanh thu trong tuần so với tuần trước
-        public async Task<ServiceResult<StatisticSellerIndexDto>> SalesRevenueInWeekAsync(string sellerId, int pageNumber = 2, int pageSize = 10)
+        public async Task<ServiceResult<StatisticSellerIndexDto>> SalesRevenueInWeekAsync(string sellerId)
         {
 
             var (startThisWeek, endThisWeek) = GetWeekRange(0);
@@ -27,16 +50,14 @@ namespace DPTS.Applications.Implements
 
             var escrows = await _context.Escrows
                 .Where(x => x.SellerId == sellerId && x.Status == EscrowStatus.Done)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
                 .ToListAsync();
 
             var salesRevenueThisWeek = CalculateTotalAmount(escrows, startThisWeek, endThisWeek);
             var salesRevenueLastWeek = CalculateTotalAmount(escrows, startLastWeek, endLastWeek);
 
-            int percentage = salesRevenueLastWeek == 0
+            double percentage = salesRevenueLastWeek == 0
                 ? (salesRevenueThisWeek > 0 ? 100 : 0)
-                : (int)((salesRevenueThisWeek - salesRevenueLastWeek) * 100 / salesRevenueLastWeek);
+                : (double)((salesRevenueThisWeek - salesRevenueLastWeek) * 100 / salesRevenueLastWeek);
 
             return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
             {
@@ -45,49 +66,58 @@ namespace DPTS.Applications.Implements
                 Infomation = $"{percentage} so với tuần trước."
             });
         }
-
-        // Đếm số đơn hàng đã bán trong tuần so với tuần trước
-        public async Task<ServiceResult<StatisticSellerIndexDto>> SoldOrdersInWeekAsync(string sellerId, int pageNumber = 2, int pageSize = 10)
+        // Thống kê doanh thu trong tháng so với tháng trước
+        public async Task<ServiceResult<StatisticSellerIndexDto>> SalesRevenueInMonthAsync(string sellerId)
         {
             var escrows = await _context.Escrows
-                .Where(x => x.Status == EscrowStatus.Done && x.SellerId == sellerId)
-                .Include(x => x.Order)
-                .ThenInclude(x => x.OrderItems)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
+                .Where(x => x.SellerId == sellerId && x.Status == EscrowStatus.Done)
                 .ToListAsync();
 
-            var (startThisWeek, endThisWeek) = GetWeekRange(0);
-            var (startLastWeek, endLastWeek) = GetWeekRange(-1);
+            var (startThisMonth, endThisMonth) = GetMonthRange(0);
+            var (startLastMonth, endLastMonth) = GetMonthRange(-1);
 
-            int countThisWeek = escrows.Count(x => x.CreatedAt.Date >= startThisWeek && x.CreatedAt.Date <= endThisWeek);
-            int countLastWeek = escrows.Count(x => x.CreatedAt.Date >= startLastWeek && x.CreatedAt.Date <= endLastWeek);
-
-            double percentage = countLastWeek == 0
-                ? (countThisWeek > 0 ? 100 : 0)
-                : (countThisWeek - countLastWeek) * 100 / countLastWeek;
-
+            var salesRevenueThisMonth = CalculateTotalAmount(escrows, startThisMonth, endThisMonth);
+            var salesRevenueLastMonth = CalculateTotalAmount(escrows, startLastMonth, endLastMonth);
             return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
             {
-                StatisticName = "Đơn hàng",
-                Value = countThisWeek,
-                Infomation = $"{percentage} so với tuần trước"
+                StatisticName = "Doanh thu tháng",
+                Value = salesRevenueThisMonth,
+                Infomation = $"{(salesRevenueLastMonth == 0 ? (salesRevenueThisMonth > 0 ? 100 : 0) : (double)((salesRevenueThisMonth - salesRevenueLastMonth) * 100 / salesRevenueLastMonth))} so với tháng trước."
             });
         }
 
+        // Thống kê số đơn hàng đã bán trong năm so với năm trước
+        public async Task<ServiceResult<StatisticSellerIndexDto>> SaleRevenueInYearAsync(string sellerId)
+        {
+            var escrows = await _context.Escrows
+                .Where(x => x.SellerId == sellerId && x.Status == EscrowStatus.Done)
+                .ToListAsync();
+            var (startThisYear, endThisYear) = GetYearRange(0);
+            var (startLastYear, endLastYear) = GetYearRange(-1);
+            var salesRevenueThisYear = CalculateTotalAmount(escrows, startThisYear, endThisYear);
+            var salesRevenueLastYear = CalculateTotalAmount(escrows, startLastYear, endLastYear);
+            return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
+            {
+                StatisticName = "Doanh thu năm",
+                Value = salesRevenueThisYear,
+                Infomation = $"{(salesRevenueLastYear == 0 ? (salesRevenueThisYear > 0 ? 100 : 0) : (double)((salesRevenueThisYear - salesRevenueLastYear) * 100 / salesRevenueLastYear))} so với năm trước."
+            });
+        }
+        #endregion
+
+        
+
         // Tính điểm đánh giá trung bình dựa trên toàn bộ sản phẩm của người bán
-        public async Task<ServiceResult<StatisticSellerIndexDto>> RatingAsync(string sellerId, int pageSize = 10, int pageNumber = 1)
+        public async Task<ServiceResult<StatisticSellerIndexDto>> RatingAsync(string sellerId)
         {
             var products = await _context.Products
                 .Where(x => x.SellerId == sellerId)
                 .Include(x => x.Reviews)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
                 .ToListAsync();
 
             var ratingSum = products.Sum(p => p.Reviews.Sum(r => r.Rating));
             var ratingCount = products.Sum(p => p.Reviews.Count);
-            var averageRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
+            var averageRating = (ratingCount > 0 ? (decimal) ratingSum / ratingCount : 0);
 
             return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
             {
@@ -98,12 +128,10 @@ namespace DPTS.Applications.Implements
         }
 
         // Thống kê số lượng sản phẩm và trạng thái của người bán trong tuần
-        public async Task<ServiceResult<StatisticSellerIndexDto>> ProductOfSellerInWeekAsync(string sellerId, int pageSize = 10, int pageNumber = 2)
+        public async Task<ServiceResult<StatisticSellerIndexDto>> ProductOfSellerInWeekAsync(string sellerId)
         {
             var products = await _context.Products
                 .Where(x => x.SellerId == sellerId)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
                 .ToListAsync();
 
             var info = $"{products.Count(x => x.Status == ProductStatus.Available)} đang kinh doanh, " +
@@ -118,90 +146,12 @@ namespace DPTS.Applications.Implements
             });
         }
 
-        // Thống kê sản phẩm bán chạy của người bán
-        public async Task<ServiceResult<IEnumerable<StatisticBestSellerIndexDto>>> BestSellAsync(string sellerId, int pageSize = 10, int pageNumber = 2)
-        {
-            var escrows = await _context.Escrows
-                .Where(x => x.SellerId == sellerId && x.Status == EscrowStatus.Done)
-                .Include(x => x.Order).ThenInclude(x => x.OrderItems)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+       
+        
 
-            var products = await _context.Products
-                .Where(x => x.SellerId == sellerId)
-                .Include(x => x.Images)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+        
 
-            var result = new List<StatisticBestSellerIndexDto>();
-            foreach (var product in products)
-            {
-                var quantity = escrows.SelectMany(e => e.Order.OrderItems)
-                    .Where(oi => oi.ProductId == product.ProductId)
-                    .Sum(oi => oi.Quantity);
 
-                result.Add(new StatisticBestSellerIndexDto
-                {
-                    ProductName = product.ProductName,
-                    Information = $"Đã bán {quantity}",
-                    ProductImage = product.Images.OrderByDescending(x => x.CreateAt).FirstOrDefault()?.ImagePath ?? "default.png",
-                    Value = product.Price
-                });
-            }
-
-            return ServiceResult<IEnumerable<StatisticBestSellerIndexDto>>.Success(result);
-        }
-
-        // Lấy các tin nhắn gần nhất của người bán
-        public async Task<ServiceResult<IEnumerable<RecentMessageIndexDto>>> RecentMessageAsync(string sellerId, int pageNumber = 2, int pageSize = 10)
-        {
-            var messages = await _context.Messages
-                .Where(x => x.ReceiverId == sellerId)
-                .OrderByDescending(x => x.CreatedAt)
-                .DistinctBy(x => x.SenderId)
-                .Include(x => x.Sender)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            var result = messages.Select(x => new RecentMessageIndexDto
-            {
-                MessageId = x.MessageId,
-                SenderName = x.Sender.FullName ?? "N/A",
-                Content = x.Content,
-                SendAt = x.CreatedAt.ToString("hh:mm - dd/MM/yyyy"),
-                UserImage = x.Sender.ImageUrl
-            });
-
-            return ServiceResult<IEnumerable<RecentMessageIndexDto>>.Success(result);
-        }
-
-        // Lấy các đơn hàng gần nhất của người bán
-        public async Task<ServiceResult<IEnumerable<RecentOrderStatisticDto>>> RecentOrderAsync(string sellerId, int pageNumber = 2, int pageSize = 10)
-        {
-            var escrows = await _context.Escrows
-                .Where(x => x.SellerId == sellerId)
-                .Include(x => x.Order).ThenInclude(x => x.OrderItems).ThenInclude(x => x.Product)
-                .Include(x => x.Order).ThenInclude(x => x.Buyer)
-                .OrderByDescending(x => x.CreatedAt)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            var result = escrows.SelectMany(escrow => escrow.Order.OrderItems.Select(item => new RecentOrderStatisticDto
-            {
-                BuyerName = escrow.Order.Buyer.FullName ?? "N/A",
-                BuyerImage = escrow.Order.Buyer.ImageUrl,
-                OrderId = escrow.Order.OrderId,
-                Information = item.Product.ProductName,
-                Status = EnumHandle.HandleEscrowStatus(escrow.Status),
-                Value = item.Product.Price
-            })).ToList();
-
-            return ServiceResult<IEnumerable<RecentOrderStatisticDto>>.Success(result);
-        }
 
         #endregion
 
@@ -221,6 +171,20 @@ namespace DPTS.Applications.Implements
             var startOfWeek = today.AddDays(-diff).AddDays(7 * offsetWeek);
             var endOfWeek = startOfWeek.AddDays(6);
             return (startOfWeek, endOfWeek);
+        }
+        private (DateTime Start, DateTime End) GetMonthRange(int offsetMonth = 0)
+        {
+            var today = DateTime.Today;
+            var firstDayOfMonth = new DateTime(today.Year, today.Month, 1).AddMonths(offsetMonth);
+            var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+            return (firstDayOfMonth, lastDayOfMonth);
+        }
+        private (DateTime Start, DateTime End) GetYearRange(int offsetYear = 0)
+        {
+            var today = DateTime.Today;
+            var firstDayOfYear = new DateTime(today.Year + offsetYear, 1, 1);
+            var lastDayOfYear = new DateTime(today.Year + offsetYear, 12, 31);
+            return (firstDayOfYear, lastDayOfYear);
         }
     }
 }

@@ -12,13 +12,10 @@
     {
         public string ProductId { get; set; } = string.Empty;
     }
-    public class GetProductsByCategoryAndRatingModel : PagingModel
+    public class GetProductsWithManyOptionsModel : PagingModel
     {
+        public string Text { get; set; } = string.Empty;
         public string CategoryId { get; set; } = string.Empty;
-        public int Rating { get; set; }
-    }
-    public class GetProductCanBeLike : PagingModel
-    {
-        public string CategoryId { get; set; } = string.Empty;
+        public int Rating { get; set; } = 0;
     }
 }

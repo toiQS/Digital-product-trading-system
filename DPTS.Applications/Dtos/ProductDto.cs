@@ -15,6 +15,7 @@
     {
         public string ProductId { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
+        public string SellerName { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public string CategoryName { get; set; } = string.Empty;
@@ -27,8 +28,9 @@
     {
         public string ProductReviewId { get; set; } = string.Empty;
         public string BuyerName { get; set; } = string.Empty;
-        public string Content { get; set; } = string.Empty;
+        public string Comment { get; set; } = string.Empty;
         public float Rating { get; set; } = 0.0f;
         public int Likes { get; set; } = 0;
+        public DateTime CreatedAt { get; set; } 
     }
 }

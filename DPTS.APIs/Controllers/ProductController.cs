@@ -16,16 +16,28 @@ namespace DPTS.APIs.Controllers
             _productService = productService;
         }
 
-        [HttpGet]
+        // -------------------------- Buyer --------------------------
+        [HttpGet("buyer")]
         public async Task<IActionResult> GetProducts([FromQuery] PagingModel model)
         {
             var result = await _productService.GetProductsAsync(
-                model.PageNumber > 0 ? model.PageNumber : 1,
-                model.PageSize > 0 ? model.PageSize : 10);
+                pageNumber: model.PageNumber > 0 ? model.PageNumber : 1,
+                pageSize: model.PageSize > 0 ? model.PageSize : 10);
 
             return HandleResult(result);
         }
 
+        [HttpGet("buyer/best-sale")]
+        public async Task<IActionResult> GetBestSaleProducts([FromQuery] PagingModel model)
+        {
+            var result = await _productService.GetProductsBestSaleAsync(
+                pageNumber: model.PageNumber > 0 ? model.PageNumber : 1,
+                pageSize: model.PageSize > 0 ? model.PageSize : 10);
+
+            return HandleResult(result);
+        }
+
+        // -------------------------- Seller --------------------------
         [HttpGet("seller")]
         public async Task<IActionResult> GetProductsOfSeller([FromQuery] GetProductOfSellerModel model)
         {
@@ -34,22 +46,27 @@ namespace DPTS.APIs.Controllers
 
             var result = await _productService.GetProductsBySellerIdAsync(
                 model.SellerId,
-                model.PageNumber > 0 ? model.PageNumber : 1,
-                model.PageSize > 0 ? model.PageSize : 10);
+                pageNumber: model.PageNumber > 0 ? model.PageNumber : 1,
+                pageSize: model.PageSize > 0 ? model.PageSize : 10);
 
             return HandleResult(result);
         }
 
-        [HttpGet("bestsale")]
-        public async Task<IActionResult> GetBestSellingProducts([FromQuery] PagingModel model)
+        [HttpGet("seller/best-sale")]
+        public async Task<IActionResult> GetBestSaleProductsOfSeller([FromQuery] GetProductOfSellerModel model)
         {
-            var result = await _productService.GetProductsBestSaleAsync(
-                model.PageNumber > 0 ? model.PageNumber : 1,
-                model.PageSize > 0 ? model.PageSize : 10);
+            if (string.IsNullOrWhiteSpace(model.SellerId))
+                return BadRequest("SellerId không được để trống.");
+
+            var result = await _productService.GetProductsBestSaleWithSellerIdAsync(
+                model.SellerId,
+                pageNumber: model.PageNumber > 0 ? model.PageNumber : 1,
+                pageSize: model.PageSize > 0 ? model.PageSize : 10);
 
             return HandleResult(result);
         }
 
+        // -------------------------- Detail --------------------------
         [HttpGet("detail")]
         public async Task<IActionResult> GetProductDetail([FromQuery] GetDetailProductModel model)
         {
@@ -60,35 +77,21 @@ namespace DPTS.APIs.Controllers
             return HandleResult(result);
         }
 
-        [HttpGet("by-category-rating")]
-        public async Task<IActionResult> GetProductsByCategoryAndRating([FromQuery] GetProductsByCategoryAndRatingModel model)
+        // -------------------------- Search/Filter --------------------------
+        [HttpGet("search")]
+        public async Task<IActionResult> GetProductsWithFilter([FromQuery] GetProductsWithManyOptionsModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.CategoryId))
-                return BadRequest("CategoryId không được để trống.");
-
-            var result = await _productService.GetProductsByCategoryIdAndRating(
+            var result = await _productService.GetProductsWithManyOptions(
+                model.Text,
                 model.CategoryId,
                 model.Rating,
-                model.PageNumber > 0 ? model.PageNumber : 1,
-                model.PageSize > 0 ? model.PageSize : 10);
+                pageNumber: model.PageNumber > 0 ? model.PageNumber : 1,
+                pageSize: model.PageSize > 0 ? model.PageSize : 10);
 
             return HandleResult(result);
         }
 
-        [HttpGet("can-be-liked")]
-        public async Task<IActionResult> GetProductsCanBeLiked([FromQuery] GetProductCanBeLike model)
-        {
-            if (string.IsNullOrWhiteSpace(model.CategoryId))
-                return BadRequest("CategoryId không được để trống.");
-
-            var result = await _productService.CanBeLikedAsync(
-                model.CategoryId,
-                model.PageNumber > 0 ? model.PageNumber : 1,
-                model.PageSize > 0 ? model.PageSize : 10);
-
-            return HandleResult(result);
-        }
-
+        // -------------------------- Shared Result Handler --------------------------
         private IActionResult HandleResult<T>(ServiceResult<T> result)
         {
             return result.Status switch

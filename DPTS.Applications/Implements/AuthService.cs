@@ -11,6 +11,7 @@ using MimeKit;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DPTS.Applications.Implements
 {
@@ -172,6 +173,39 @@ namespace DPTS.Applications.Implements
                 _logger.LogError(ex, "Lỗi khi đăng nhập.");
                 return ServiceResult<string>.Error("Đăng nhập thất bại.");
             }
+        }
+        /// <summary>
+        /// est mật khẩu cho người dùng thông qua email.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public async Task<ServiceResult<string>> ForgotPasswordAsync(string email)
+        {
+            var user = _context.Users.Where(x => x.Email == email).FirstOrDefault();
+            if(user == null)
+            {
+                return ServiceResult<string>.Error("Email không tồn tại.");
+            }  
+           
+            try
+            {
+                var newPassword = Guid.NewGuid().ToString("N").Substring(0, 8);
+                var sendMailResult = SendMail(email, newPassword);
+                using (var transaction = await _context.Database.BeginTransactionAsync())
+                {
+                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                    _context.Entry(user).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi khi đặt lại mật khẩu.");
+                return ServiceResult<string>.Error("Đặt lại mật khẩu thất bại.");
+            }
+            return ServiceResult<string>.Success("Mật khẩu mới đã được gửi đến email của bạn.");
         }
 
         /// <summary>
