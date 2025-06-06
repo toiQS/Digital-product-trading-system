@@ -1,4 +1,5 @@
 ﻿using DPTS.Applications;
+using DPTS.Infrastructures.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Initalize(builder.Configuration);
@@ -32,7 +33,11 @@ else
     app.UseExceptionHandler("/error");
     app.UseHsts();
 }
-
-app.MapControllers();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedingRole.Initialize(services);
+}
+    app.MapControllers();
 
 app.Run();

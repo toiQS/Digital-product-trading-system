@@ -23,11 +23,12 @@ namespace DPTS.Applications
 
             services.AddScoped<IStatisticService, StatictisService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IUserService, UserService>();
-
+            services.AddScoped<IWalletService, WalletService>();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DPTS.Applications.Dtos;
+using DPTS.Applications.Interfaces;
 using DPTS.Applications.Shareds;
 using DPTS.Infrastructures.Data;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Implements
 {
-    public class WalletService
+    public class WalletService : IWalletService
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<WalletService> _logger;
