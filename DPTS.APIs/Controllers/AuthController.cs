@@ -42,6 +42,13 @@ namespace DPTS.APIs.Controllers
             return HandleServiceResult(result);
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
+        {
+            var result = await _authService.ForgotPasswordAsync(model.Email);
+            return HandleServiceResult(result);
+        }
+
         private IActionResult HandleServiceResult(ServiceResult<string> result)
         {
             return result.Status switch
