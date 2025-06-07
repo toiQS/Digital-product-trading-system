@@ -146,13 +146,6 @@ namespace DPTS.Applications.Implements
             });
         }
 
-       
-        
-
-        
-
-
-
         #endregion
 
         // Tính tổng số tiền trong khoảng thời gian theo trạng thái escrow

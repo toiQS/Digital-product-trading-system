@@ -55,7 +55,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasKey("AddressId");
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Addresses", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Category", b =>
@@ -80,7 +80,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Complaint", b =>
@@ -127,7 +127,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Complications");
+                    b.ToTable("Complications", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Escrow", b =>
@@ -172,7 +172,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Escrows");
+                    b.ToTable("Escrows", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Image", b =>
@@ -199,7 +199,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Images");
+                    b.ToTable("Images", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Log", b =>
@@ -225,7 +225,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Logs");
+                    b.ToTable("Logs", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Message", b =>
@@ -265,7 +265,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Order", b =>
@@ -299,7 +299,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("BuyerId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.OrderItem", b =>
@@ -332,7 +332,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Product", b =>
@@ -386,7 +386,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.ProductReview", b =>
@@ -428,7 +428,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ProductReviews");
+                    b.ToTable("ProductReviews", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Role", b =>
@@ -450,7 +450,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Trade", b =>
@@ -501,7 +501,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Trades");
+                    b.ToTable("Trades", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.User", b =>
@@ -571,7 +571,7 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Wallet", b =>
@@ -599,7 +599,7 @@ namespace DPTS.Infrastructures.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Wallets");
+                    b.ToTable("Wallets", (string)null);
                 });
 
             modelBuilder.Entity("DPTS.Domains.Complaint", b =>

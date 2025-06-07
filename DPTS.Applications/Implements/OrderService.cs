@@ -4,8 +4,13 @@ using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using System.Data;
+using System.Reflection.Metadata.Ecma335;
+using System.Threading.Tasks;
 
 namespace DPTS.Applications.Implements
 {
@@ -19,186 +24,131 @@ namespace DPTS.Applications.Implements
             _logger = logger;
         }
 
+
+
         #region Seller
-        // Lấy danh sách đơn hàng của người bán theo sellerId
         public async Task<ServiceResult<IEnumerable<OrderIndexDto>>> GetOrdersBySellerId(string sellerId, int pageNumber = 1, int pageSize = 10)
         {
-            _logger.LogInformation("Fetching orders for seller {SellerId}, page {PageNumber}, size {PageSize}", sellerId, pageNumber, pageSize);
-
-            // Truy vấn Escrows liên quan đến Seller + Order + OrderItems + Product
-            var escrows = await _context.Escrows
-                .Where(e => e.SellerId == sellerId)
-                .Include(e => e.Order)
-                    .ThenInclude(o => o.OrderItems.Where(oi => oi.Product.SellerId == sellerId))
-                        .ThenInclude(oi => oi.Product)
-                .OrderBy(e => e.CreatedAt)
-                .ToListAsync();
-
-            if (!escrows.Any())
+            _logger.LogInformation("Fetching orders for seller with ID: {SellerId}", sellerId);
+            var escrows = GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId);
+            if (escrows == null || !escrows.Any())
             {
-                return ServiceResult<IEnumerable<OrderIndexDto>>.Success(Enumerable.Empty<OrderIndexDto>());
+                return ServiceResult<IEnumerable<OrderIndexDto>>.Error("Không có đơn hàng nào.");
             }
-
-            // Lấy toàn bộ buyerId cần dùng (tránh gọi từng user)
-            var buyerIds = escrows.Select(e => e.Order.BuyerId).Distinct().ToList();
-            var buyers = await _context.Users
-                .Where(u => buyerIds.Contains(u.UserId))
-                .ToDictionaryAsync(u => u.UserId);
-
-            var result = new List<OrderIndexDto>();
+            var orders = new List<OrderIndexDto>();
             foreach (var escrow in escrows)
             {
-                var buyerName = buyers.TryGetValue(escrow.Order.BuyerId, out var buyer)
-                    ? buyer.FullName ?? "N/A"
-                    : "N/A";
-
-                foreach (var item in escrow.Order.OrderItems)
+                var orderitems = escrow.Order.OrderItems.Select(x => new OrderIndexDto()
                 {
-                    // Đảm bảo là của seller (phòng trường hợp Include không lọc hết)
-                    if (item.Product.SellerId != sellerId) continue;
+                    OrderId = escrow.Order.OrderId,
+                    ProductionName = x.Product.ProductName,
+                    BuyerName = escrow.Order.Buyer.FullName!,
+                    Amount = x.Product.Price * x.Quantity,
+                    Status = EnumHandle.HandleEscrowStatus(escrow.Status),
+                    CreatedAt = escrow.CreatedAt,
+                }).ToList();
+                orders.AddRange(orderitems);
+            }
+            return ServiceResult<IEnumerable<OrderIndexDto>>.Success(orders.OrderBy(x => x.OrderId).OrderByDescending(x => x.CreatedAt).Skip((pageNumber - 1) * pageSize).Take(pageSize));
 
-                    result.Add(new OrderIndexDto
+        }
+        public async Task<ServiceResult<StatisticSellerIndexDto>> GetSoldOrderInRangeTimeAsync(string sellerId, bool isDay, bool isWeek, bool isMonth, bool isYear)
+        {
+            var percentage = 0.0;
+            
+            switch (isDay, isWeek, isMonth, isYear)
+            {
+                case (true, false, false, false):
                     {
-                        OrderId = item.OrderId,
-                        ProductionName = item.Product.ProductName,
-                        BuyerName = buyerName,
-                        Amount = item.TotalAmount,
+                        var totalOrdersToday = CalculateQuantityOrderIsSold(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, status: EscrowStatus.Done), DateTime.Today, DateTime.Today);
+                        var totalOrdersYesterday = CalculateQuantityOrderIsSold(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, status: EscrowStatus.Done), DateTime.Today.AddDays(-1), DateTime.Today.AddDays(-1));
+                        percentage = totalOrdersYesterday == 0 ? (totalOrdersToday > 0 ? 100 : 0) : (double)((totalOrdersToday - totalOrdersYesterday) * 100 / totalOrdersYesterday);
+                        return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
+                        {
+                            StatisticName = "Đơn hàng",
+                            Value = totalOrdersToday,
+                            Infomation = $"{percentage} so với ngày trước."
+                        });
+                    }
+                case (false, true, false, false):
+                    {
+                        var (startThisWeek, endThisWeek) = GetWeekRange(0);
+                        var (startLastWeek, endLastWeek) = GetWeekRange(-1);
+                        var totalOrdersWeek = CalculateQuantityOrderIsSold(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, status: EscrowStatus.Done), startThisWeek, endThisWeek);
+                        var totalOrdersYesterday = CalculateQuantityOrderIsSold(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, status: EscrowStatus.Done), startLastWeek, endLastWeek);
+                        percentage = totalOrdersYesterday == 0 ? (totalOrdersWeek > 0 ? 100 : 0) : (double)((totalOrdersWeek - totalOrdersYesterday) * 100 / totalOrdersYesterday);
+                        return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
+                        {
+                            StatisticName = "Đơn hàng",
+                            Value = totalOrdersWeek,
+                            Infomation = $"{percentage} so với tuần trước."
+                        });
+                    }
+                case (false, false, true, false):
+                    {
+                        var (startThisMonth, endThisMonth) = GetMonthRange(0);
+                        var (startLastMonth, endLastMonth) = GetMonthRange(-1);
+                        var totalOrdersMonth = CalculateQuantityOrderIsSold(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, status: EscrowStatus.Done), startThisMonth, endThisMonth);
+                        var totalOrdersYesterday = CalculateQuantityOrderIsSold(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, status: EscrowStatus.Done), startLastMonth, endLastMonth);
+                        percentage = totalOrdersYesterday == 0 ? (totalOrdersMonth > 0 ? 100 : 0) : (double)((totalOrdersMonth - totalOrdersYesterday) * 100 / totalOrdersYesterday);
+                        return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
+                        {
+                            StatisticName = "Đơn hàng",
+                            Value = totalOrdersMonth,
+                            Infomation = $"{percentage} so với tháng trước."
+                        });
+                    }
+                case (false, false, false, true):
+                    {
+                        var (startThisYear, endThisYear) = GetYearRange(0);
+                        var (startLastYear, endLastYear) = GetYearRange(-1);
+                        var totalOrdersYear = CalculateQuantityOrderIsSold(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, status: EscrowStatus.Done), startThisYear, endThisYear);
+                        var totalOrdersYesterday = CalculateQuantityOrderIsSold(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, status: EscrowStatus.Done), startLastYear, endLastYear);
+                        percentage = totalOrdersYesterday == 0 ? (totalOrdersYear > 0 ? 100 : 0) : (double)((totalOrdersYear - totalOrdersYesterday) * 100 / totalOrdersYesterday);
+                        return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
+                        {
+                            StatisticName = "Đơn hàng",
+                            Value = totalOrdersYear,
+                            Infomation = $"{percentage} so với năm trước."
+                        });
+                    }
+                default:
+                    return ServiceResult<StatisticSellerIndexDto>.Error("Vui lòng chọn một khoảng thời gian hợp lệ.");
+            }
+        }
+        public async Task<ServiceResult<IEnumerable<OrderIndexDto>>> GetOrderWithManyConditionAsync( DateTime from, DateTime to, int pageNumber, int pageSize , string sellerId, string text, EscrowStatus? status = null)
+        {
+            _logger.LogInformation("Fetching orders with conditions: SellerId={SellerId}, Text={Text}, Status={Status}, From={From}, To={To}", sellerId, text, status, from, to);
+            try
+            {
+                var escrows = GetEscrowsInRangeTime(GetEscrowsByManyConditionAsync(await GetEscrowsAsync(), sellerId, text, status), from, to);
+                var orders = new List<OrderIndexDto>();
+                foreach(var escrow in escrows)
+                {
+                    var orderitems = escrow.Order.OrderItems.Select(x => new OrderIndexDto()
+                    {
+                        OrderId = escrow.Order.OrderId,
+                        ProductionName = x.Product.ProductName,
+                        BuyerName = escrow.Order.Buyer.FullName!,
+                        Amount = x.Product.Price * x.Quantity,
                         Status = EnumHandle.HandleEscrowStatus(escrow.Status),
-                    });
+                        CreatedAt = escrow.CreatedAt,
+                    }).ToList();
+                    orders.AddRange(orderitems);
                 }
+                return ServiceResult<IEnumerable<OrderIndexDto>>.Success(orders.OrderBy(x => x.OrderId).OrderByDescending(x => x.CreatedAt).Skip((pageNumber-1)*pageSize).Take(pageSize));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching orders with conditions: SellerId={SellerId}, Text={Text}, Status={Status}, From={From}, To={To}", sellerId, text, status, from, to);
+                return ServiceResult<IEnumerable<OrderIndexDto>>.Error("Lỗi khi lấy đơn hàng với điều kiện đã cho.");
             }
 
-            return ServiceResult<IEnumerable<OrderIndexDto>>.Success(result.Skip((pageNumber-1)*pageSize).Take(pageSize));
-        }
-       
-        // Đếm số đơn hàng đã bán trong ngày so với ngày trước
-        public async Task<ServiceResult<StatisticSellerIndexDto>> SoldOrdersInDayAsync(string sellerId)
-        {
-            var escrows = await _context.Escrows
-                .Where(x => x.Status == EscrowStatus.Done && x.SellerId == sellerId)
-                .Include(x => x.Order)
-                .ThenInclude(x => x.OrderItems)
-                .ToListAsync();
-            var today = DateTime.Today;
-            var yesterday = today.AddDays(-1);
-            var countThisDay = escrows.Count(x => x.CreatedAt.Date == today);
-            var countLastDay = escrows.Count(x => x.CreatedAt.Date == yesterday);
-
-            var percentage = countLastDay == 0
-                ? (countThisDay > 0 ? 100 : 0)
-                : (double)(countThisDay - countLastDay) * 100 / countLastDay;
-
-            return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
-            {
-                StatisticName = "Đơn hàng ngày",
-                Value = countThisDay,
-                Infomation = $"{percentage} so với ngày trước"
-            });
-        }
-        // Đếm số đơn hàng đã bán trong tuần so với tuần trước
-        public async Task<ServiceResult<StatisticSellerIndexDto>> SoldOrdersInWeekAsync(string sellerId)
-        {
-            var escrows = await _context.Escrows
-                .Where(x => x.Status == EscrowStatus.Done && x.SellerId == sellerId)
-                .Include(x => x.Order)
-                .ThenInclude(x => x.OrderItems)
-                .ToListAsync();
-
-            var (startThisWeek, endThisWeek) = GetWeekRange(0);
-            var (startLastWeek, endLastWeek) = GetWeekRange(-1);
-
-            int countThisWeek = escrows.Count(x => x.CreatedAt.Date >= startThisWeek && x.CreatedAt.Date <= endThisWeek);
-            int countLastWeek = escrows.Count(x => x.CreatedAt.Date >= startLastWeek && x.CreatedAt.Date <= endLastWeek);
-
-            double percentage = countLastWeek == 0
-                ? (countThisWeek > 0 ? 100 : 0)
-                : (double)(countThisWeek - countLastWeek) * 100 / countLastWeek;
-
-            return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
-            {
-                StatisticName = "Đơn hàng",
-                Value = countThisWeek,
-                Infomation = $"{percentage} so với tuần trước"
-            });
-        }
-
-        // Đếm số đơn hàng trong tháng so với tháng trước
-        public async Task<ServiceResult<StatisticSellerIndexDto>> SoldOrdersInMonthAsync(string sellerId)
-        {
-            var escrows = await _context.Escrows
-                .Where(x => x.Status == EscrowStatus.Done && x.SellerId == sellerId)
-                .Include(x => x.Order)
-                .ThenInclude(x => x.OrderItems)
-                .ToListAsync();
-
-            var (startThisMonth, endThisMonth) = GetMonthRange(0);
-            var (startLastMonth, endLastMonth) = GetMonthRange(-1);
-
-            int countThisMonth = escrows.Count(x => x.CreatedAt.Date >= startThisMonth && x.CreatedAt.Date <= endThisMonth);
-            int countLastMonth = escrows.Count(x => x.CreatedAt.Date >= startLastMonth && x.CreatedAt.Date <= endLastMonth);
-
-            double percentage = countLastMonth == 0
-                ? (countThisMonth > 0 ? 100 : 0)
-                : (double)(countThisMonth - countLastMonth) * 100 / countLastMonth;
-
-            return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
-            {
-                StatisticName = "Đơn hàng",
-                Value = countThisMonth,
-                Infomation = $"{percentage} so với tháng trước"
-            });
-        }
-
-        // Đếm số đơn hàng trong năm
-        public async Task<ServiceResult<StatisticSellerIndexDto>> SoldOrdersInYearAsync(string sellerId)
-        {
-            var escrows = await _context.Escrows
-                .Where(x => x.Status == EscrowStatus.Done && x.SellerId == sellerId)
-                .Include(x => x.Order)
-                .ThenInclude(x => x.OrderItems)
-                .ToListAsync();
-
-            var (startThisYear, endThisYear) = GetYearRange(0);
-            var (startLastYear, endLastYear) = GetYearRange(-1);
-
-            int countThisYear = escrows.Count(x => x.CreatedAt.Date >= startThisYear && x.CreatedAt.Date <= endThisYear);
-            int countLastYear = escrows.Count(x => x.CreatedAt.Date >= startLastYear && x.CreatedAt.Date <= endLastYear);
-
-            double percentage = countLastYear == 0
-                ? (countThisYear > 0 ? 100 : 0)
-                : (double)(countThisYear - countLastYear) * 100 / countLastYear;
-
-            return ServiceResult<StatisticSellerIndexDto>.Success(new StatisticSellerIndexDto
-            {
-                StatisticName = "Đơn hàng",
-                Value = countThisYear,
-                Infomation = $"{percentage} so với năm trước"
-            });
-        }
-        // Lấy các đơn hàng gần nhất của người bán
-        public async Task<ServiceResult<IEnumerable<RecentOrderStatisticDto>>> RecentOrderAsync(string sellerId, int pageNumber = 2, int pageSize = 10)
-        {
-            var escrows = await _context.Escrows
-                .Where(x => x.SellerId == sellerId)
-                .Include(x => x.Order).ThenInclude(x => x.OrderItems).ThenInclude(x => x.Product)
-                .Include(x => x.Order).ThenInclude(x => x.Buyer)
-                .OrderByDescending(x => x.CreatedAt)
-                .ToListAsync();
-
-            var result = escrows.SelectMany(escrow => escrow.Order.OrderItems.Select(item => new RecentOrderStatisticDto
-            {
-                BuyerName = escrow.Order.Buyer.FullName ?? "N/A",
-                BuyerImage = escrow.Order.Buyer.ImageUrl,
-                OrderId = escrow.Order.OrderId,
-                Information = item.Product.ProductName,
-                Status = EnumHandle.HandleEscrowStatus(escrow.Status),
-                Value = item.Product.Price
-            })).ToList();
-
-            return ServiceResult<IEnumerable<RecentOrderStatisticDto>>.Success(result.Skip((pageNumber - 1) * pageSize).Take(pageSize));
         }
         #endregion
-
+        #region Buyer
+        #endregion
+        #region Private Methods
         // Trả về ngày đầu và cuối tuần, có thể dùng offset tuần
         private (DateTime Start, DateTime End) GetWeekRange(int offsetWeek = 0)
         {
@@ -208,6 +158,7 @@ namespace DPTS.Applications.Implements
             var endOfWeek = startOfWeek.AddDays(6);
             return (startOfWeek, endOfWeek);
         }
+        // Trả về ngày đầu và cuối tháng, có thể dùng offset tháng
         private (DateTime Start, DateTime End) GetMonthRange(int offsetMonth = 0)
         {
             var today = DateTime.Today;
@@ -215,6 +166,7 @@ namespace DPTS.Applications.Implements
             var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
             return (firstDayOfMonth, lastDayOfMonth);
         }
+        // Trả về ngày đầu và cuối năm, có thể dùng offset năm
         private (DateTime Start, DateTime End) GetYearRange(int offsetYear = 0)
         {
             var today = DateTime.Today;
@@ -222,5 +174,83 @@ namespace DPTS.Applications.Implements
             var lastDayOfYear = new DateTime(today.Year + offsetYear, 12, 31);
             return (firstDayOfYear, lastDayOfYear);
         }
+       
+        private async Task<IEnumerable<Escrow>> GetEscrowsAsync()
+        {
+            return await _context.Escrows
+                .Include(e => e.Order)
+                    .ThenInclude(x => x.Buyer) // thông tin người mua
+                .Include(e => e.Order)
+                    .ThenInclude(x => x.OrderItems)
+                        .ThenInclude(x => x.Product)
+                .Include(e => e.User) // thông tin người bán
+                .AsNoTracking()
+                .ToArrayAsync();
+        }
+        private IEnumerable<Escrow> GetEscrowsByManyConditionAsync(IEnumerable<Escrow> escrows, string sellerId = null!, string text = null!, EscrowStatus? status = null)
+        {
+            switch (status)
+            {
+                default:
+                    return escrows;
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status == EscrowStatus.Unknown:
+                    return escrows.Where(x => x.Status == EscrowStatus.Unknown);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status == EscrowStatus.Done:
+                    return escrows.Where(x => x.Status != EscrowStatus.Done);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.WaitingComfirm:
+                    return escrows.Where(x => x.Status != EscrowStatus.WaitingComfirm);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Comfirmed:
+                    return escrows.Where(x => x.Status != EscrowStatus.Comfirmed);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Canceled:
+                    return escrows.Where(x => x.Status != EscrowStatus.Canceled);
+
+                //when sellerId is not null or empty
+                case var _ when !string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status == EscrowStatus.Unknown:
+                    return escrows;
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Done:
+                    return escrows.Where(x => x.Status != EscrowStatus.Done && x.SellerId == sellerId);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.WaitingComfirm:
+                    return escrows.Where(x => x.Status != EscrowStatus.WaitingComfirm && x.SellerId == sellerId);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Comfirmed:
+                    return escrows.Where(x => x.Status != EscrowStatus.Comfirmed && x.SellerId == sellerId);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Canceled:
+                    return escrows.Where(x => x.Status != EscrowStatus.Canceled && x.SellerId == sellerId);
+
+                //when text is not null or empty
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status == EscrowStatus.Unknown:
+                    return escrows.Where(x => x.Status == EscrowStatus.Unknown && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()));
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status == EscrowStatus.Done:
+                    return escrows.Where(x => x.Status != EscrowStatus.Done && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()));
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.WaitingComfirm:
+                    return escrows.Where(x => x.Status != EscrowStatus.WaitingComfirm && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()));
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Comfirmed:
+                    return escrows.Where(x => x.Status != EscrowStatus.Comfirmed && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()));
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Canceled:
+                    return escrows.Where(x => x.Status != EscrowStatus.Canceled && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()));
+
+                // when sellerId and text is not null or empty
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status == EscrowStatus.Unknown:
+                    return escrows.Where(x => x.Status == EscrowStatus.Unknown && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()) && x.SellerId == sellerId);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status == EscrowStatus.Done:
+                    return escrows.Where(x => x.Status != EscrowStatus.Done && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()) && x.SellerId == sellerId);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.WaitingComfirm:
+                    return escrows.Where(x => x.Status != EscrowStatus.WaitingComfirm && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()) && x.SellerId == sellerId);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Comfirmed:
+                    return escrows.Where(x => x.Status != EscrowStatus.Comfirmed && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()) && x.SellerId == sellerId);
+                case var _ when string.IsNullOrEmpty(sellerId) && string.IsNullOrEmpty(text) && status != EscrowStatus.Canceled:
+                    return escrows.Where(x => x.Status != EscrowStatus.Canceled && x.Order.Buyer.FullName!.ToLower().Contains(text.ToLower()) && x.SellerId == sellerId);
+            }
+        }
+        private IEnumerable<Escrow> GetEscrowsInRangeTime(IEnumerable<Escrow> escrows, DateTime start, DateTime end)
+        {
+            return escrows.Where(x => x.CreatedAt >= start && x.CreatedAt <= end);
+        }
+        private decimal CalculateQuantityOrderIsSold(IEnumerable<Escrow> escrows, DateTime startDate, DateTime endDate)
+        {
+            return escrows
+                .Where(x => x.CreatedAt.Date >= startDate && x.CreatedAt.Date <= endDate).Count(); 
+        }
+        
+        #endregion
     }
 }

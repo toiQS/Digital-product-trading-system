@@ -33,11 +33,12 @@ else
     app.UseExceptionHandler("/error");
     app.UseHsts();
 }
+
+    app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     await SeedingRole.Initialize(services);
 }
-    app.MapControllers();
 
 app.Run();

@@ -2,6 +2,7 @@
 using DPTS.APIs.Models;
 using DPTS.Applications.Shareds;
 using Microsoft.AspNetCore.Mvc;
+using DPTS.Domains;
 
 namespace DPTS.APIs.Controllers
 {
@@ -17,7 +18,7 @@ namespace DPTS.APIs.Controllers
         }
 
         [HttpGet("seller")]
-        public async Task<IActionResult> GetOrdersOfSeller([FromQuery] GetOrdersOfSellerModel model)
+        public async Task<IActionResult> GetOrdersOfSeller([FromQuery] OrderModel model)
         {
             if (string.IsNullOrWhiteSpace(model.SellerId))
                 return BadRequest("SellerId không được để trống.");
@@ -29,56 +30,38 @@ namespace DPTS.APIs.Controllers
             return HandleResult(result);
         }
 
-        [HttpGet("sold/day")]
-        public async Task<IActionResult> GetSoldOrdersInDay([FromQuery] string sellerId)
-        {
-            if (string.IsNullOrWhiteSpace(sellerId))
-                return BadRequest("SellerId không được để trống.");
-
-            var result = await _orderService.SoldOrdersInDayAsync(sellerId);
-            return HandleResult(result);
-        }
-
-        [HttpGet("sold/week")]
-        public async Task<IActionResult> GetSoldOrdersInWeek([FromQuery] string sellerId)
-        {
-            if (string.IsNullOrWhiteSpace(sellerId))
-                return BadRequest("SellerId không được để trống.");
-
-            var result = await _orderService.SoldOrdersInWeekAsync(sellerId);
-            return HandleResult(result);
-        }
-
-        [HttpGet("sold/month")]
-        public async Task<IActionResult> GetSoldOrdersInMonth([FromQuery] string sellerId)
-        {
-            if (string.IsNullOrWhiteSpace(sellerId))
-                return BadRequest("SellerId không được để trống.");
-
-            var result = await _orderService.SoldOrdersInMonthAsync(sellerId);
-            return HandleResult(result);
-        }
-
-        [HttpGet("sold/year")]
-        public async Task<IActionResult> GetSoldOrdersInYear([FromQuery] string sellerId)
-        {
-            if (string.IsNullOrWhiteSpace(sellerId))
-                return BadRequest("SellerId không được để trống.");
-
-            var result = await _orderService.SoldOrdersInYearAsync(sellerId);
-            return HandleResult(result);
-        }
-
-        [HttpGet("recent")]
-        public async Task<IActionResult> GetRecentOrders([FromQuery] GetOrdersOfSellerModel model)
+        [HttpPost("range-time")]
+        public async Task<IActionResult> GetOrdersInRangeTime([FromBody] OrderOptionTimeModel model)
         {
             if (string.IsNullOrWhiteSpace(model.SellerId))
                 return BadRequest("SellerId không được để trống.");
 
+            if (!model.IsDay && !model.IsWeek && !model.IsMonth && !model.IsYear)
+                return BadRequest("Phải chọn ít nhất một mốc thời gian.");
+
+            var result = await _orderService.GetSoldOrderInRangeTimeAsync(
+                model.SellerId, model.IsDay, model.IsWeek, model.IsMonth, model.IsYear
+            );
+
+            return HandleResult(result);
+        }
+
+        [HttpPost("filter")]
+        public async Task<IActionResult> GetOrdersWithManyConditions([FromBody] GetOrdersWithManyConditionModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.SellerId))
+                return BadRequest("SellerId không được để trống.");
+
+            if (model.From > model.To)
+                return BadRequest("Thời gian không hợp lệ: 'From' phải nhỏ hơn hoặc bằng 'To'.");
+
             var pageNumber = model.PageNumber > 0 ? model.PageNumber : 1;
             var pageSize = model.PageSize > 0 ? model.PageSize : 10;
 
-            var result = await _orderService.RecentOrderAsync(model.SellerId, pageNumber, pageSize);
+            var result = await _orderService.GetOrderWithManyConditionAsync(
+                model.From, model.To, pageNumber, pageSize, model.SellerId, model.Text, model.Status
+            );
+
             return HandleResult(result);
         }
 
