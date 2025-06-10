@@ -15,7 +15,7 @@ namespace DPTS.Domains
         public int Quantity { get; set; } = 1;
 
         [Column("total_amount")]
-        public decimal TotalAmount { get; set; }
+        public double TotalAmount { get; set; }
 
         [Column("order_id")]
         public string OrderId { get; set; } = string.Empty;

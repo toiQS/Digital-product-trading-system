@@ -1,6 +1,4 @@
-﻿using DPTS.Applications.Implements;
-using DPTS.Applications.Interfaces;
-using DPTS.Infrastructures.Data;
+﻿using DPTS.Infrastructures.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,14 +19,14 @@ namespace DPTS.Applications
         private static void InitializeService(this IServiceCollection services)
         {
 
-            services.AddScoped<IStatisticService, StatictisService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IMessageService, MessageService>();
-            services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<IOrderService, OrderService>();
-            services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IWalletService, WalletService>();
+            //services.AddScoped<IStatisticService, StatictisService>();
+            //services.AddScoped<IAuthService, AuthService>();
+            //services.AddScoped<IMessageService, MessageService>();
+            //services.AddScoped<ICategoryService, CategoryService>();
+            //services.AddScoped<IOrderService, OrderService>();
+            //services.AddScoped<IProductService, ProductService>();
+            //services.AddScoped<IUserService, UserService>();
+            //services.AddScoped<IWalletService, WalletService>();
         }
     }
 }

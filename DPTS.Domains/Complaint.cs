@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DPTS.Domains
@@ -11,7 +12,8 @@ namespace DPTS.Domains
 
         [Column("order_id")]
         public string OrderId { get; set; } = string.Empty ;
-
+        [Column("product_id")]
+        public string ProductId { get; set; } = string.Empty;
         [Column("user_id")]
         public string UserId { get; set; } = string.Empty;
 
@@ -31,9 +33,11 @@ namespace DPTS.Domains
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public List<ComplaintImage> Images { get; set; } = new List<ComplaintImage>();
 
         public virtual Order Order { get; set; } = null!;
         public virtual User User { get; set; } = null!;
+        public virtual Product Product { get; set; } = null!;
     }
     public enum ComplaintStatus
     {

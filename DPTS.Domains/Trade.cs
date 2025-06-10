@@ -12,7 +12,7 @@ namespace DPTS.Domains
         [Column("trade_name")]
         public string TradeName { get; set;} = string.Empty;
         [Column("amount")]
-        public decimal Amount { get; set; }
+        public double Amount { get; set; }
         [Column("trade_from_id")]
         public string TradeFromId { get; set; } = string.Empty;
         [Column("trade_to_id")]

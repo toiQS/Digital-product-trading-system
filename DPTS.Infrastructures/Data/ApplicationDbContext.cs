@@ -11,7 +11,7 @@ namespace DPTS.Infrastructures.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Complaint> Complications { get; set; }
         public DbSet<Escrow> Escrows { get; set; }
-        public DbSet<Image> Images { get; set; }
+        public DbSet<ProductImage> Images { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Order> Orders { get; set; }

@@ -15,7 +15,7 @@ namespace DPTS.Domains
         public string SellerId { get; set; } = string.Empty;
 
         [Column("amount")]
-        public decimal Amount { get; set; }
+        public double Amount { get; set; }
 
         [Column("status")]
         public EscrowStatus Status { get; set; }
@@ -27,7 +27,7 @@ namespace DPTS.Domains
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual Order Order { get; set; } = null!;
-        public virtual User User { get; set; } = null!;
+        public virtual User Seller { get; set; } = null!;
     }
     public enum EscrowStatus
     {

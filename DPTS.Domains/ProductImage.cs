@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DPTS.Domains
 {
-    public class Image
+    public class ProductImage
     {
         [Key]
         [Column("image_id")]
