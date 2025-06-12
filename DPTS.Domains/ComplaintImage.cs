@@ -11,15 +11,16 @@ namespace DPTS.Domains
 
         [Required]
         [Column("complaint_id")]
-        public string ComplantId { get; set; } = string.Empty;
+        public string ComplaintId { get; set; } = string.Empty;
 
         [Required]
         [Column("image_path")]
         public string ImagePath { get; set; } = string.Empty;
 
-        [ForeignKey("ProductId")]
+        [ForeignKey("ComplaintId")]
         public virtual Complaint Complaint { get; set; } = null!;
+
         [Column("create_at")]
-        public DateTime CreateAt { get; set; }
+        public DateTime CreateAt { get; set; } = DateTime.UtcNow;
     }
 }
