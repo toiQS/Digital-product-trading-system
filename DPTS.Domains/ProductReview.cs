@@ -9,9 +9,11 @@ namespace DPTS.Domains
         [Column("review_id")]
         public string ReviewId { get; set; } = string.Empty;
 
+        [Required]
         [Column("product_id")]
         public string ProductId { get; set; } = string.Empty;
 
+        [Required]
         [Column("user_id")]
         public string UserId { get; set; } = string.Empty;
 
@@ -27,8 +29,10 @@ namespace DPTS.Domains
         [Column("likes")]
         public int Likes { get; set; } = 0;
 
+        [ForeignKey("ProductId")]
         public virtual Product Product { get; set; } = null!;
+
+        [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
     }
-
 }
