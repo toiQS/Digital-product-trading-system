@@ -1,6 +1,4 @@
 ﻿using DPTS.Domains;
-using System.Formats.Asn1;
-using System.Transactions;
 
 public static class EnumHandle
 {
