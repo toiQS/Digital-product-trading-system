@@ -9,8 +9,11 @@ namespace DPTS.Domains
         [Column("escrow_id")]
         public string EscrowId { get; set; } = string.Empty;
 
+        [Required]
         [Column("order_id")]
         public string OrderId { get; set; } = string.Empty;
+
+        [Required]
         [Column("seller_id")]
         public string SellerId { get; set; } = string.Empty;
 
@@ -18,7 +21,7 @@ namespace DPTS.Domains
         public double Amount { get; set; }
 
         [Column("status")]
-        public EscrowStatus Status { get; set; }
+        public EscrowStatus Status { get; set; } = EscrowStatus.Unknown;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -29,13 +32,13 @@ namespace DPTS.Domains
         public virtual Order Order { get; set; } = null!;
         public virtual User Seller { get; set; } = null!;
     }
+
     public enum EscrowStatus
     {
-        Unknown,
-        WaitingComfirm,
-        Comfirmed,
-        Done,
-        Canceled,
+        Unknown = 0,
+        WaitingComfirm = 1,
+        Comfirmed = 2,
+        Done = 3,
+        Canceled = 4
     }
-
 }
