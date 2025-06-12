@@ -9,9 +9,10 @@ namespace DPTS.Infrastructures.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<Complaint> Complications { get; set; }
+        public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<ComplaintImage> ComplaintImages { get; set; }
         public DbSet<Escrow> Escrows { get; set; }
-        public DbSet<ProductImage> Images { get; set; }
+        public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Order> Orders { get; set; }
@@ -25,6 +26,17 @@ namespace DPTS.Infrastructures.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<User>()
+            .OwnsOne(u => u.Address, a =>
+            {
+                a.Property(x => x.Street).HasColumnName("street");
+                a.Property(x => x.District).HasColumnName("district");
+                a.Property(x => x.City).HasColumnName("city");
+                a.Property(x => x.Country).HasColumnName("country");
+                a.Property(x => x.PostalCode).HasColumnName("postal_code");
+            });
+
 
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
@@ -45,12 +57,12 @@ namespace DPTS.Infrastructures.Data
                 .OnDelete(DeleteBehavior.SetNull);
 
            modelBuilder.Entity<Trade>()
-                .HasOne(x => x.TrandeFrom)
+                .HasOne(x => x.TradeFrom)
                 .WithMany(x => x.TradeFroms)
                 .HasForeignKey(x => x.TradeFromId)
                 .OnDelete(DeleteBehavior.SetNull);
            modelBuilder.Entity<Trade>()
-                .HasOne(x => x.TrandeTo)
+                .HasOne(x => x.TradeTo)
                 .WithMany(x => x.TradeTos)
                 .HasForeignKey(x => x.TradeToId)
                 .OnDelete(DeleteBehavior.SetNull);
