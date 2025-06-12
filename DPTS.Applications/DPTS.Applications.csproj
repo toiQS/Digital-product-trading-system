@@ -6,6 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  
+
   <ItemGroup>
     <ProjectReference Include="..\DPTS.Infrastructures\DPTS.Infrastructures.csproj" />
   </ItemGroup>
@@ -14,6 +16,8 @@
     <PackageReference Include="BCrypt.Net-Core" Version="1.6.0" />
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="9.0.8" />
     <PackageReference Include="MailKit" Version="4.12.1" />
+    <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
   </ItemGroup>
 
 </Project>
