@@ -17,8 +17,8 @@ namespace DPTS.Infrastructures.Repository.Implements
         public async Task<IEnumerable<OrderItem>> GetsAsync(
             string? orderId = null,
             string? productId = null,
-            double? minAmount = null,
-            double? maxAmount = null,
+            decimal? minAmount = null,
+            decimal? maxAmount = null,
             int? minQuantity = null,
             int? maxQuantity = null,
             bool includeProduct = false,
