@@ -13,7 +13,7 @@ namespace DPTS.Domains
         public string UserId { get; set; } = string.Empty;
 
         [Column("avaibable_balance")]
-        public double AvaibableBalance { get; set; }
+        public decimal AvaibableBalance { get; set; }
 
         [Column("currency")]
         [MaxLength(10)]
