@@ -13,7 +13,7 @@ namespace DPTS.Domains
         public string BuyerId { get; set; } = string.Empty ;
 
         [Column("total_amount")]
-        public double TotalAmount { get; set; }
+        public decimal TotalAmount { get; set; }
 
         //[Column("status")]
         //public string Status { get; set; } = string.Empty;
