@@ -44,8 +44,8 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         public async Task<IEnumerable<Wallet>> GetsAsync(
             UnitCurrency? currency = null,
-            double? minBalance = null,
-            double? maxBalance = null,
+            decimal? minBalance = null,
+            decimal? maxBalance = null,
             string? userKeyword = null,
             bool includeUser = false)
         {
