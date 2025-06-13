@@ -7,7 +7,7 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task AddAsync(OrderItem item);
         Task DeleteAsync(string id);
         Task<OrderItem?> GetByIdAsync(string id, bool includeProduct = false, bool includeOrder = false);
-        Task<IEnumerable<OrderItem>> GetsAsync(string? orderId = null, string? productId = null, double? minAmount = null, double? maxAmount = null, int? minQuantity = null, int? maxQuantity = null, bool includeProduct = false, bool includeOrder = false);
+        Task<IEnumerable<OrderItem>> GetsAsync(string? orderId = null, string? productId = null, decimal? minAmount = null, decimal? maxAmount = null, int? minQuantity = null, int? maxQuantity = null, bool includeProduct = false, bool includeOrder = false);
         Task UpdateAsync(OrderItem item);
     }
 }
