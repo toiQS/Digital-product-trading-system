@@ -22,7 +22,7 @@ namespace DPTS.Domains
 
         [Required]
         [Column("price")]
-        public double Price { get; set; }
+        public decimal Price { get; set; }
 
         [Column("category")]
         public string CategoryId { get; set; }= string.Empty;   
