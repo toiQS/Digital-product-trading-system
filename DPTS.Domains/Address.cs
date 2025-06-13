@@ -6,8 +6,7 @@ namespace DPTS.Domains
     [Owned]
     public class Address
     {
-        [Column("address_id")] 
-        public string AddressId { get; set; } = string.Empty;
+       
         [Column("street")]
         public string Street { get; set; } = string.Empty;
         [Column("district")]
