@@ -14,7 +14,7 @@ namespace DPTS.Domains
         public string TradeName { get; set; } = string.Empty;
 
         [Column("amount")]
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
 
         [Required]
         [Column("trade_from_id")]
