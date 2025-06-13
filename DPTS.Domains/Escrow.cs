@@ -18,7 +18,7 @@ namespace DPTS.Domains
         public string SellerId { get; set; } = string.Empty;
 
         [Column("amount")]
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
 
         [Column("status")]
         public EscrowStatus Status { get; set; } = EscrowStatus.Unknown;
