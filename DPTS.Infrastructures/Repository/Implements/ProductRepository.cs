@@ -16,6 +16,7 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         public async Task<IEnumerable<Product>> GetsAsync(
             string? sellerId = null,
+            string? text = null,
             string? categoryId = null,
             ProductStatus? status = null,
             decimal? minPrice = null,
@@ -26,6 +27,9 @@ namespace DPTS.Infrastructures.Repository.Implements
             bool includeReviews = false)
         {
             var query = _context.Products.AsQueryable();
+
+            if (sellerId != null )
+                query = query.Where(c => EF.Functions.Like(c.ProductName, $"%{text}%"));
 
             if (!string.IsNullOrWhiteSpace(sellerId))
                 query = query.Where(p => p.SellerId == sellerId);
