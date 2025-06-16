@@ -6,34 +6,19 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DPTS.Infrastructures.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDB : Migration
+    public partial class initDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Address",
-                columns: table => new
-                {
-                    address_id = table.Column<string>(type: "text", nullable: false),
-                    street = table.Column<string>(type: "text", nullable: false),
-                    district = table.Column<string>(type: "text", nullable: false),
-                    city = table.Column<string>(type: "text", nullable: false),
-                    postal_code = table.Column<string>(type: "text", nullable: false),
-                    country = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Address", x => x.address_id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
                 {
                     category_id = table.Column<string>(type: "text", nullable: false),
                     category_name = table.Column<string>(type: "text", nullable: false),
-                    quantity = table.Column<long>(type: "bigint", nullable: false)
+                    category_icon = table.Column<string>(type: "text", nullable: false),
+                    create_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -46,7 +31,7 @@ namespace DPTS.Infrastructures.Migrations
                 {
                     role_id = table.Column<string>(type: "text", nullable: false),
                     role_name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    description = table.Column<string>(type: "text", nullable: false)
+                    description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,7 +49,6 @@ namespace DPTS.Infrastructures.Migrations
                     password_hash = table.Column<string>(type: "text", nullable: false),
                     full_name = table.Column<string>(type: "text", nullable: true),
                     phone = table.Column<string>(type: "text", nullable: true),
-                    AddressId = table.Column<string>(type: "text", nullable: true),
                     two_factor_enabled = table.Column<bool>(type: "boolean", nullable: false),
                     two_factor_secret = table.Column<string>(type: "text", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -75,15 +59,32 @@ namespace DPTS.Infrastructures.Migrations
                 {
                     table.PrimaryKey("PK_Users", x => x.user_id);
                     table.ForeignKey(
-                        name: "FK_Users_Address_AddressId",
-                        column: x => x.AddressId,
-                        principalTable: "Address",
-                        principalColumn: "address_id");
-                    table.ForeignKey(
                         name: "FK_Users_Roles_role_id",
                         column: x => x.role_id,
                         principalTable: "Roles",
                         principalColumn: "role_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Addresses",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    street = table.Column<string>(type: "text", nullable: false),
+                    district = table.Column<string>(type: "text", nullable: false),
+                    city = table.Column<string>(type: "text", nullable: false),
+                    postal_code = table.Column<string>(type: "text", nullable: false),
+                    country = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Addresses", x => x.UserId);
+                    table.ForeignKey(
+                        name: "FK_Addresses_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "user_id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -107,6 +108,28 @@ namespace DPTS.Infrastructures.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    order_id = table.Column<string>(type: "text", nullable: false),
+                    buyer_id = table.Column<string>(type: "text", nullable: false),
+                    total_amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    IsPaied = table.Column<bool>(name: "Is Paied", type: "boolean", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.order_id);
+                    table.ForeignKey(
+                        name: "FK_Orders_Users_buyer_id",
+                        column: x => x.buyer_id,
+                        principalTable: "Users",
+                        principalColumn: "user_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
@@ -118,8 +141,7 @@ namespace DPTS.Infrastructures.Migrations
                     category = table.Column<string>(type: "text", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    is_circulate = table.Column<bool>(type: "boolean", nullable: false)
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -159,148 +181,6 @@ namespace DPTS.Infrastructures.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Images",
-                columns: table => new
-                {
-                    image_id = table.Column<string>(type: "text", nullable: false),
-                    product_id = table.Column<string>(type: "text", nullable: false),
-                    image_path = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Images", x => x.image_id);
-                    table.ForeignKey(
-                        name: "FK_Images_Products_product_id",
-                        column: x => x.product_id,
-                        principalTable: "Products",
-                        principalColumn: "product_id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Orders",
-                columns: table => new
-                {
-                    order_id = table.Column<string>(type: "text", nullable: false),
-                    buyer_id = table.Column<string>(type: "text", nullable: false),
-                    total_amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    IsPaied = table.Column<bool>(name: "Is Paied", type: "boolean", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ProductId = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Orders", x => x.order_id);
-                    table.ForeignKey(
-                        name: "FK_Orders_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "product_id");
-                    table.ForeignKey(
-                        name: "FK_Orders_Users_buyer_id",
-                        column: x => x.buyer_id,
-                        principalTable: "Users",
-                        principalColumn: "user_id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ProductReviews",
-                columns: table => new
-                {
-                    review_id = table.Column<string>(type: "text", nullable: false),
-                    product_id = table.Column<string>(type: "text", nullable: false),
-                    user_id = table.Column<string>(type: "text", nullable: false),
-                    rating = table.Column<int>(type: "integer", nullable: false),
-                    comment = table.Column<string>(type: "text", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    likes = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ProductReviews", x => x.review_id);
-                    table.ForeignKey(
-                        name: "FK_ProductReviews_Products_product_id",
-                        column: x => x.product_id,
-                        principalTable: "Products",
-                        principalColumn: "product_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ProductReviews_Users_user_id",
-                        column: x => x.user_id,
-                        principalTable: "Users",
-                        principalColumn: "user_id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "WalletTransactions",
-                columns: table => new
-                {
-                    trade_id = table.Column<string>(type: "text", nullable: false),
-                    user_id = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    trade_name = table.Column<string>(type: "text", nullable: false),
-                    amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    trade_from_id = table.Column<string>(type: "text", nullable: false),
-                    trade_to_id = table.Column<string>(type: "text", nullable: false),
-                    TradeDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WalletTransactions", x => x.trade_id);
-                    table.ForeignKey(
-                        name: "FK_WalletTransactions_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "user_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_WalletTransactions_Wallets_trade_from_id",
-                        column: x => x.trade_from_id,
-                        principalTable: "Wallets",
-                        principalColumn: "wallet_id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_WalletTransactions_Wallets_trade_to_id",
-                        column: x => x.trade_to_id,
-                        principalTable: "Wallets",
-                        principalColumn: "wallet_id",
-                        onDelete: ReferentialAction.SetNull);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Complaints",
-                columns: table => new
-                {
-                    complaint_id = table.Column<string>(type: "text", nullable: false),
-                    order_id = table.Column<string>(type: "text", nullable: false),
-                    user_id = table.Column<string>(type: "text", nullable: false),
-                    title = table.Column<string>(type: "text", nullable: false),
-                    description = table.Column<string>(type: "text", nullable: false),
-                    status = table.Column<int>(type: "integer", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Complaints", x => x.complaint_id);
-                    table.ForeignKey(
-                        name: "FK_Complaints_Orders_order_id",
-                        column: x => x.order_id,
-                        principalTable: "Orders",
-                        principalColumn: "order_id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Complaints_Users_user_id",
-                        column: x => x.user_id,
-                        principalTable: "Users",
-                        principalColumn: "user_id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Escrows",
                 columns: table => new
                 {
@@ -310,8 +190,7 @@ namespace DPTS.Infrastructures.Migrations
                     amount = table.Column<decimal>(type: "numeric", nullable: false),
                     status = table.Column<int>(type: "integer", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UserId = table.Column<string>(type: "text", nullable: true)
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -323,10 +202,11 @@ namespace DPTS.Infrastructures.Migrations
                         principalColumn: "order_id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Escrows_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Escrows_Users_seller_id",
+                        column: x => x.seller_id,
                         principalTable: "Users",
-                        principalColumn: "user_id");
+                        principalColumn: "user_id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -364,6 +244,43 @@ namespace DPTS.Infrastructures.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Complaints",
+                columns: table => new
+                {
+                    complaint_id = table.Column<string>(type: "text", nullable: false),
+                    order_id = table.Column<string>(type: "text", nullable: false),
+                    product_id = table.Column<string>(type: "text", nullable: false),
+                    user_id = table.Column<string>(type: "text", nullable: false),
+                    title = table.Column<string>(type: "text", nullable: false),
+                    description = table.Column<string>(type: "text", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Complaints", x => x.complaint_id);
+                    table.ForeignKey(
+                        name: "FK_Complaints_Orders_order_id",
+                        column: x => x.order_id,
+                        principalTable: "Orders",
+                        principalColumn: "order_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Complaints_Products_product_id",
+                        column: x => x.product_id,
+                        principalTable: "Products",
+                        principalColumn: "product_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Complaints_Users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "Users",
+                        principalColumn: "user_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OrderItems",
                 columns: table => new
                 {
@@ -390,10 +307,127 @@ namespace DPTS.Infrastructures.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ProductImages",
+                columns: table => new
+                {
+                    image_id = table.Column<string>(type: "text", nullable: false),
+                    product_id = table.Column<string>(type: "text", nullable: false),
+                    image_path = table.Column<string>(type: "text", nullable: false),
+                    is_primary = table.Column<bool>(type: "boolean", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductImages", x => x.image_id);
+                    table.ForeignKey(
+                        name: "FK_ProductImages_Products_product_id",
+                        column: x => x.product_id,
+                        principalTable: "Products",
+                        principalColumn: "product_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductReviews",
+                columns: table => new
+                {
+                    review_id = table.Column<string>(type: "text", nullable: false),
+                    product_id = table.Column<string>(type: "text", nullable: false),
+                    user_id = table.Column<string>(type: "text", nullable: false),
+                    rating = table.Column<int>(type: "integer", nullable: false),
+                    comment = table.Column<string>(type: "text", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    likes = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductReviews", x => x.review_id);
+                    table.ForeignKey(
+                        name: "FK_ProductReviews_Products_product_id",
+                        column: x => x.product_id,
+                        principalTable: "Products",
+                        principalColumn: "product_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ProductReviews_Users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "Users",
+                        principalColumn: "user_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Trades",
+                columns: table => new
+                {
+                    trade_id = table.Column<string>(type: "text", nullable: false),
+                    trade_name = table.Column<string>(type: "text", nullable: false),
+                    amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    trade_from_id = table.Column<string>(type: "text", nullable: false),
+                    trade_to_id = table.Column<string>(type: "text", nullable: false),
+                    user_id = table.Column<string>(type: "text", nullable: false),
+                    trade_icon = table.Column<string>(type: "text", nullable: false),
+                    status = table.Column<int>(type: "integer", nullable: false),
+                    trade_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Trades", x => x.trade_id);
+                    table.ForeignKey(
+                        name: "FK_Trades_Users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "Users",
+                        principalColumn: "user_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Trades_Wallets_trade_from_id",
+                        column: x => x.trade_from_id,
+                        principalTable: "Wallets",
+                        principalColumn: "wallet_id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Trades_Wallets_trade_to_id",
+                        column: x => x.trade_to_id,
+                        principalTable: "Wallets",
+                        principalColumn: "wallet_id",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ComplaintImages",
+                columns: table => new
+                {
+                    image_id = table.Column<string>(type: "text", nullable: false),
+                    complaint_id = table.Column<string>(type: "text", nullable: false),
+                    image_path = table.Column<string>(type: "text", nullable: false),
+                    create_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ComplaintImages", x => x.image_id);
+                    table.ForeignKey(
+                        name: "FK_ComplaintImages_Complaints_complaint_id",
+                        column: x => x.complaint_id,
+                        principalTable: "Complaints",
+                        principalColumn: "complaint_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ComplaintImages_complaint_id",
+                table: "ComplaintImages",
+                column: "complaint_id");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Complaints_order_id",
                 table: "Complaints",
                 column: "order_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Complaints_product_id",
+                table: "Complaints",
+                column: "product_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Complaints_user_id",
@@ -407,14 +441,9 @@ namespace DPTS.Infrastructures.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Escrows_UserId",
+                name: "IX_Escrows_seller_id",
                 table: "Escrows",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Images_product_id",
-                table: "Images",
-                column: "product_id");
+                column: "seller_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Logs_user_id",
@@ -452,9 +481,9 @@ namespace DPTS.Infrastructures.Migrations
                 column: "buyer_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Orders_ProductId",
-                table: "Orders",
-                column: "ProductId");
+                name: "IX_ProductImages_product_id",
+                table: "ProductImages",
+                column: "product_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductReviews_product_id",
@@ -477,9 +506,19 @@ namespace DPTS.Infrastructures.Migrations
                 column: "seller_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Users_AddressId",
-                table: "Users",
-                column: "AddressId");
+                name: "IX_Trades_trade_from_id",
+                table: "Trades",
+                column: "trade_from_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trades_trade_to_id",
+                table: "Trades",
+                column: "trade_to_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Trades_user_id",
+                table: "Trades",
+                column: "user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_role_id",
@@ -491,34 +530,19 @@ namespace DPTS.Infrastructures.Migrations
                 table: "Wallets",
                 column: "user_id",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WalletTransactions_trade_from_id",
-                table: "WalletTransactions",
-                column: "trade_from_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WalletTransactions_trade_to_id",
-                table: "WalletTransactions",
-                column: "trade_to_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_WalletTransactions_UserId",
-                table: "WalletTransactions",
-                column: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Complaints");
+                name: "Addresses");
+
+            migrationBuilder.DropTable(
+                name: "ComplaintImages");
 
             migrationBuilder.DropTable(
                 name: "Escrows");
-
-            migrationBuilder.DropTable(
-                name: "Images");
 
             migrationBuilder.DropTable(
                 name: "Logs");
@@ -530,16 +554,22 @@ namespace DPTS.Infrastructures.Migrations
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
+                name: "ProductImages");
+
+            migrationBuilder.DropTable(
                 name: "ProductReviews");
 
             migrationBuilder.DropTable(
-                name: "WalletTransactions");
+                name: "Trades");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "Complaints");
 
             migrationBuilder.DropTable(
                 name: "Wallets");
+
+            migrationBuilder.DropTable(
+                name: "Orders");
 
             migrationBuilder.DropTable(
                 name: "Products");
@@ -549,9 +579,6 @@ namespace DPTS.Infrastructures.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Address");
 
             migrationBuilder.DropTable(
                 name: "Roles");

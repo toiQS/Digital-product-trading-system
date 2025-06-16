@@ -4,6 +4,8 @@ using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Seller.orders.Handles
@@ -32,12 +34,19 @@ namespace DPTS.Applications.Seller.orders.Handles
                 var orders = (await _orderRepository.GetsAsync(includeBuyer: true, includeEscrow: true))
                     .Where(x => x.Escrow.SellerId == query.SellerId)
                     .ToList();
+                if(query.Text != null)
+                {
+                    orders = orders.Where(x => EF.Functions.Like(x.Buyer.FullName, $"{query.Text}")).ToList();
+                }
 
                 // Lấy tất cả order item có product thuộc seller
                 var orderItems = (await _orderItemRepository.GetsAsync(includeProduct: true))
                     .Where(x => x.Product.SellerId == query.SellerId)
                     .ToList();
-
+                if (query.Text != null)
+                {
+                    orderItems = orderItems.Where(x => EF.Functions.Like(x.Product.ProductName, $"{query.Text}")).ToList();
+                }
                 List<ResultJoined> resultJoineds;
 
                 try

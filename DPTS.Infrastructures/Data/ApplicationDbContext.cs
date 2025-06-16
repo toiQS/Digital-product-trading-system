@@ -66,6 +66,10 @@ namespace DPTS.Infrastructures.Data
                 .WithMany(x => x.TradeTos)
                 .HasForeignKey(x => x.TradeToId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+
+
+
         }
     }
 }
