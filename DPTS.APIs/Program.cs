@@ -38,7 +38,7 @@ else
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    await SeedingRole.Initialize(services);
+    await DataSeeder.SeedAllAsync(services);
 }
 
 app.Run();
