@@ -1,6 +1,10 @@
-﻿namespace DPTS.Applications.Seller.revenues.Queries
+﻿using DPTS.Applications.Seller.revenues.Dtos;
+using DPTS.Applications.Shareds;
+using MediatR;
+
+namespace DPTS.Applications.Seller.revenues.Queries
 {
-    internal class GetTopSellingProductsQuery
+    public class GetTopSellingProductsQuery : IRequest<ServiceResult<IEnumerable<TopSellingProductDto>>>
     {
         public string SellerId { get; set; } = string.Empty;
     }
