@@ -22,8 +22,12 @@ namespace DPTS.Applications
         }
         private static void InitializeService(this IServiceCollection services)
         {
-
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssembly(typeof(DPTS.Applications.Seller.revenues.Queries.GetTopSellingProductsQuery).Assembly);
+            });
         }
+
         private static void InitializeRepository(this IServiceCollection services)
         {
             services.AddScoped<ICategoryRepository, CategoryRepository>();
