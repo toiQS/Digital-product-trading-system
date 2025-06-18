@@ -1,6 +1,4 @@
 ﻿using DPTS.Domains;
-using System.Formats.Asn1;
-using System.Transactions;
 
 public static class EnumHandle
 {
@@ -33,14 +31,25 @@ public static class EnumHandle
         return status switch
         {
             ProductStatus.Unknown => "Không rõ",
-            ProductStatus.Newest => "Mới nhất",
-            ProductStatus.StopSelling => "Ngừng kinh doanh",
             ProductStatus.Pending => "Chờ duyệt",
             ProductStatus.Available => "Có sẵn",
             ProductStatus.Blocked => "Bị chặn",
             _ => "Không xác định"
         };
     }
+
+    //public static string HandleProductHagtag(ProductHagtag tag)
+    //{
+    //    return tag switch
+    //    {
+    //        ProductHagtag.None => "",
+    //        ProductHagtag.Newest => "Mới nhất",
+    //        ProductHagtag.BestSeller => "Bán chạy",
+    //        ProductHagtag.StopSelling => "Ngừng kinh doanh",
+    //        _ => "Không xác định"
+    //    };
+    //}
+
     public static string HandleWalletUnitCurrency(UnitCurrency unitCurrency)
     {
         return unitCurrency switch

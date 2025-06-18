@@ -36,23 +36,19 @@ namespace DPTS.Domains
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        [Column("is_circulate")]
-        public bool IsCirculate { get; set; }
-
+       
         public virtual User Seller { get; set; } = null!;
         public virtual Category Category { get; set; } = null!;
         public virtual ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
-        public virtual ICollection<Image> Images { get; set; } = new List<Image>();
+        public virtual ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
+        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
     public enum ProductStatus
     {
         Unknown,
-        Newest,
-        BestSeller,
-        StopSelling,
         Pending,
         Available,
         Blocked
     }
-
+    
 }

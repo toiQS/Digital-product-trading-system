@@ -1,13 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DPTS.Domains
 {
+    [Owned]
     public class Address
     {
-        [Key]
-        [Column("address_id")] 
-        public string AddressId { get; set; } = string.Empty;
+       
         [Column("street")]
         public string Street { get; set; } = string.Empty;
         [Column("district")]
