@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace DPTS.Infrastructures.Repository.Implements
 {
     public class EscrowRepository : IEscrowRepository
+
     {
         private readonly ApplicationDbContext _context;
 
@@ -15,7 +16,7 @@ namespace DPTS.Infrastructures.Repository.Implements
         }
 
         public async Task<IEnumerable<Escrow>> GetsAsync(
-            string? sellerId = null,
+            string? storeId = null,
             EscrowStatus? status = null,
             DateTime? fromDate = null,
             DateTime? toDate = null,
@@ -25,8 +26,8 @@ namespace DPTS.Infrastructures.Repository.Implements
             var query = _context.Escrows.AsQueryable();
 
             // Ưu tiên lọc theo seller
-            if (!string.IsNullOrWhiteSpace(sellerId))
-                query = query.Where(e => e.SellerId == sellerId);
+            if (!string.IsNullOrWhiteSpace(storeId))
+                query = query.Where(e => e.StoreId == storeId);
 
             // Lọc theo trạng thái
             if (status.HasValue)
@@ -40,7 +41,7 @@ namespace DPTS.Infrastructures.Repository.Implements
 
             // Điều kiện include
             if (includeOrder) query = query.Include(e => e.Order);
-            if (includeSeller) query = query.Include(e => e.Seller);
+            if (includeSeller) query = query.Include(e => e.Store);
 
             return await query.ToListAsync();
         }
@@ -51,7 +52,7 @@ namespace DPTS.Infrastructures.Repository.Implements
 
             return await _context.Escrows
                 .Include(e => e.Order)
-                .Include(e => e.Seller)
+                .Include(e => e.Store)
                 .FirstOrDefaultAsync(e => e.EscrowId == id);
         }
 
@@ -61,16 +62,16 @@ namespace DPTS.Infrastructures.Repository.Implements
 
             return await _context.Escrows
                 .Include(e => e.Order)
-                .Include(e => e.Seller)
+                .Include(e => e.Store)
                 .FirstOrDefaultAsync(e => e.OrderId == orderId);
         }
 
-        public async Task<IEnumerable<Escrow>> GetBySellerIdAsync(string sellerId)
+        public async Task<IEnumerable<Escrow>> GetBystoreIdAsync(string storeId)
         {
-            if (string.IsNullOrWhiteSpace(sellerId)) return Enumerable.Empty<Escrow>();
+            if (string.IsNullOrWhiteSpace(storeId)) return Enumerable.Empty<Escrow>();
 
             return await _context.Escrows
-                .Where(e => e.SellerId == sellerId)
+                .Where(e => e.StoreId == storeId)
                 .Include(e => e.Order)
                 .ToListAsync();
         }

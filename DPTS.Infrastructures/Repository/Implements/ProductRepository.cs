@@ -28,11 +28,11 @@ namespace DPTS.Infrastructures.Repository.Implements
         {
             var query = _context.Products.AsQueryable();
 
-            if (sellerId != null )
-                query = query.Where(c => EF.Functions.Like(c.ProductName, $"%{text}%"));
-
             if (!string.IsNullOrWhiteSpace(sellerId))
-                query = query.Where(p => p.SellerId == sellerId);
+                query = query.Where(p => p.StoreId == sellerId);
+
+            if (!string.IsNullOrWhiteSpace(text))
+                query = query.Where(p => EF.Functions.Like(p.ProductName, $"%{text}%"));
 
             if (!string.IsNullOrWhiteSpace(categoryId))
                 query = query.Where(p => p.CategoryId == categoryId);
@@ -41,10 +41,10 @@ namespace DPTS.Infrastructures.Repository.Implements
                 query = query.Where(p => p.Status == status.Value);
 
             if (minPrice.HasValue)
-                query = query.Where(p => p.Price >= minPrice.Value);
+                query = query.Where(p => p.OriginalPrice >= minPrice.Value);
 
             if (maxPrice.HasValue)
-                query = query.Where(p => p.Price <= maxPrice.Value);
+                query = query.Where(p => p.OriginalPrice <= maxPrice.Value);
 
             if (!string.IsNullOrWhiteSpace(keyword))
                 query = query.Where(p => p.ProductName.Contains(keyword));
@@ -67,7 +67,9 @@ namespace DPTS.Infrastructures.Repository.Implements
             bool includeImages = false,
             bool includeReviews = false)
         {
-            var query = _context.Products.Where(p => p.ProductId == id);
+            var query = _context.Products
+                .Where(p => p.ProductId == id)
+                .AsQueryable();
 
             if (includeCategory)
                 query = query.Include(p => p.Category);
@@ -103,5 +105,4 @@ namespace DPTS.Infrastructures.Repository.Implements
             }
         }
     }
-
 }

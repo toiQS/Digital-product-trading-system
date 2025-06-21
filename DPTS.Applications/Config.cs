@@ -14,19 +14,19 @@ namespace DPTS.Applications
         {
             services.InitializeConnect(configuration);
             services.InitializeRepository();
-            services.InitializeService();
+            //services.InitializeService();
         }
         private static void InitializeConnect(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("PostgreConnectString")));
         }
-        private static void InitializeService(this IServiceCollection services)
-        {
-            services.AddMediatR(cfg =>
-            {
-                cfg.RegisterServicesFromAssembly(typeof(DPTS.Applications.Seller.revenues.Queries.GetTopSellingProductsQuery).Assembly);
-            });
-        }
+        //private static void InitializeService(this IServiceCollection services)
+        //{
+        //    services.AddMediatR(cfg =>
+        //    {
+        //        cfg.RegisterServicesFromAssembly(typeof(DPTS.Applications.Seller.revenues.Queries.GetTopSellingProductsQuery).Assembly);
+        //    });
+        //}
 
         private static void InitializeRepository(this IServiceCollection services)
         {

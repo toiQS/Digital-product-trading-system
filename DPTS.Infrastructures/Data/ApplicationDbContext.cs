@@ -23,6 +23,7 @@ namespace DPTS.Infrastructures.Data
         public DbSet<Trade> Trades { get; set; }
         public DbSet <User> Users { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<Store> Stores { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -38,23 +39,7 @@ namespace DPTS.Infrastructures.Data
             });
 
 
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.Sender)
-                .WithMany(u => u.SentMessages)
-                .HasForeignKey(m => m.SenderId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.Receiver)
-                .WithMany(u => u.ReceivedMessages)
-                .HasForeignKey(m => m.ReceiverId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.Order)
-                .WithMany(o => o.Messages)
-                .HasForeignKey(m => m.OrderId)
-                .OnDelete(DeleteBehavior.SetNull);
+           
 
            modelBuilder.Entity<Trade>()
                 .HasOne(x => x.TradeFrom)

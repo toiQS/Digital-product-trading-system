@@ -17,7 +17,6 @@ namespace DPTS.Infrastructures.Repository.Implements
         public async Task<User?> GetByIdAsync(
             string userId,
             bool includeWallet = false,
-            bool includeAddress = false,
             bool includeRole = false)
         {
             if (string.IsNullOrWhiteSpace(userId)) return null;
@@ -27,9 +26,6 @@ namespace DPTS.Infrastructures.Repository.Implements
             if (includeWallet)
                 query = query.Include(u => u.Wallet);
 
-            if (includeAddress)
-                query = query.Include(u => u.Address);
-
             if (includeRole)
                 query = query.Include(u => u.Role);
 
@@ -38,13 +34,43 @@ namespace DPTS.Infrastructures.Repository.Implements
                 .FirstOrDefaultAsync(u => u.UserId == userId);
         }
 
+        public async Task<User?> GetByEmailAsync(string email, bool includeRole = false)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return null;
+
+            var query = _context.Users.AsQueryable();
+
+            if (includeRole)
+                query = query.Include(u => u.Role);
+
+            return await query
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User?> GetByUsernameAsync(string username, bool includeRole = false)
+        {
+            if (string.IsNullOrWhiteSpace(username)) return null;
+
+            var query = _context.Users.AsQueryable();
+
+            if (includeRole)
+                query = query.Include(u => u.Role);
+
+            return await query
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Username == username);
+        }
+
         public async Task<IEnumerable<User>> GetsAsync(
             string? search = null,
             string? roleId = null,
             bool? twoFactor = null,
             DateTime? from = null,
             DateTime? to = null,
-            bool includeRole = false)
+            bool includeRole = false,
+            int? pageIndex = null,
+            int? pageSize = null)
         {
             var query = _context.Users.AsQueryable();
 
@@ -54,8 +80,8 @@ namespace DPTS.Infrastructures.Repository.Implements
                 query = query.Where(u =>
                     u.Username.ToLower().Contains(lowered) ||
                     u.Email.ToLower().Contains(lowered) ||
-                    u.FullName != null && u.FullName.ToLower().Contains(lowered) ||
-                    u.Phone != null && u.Phone.Contains(lowered));
+                    (u.FullName != null && u.FullName.ToLower().Contains(lowered)) ||
+                    (u.Phone != null && u.Phone.Contains(lowered)));
             }
 
             if (!string.IsNullOrWhiteSpace(roleId))
@@ -73,23 +99,10 @@ namespace DPTS.Infrastructures.Repository.Implements
             if (includeRole)
                 query = query.Include(u => u.Role);
 
-            return await query
-                .AsNoTracking()
-                .ToListAsync();
-        }
+            if (pageIndex.HasValue && pageSize.HasValue)
+                query = query.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value);
 
-        public async Task<User?> GetByEmailAsync(string email, bool includeRole = false)
-        {
-            if (string.IsNullOrWhiteSpace(email)) return null;
-
-            var query = _context.Users.AsQueryable();
-
-            if (includeRole)
-                query = query.Include(u => u.Role);
-
-            return await query
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == email);
+            return await query.AsNoTracking().ToListAsync();
         }
 
         public async Task<bool> ExistsAsync(string userId)
