@@ -15,7 +15,7 @@ namespace DPTS.Infrastructures.Repository.Implements
         }
 
         public async Task<IEnumerable<Product>> GetsAsync(
-            string? sellerId = null,
+            string? storeId = null,
             string? text = null,
             string? categoryId = null,
             ProductStatus? status = null,
@@ -24,12 +24,14 @@ namespace DPTS.Infrastructures.Repository.Implements
             string? keyword = null,
             bool includeCategory = false,
             bool includeImages = false,
-            bool includeReviews = false)
+            bool includeReviews = false,
+            bool includeStore = false,
+            bool includeOrderItem = false)
         {
             var query = _context.Products.AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(sellerId))
-                query = query.Where(p => p.StoreId == sellerId);
+            if (!string.IsNullOrWhiteSpace(storeId))
+                query = query.Where(p => p.StoreId == storeId);
 
             if (!string.IsNullOrWhiteSpace(text))
                 query = query.Where(p => EF.Functions.Like(p.ProductName, $"%{text}%"));
@@ -58,6 +60,12 @@ namespace DPTS.Infrastructures.Repository.Implements
             if (includeReviews)
                 query = query.Include(p => p.Reviews);
 
+            if(includeStore)
+                query = query.Include(p=> p.Store);
+
+            if (includeOrderItem)
+                query = query.Include(p => p.OrderItems);
+
             return await query.ToListAsync();
         }
 
@@ -65,7 +73,9 @@ namespace DPTS.Infrastructures.Repository.Implements
             string id,
             bool includeCategory = false,
             bool includeImages = false,
-            bool includeReviews = false)
+            bool includeReviews = false,
+            bool includeStore = false,
+            bool includeOrderItem = false)
         {
             var query = _context.Products
                 .Where(p => p.ProductId == id)
@@ -79,6 +89,12 @@ namespace DPTS.Infrastructures.Repository.Implements
 
             if (includeReviews)
                 query = query.Include(p => p.Reviews);
+
+            if (includeStore)
+                query = query.Include(p => p.Store);
+
+            if (includeOrderItem)
+                query = query.Include(p => p.OrderItems);
 
             return await query.FirstOrDefaultAsync();
         }
