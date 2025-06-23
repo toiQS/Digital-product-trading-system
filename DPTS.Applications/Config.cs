@@ -1,10 +1,11 @@
-﻿using DPTS.Infrastructures.Data;
+﻿using DPTS.Applications.NoDistinctionOfRoles.auths.Queries;
+using DPTS.Applications.Sellers.overviews.Queries;
+using DPTS.Infrastructures.Data;
 using DPTS.Infrastructures.Repository.Implements;
 using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace DPTS.Applications
 {
@@ -14,19 +15,25 @@ namespace DPTS.Applications
         {
             services.InitializeConnect(configuration);
             services.InitializeRepository();
-            //services.InitializeService();
+            services.InitializeService();
         }
+
         private static void InitializeConnect(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("PostgreConnectString")));
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("PostgreConnectString")));
         }
-        //private static void InitializeService(this IServiceCollection services)
-        //{
-        //    services.AddMediatR(cfg =>
-        //    {
-        //        cfg.RegisterServicesFromAssembly(typeof(DPTS.Applications.Seller.revenues.Queries.GetTopSellingProductsQuery).Assembly);
-        //    });
-        //}
+
+        private static void InitializeService(this IServiceCollection services)
+        {
+            services.AddMediatR(cfg =>
+            {
+                cfg.RegisterServicesFromAssemblies(
+                    typeof(GetSellerOverviewQuery).Assembly,   
+                    typeof(LoginQuery).Assembly                 
+                );
+            });
+        }
 
         private static void InitializeRepository(this IServiceCollection services)
         {
@@ -41,6 +48,7 @@ namespace DPTS.Applications
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductImageRepository, ProductImageRepository>();
             services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
+            services.AddScoped<IStoreRepository, StoreRepository>();
             services.AddScoped<ITradeRepository, TradeRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IWalletRepository, WalletRepository>();
