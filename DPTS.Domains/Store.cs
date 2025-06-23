@@ -21,6 +21,8 @@ namespace DPTS.Domains
 
         // fk
         public virtual User User { get; set; } = null!;
+        public virtual ICollection<Message> SentMessages { get; set; } = new List<Message>();
+        public virtual ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
     }
     public enum StoreStatus
     {
