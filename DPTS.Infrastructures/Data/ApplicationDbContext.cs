@@ -38,10 +38,32 @@ namespace DPTS.Infrastructures.Data
                 a.Property(x => x.PostalCode).HasColumnName("postal_code");
             });
 
+            modelBuilder.Entity<Message>()
+               .HasOne(m => m.SenderUser)
+               .WithMany(u => u.SentMessages)
+               .HasForeignKey(m => m.SenderUserId)
+               .OnDelete(DeleteBehavior.Restrict);
 
-           
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.ReceiverUser)
+                .WithMany(u => u.ReceivedMessages)
+                .HasForeignKey(m => m.ReceiverUserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-           modelBuilder.Entity<Trade>()
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.SenderStore)
+                .WithMany() // Không ánh xạ ngược về Store
+                .HasForeignKey(m => m.SenderStoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Message>()
+                .HasOne(m => m.ReceiverStore)
+                .WithMany() // Không ánh xạ ngược về Store
+                .HasForeignKey(m => m.ReceiverStoreId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            modelBuilder.Entity<Trade>()
                 .HasOne(x => x.TradeFrom)
                 .WithMany(x => x.TradeFroms)
                 .HasForeignKey(x => x.TradeFromId)
@@ -53,7 +75,10 @@ namespace DPTS.Infrastructures.Data
                 .OnDelete(DeleteBehavior.SetNull);
 
 
-
+            modelBuilder.Entity<Role>().HasData(
+                new Role { RoleId = "Admin", RoleName = "Admin", Description = "" },
+                new Role { RoleId = "Buyer", RoleName = "Buyer", Description = "" },
+                new Role { RoleId = "Seller", RoleName = "Seller", Description = "" });
 
         }
     }
