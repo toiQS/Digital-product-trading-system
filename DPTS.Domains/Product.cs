@@ -24,13 +24,13 @@ namespace DPTS.Domains
         [Column("original_price")]
         public decimal OriginalPrice { get; set; }
         [Column(name:"discount")]
-        public double Discount { get; set; }
+        public int Discount { get; set; }
         [Column("price")]
         public decimal Price { get; set; }
         [Column("category")]
-        public string CategoryId { get; set; }= string.Empty;   
-        
-
+        public string CategoryId { get; set; }= string.Empty;
+        [Column("summary")]
+        public string Summary { get; set; }= string.Empty;
         [Column("status")]
         public ProductStatus Status { get; set; }
 
