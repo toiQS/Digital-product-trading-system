@@ -147,14 +147,14 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("order_id");
 
-                    b.Property<string>("SellerId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("seller_id");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer")
                         .HasColumnName("status");
+
+                    b.Property<string>("StoreId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("store_id");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -165,7 +165,7 @@ namespace DPTS.Infrastructures.Migrations
                     b.HasIndex("OrderId")
                         .IsUnique();
 
-                    b.HasIndex("SellerId");
+                    b.HasIndex("StoreId");
 
                     b.ToTable("Escrows");
                 });
@@ -196,46 +196,6 @@ namespace DPTS.Infrastructures.Migrations
                     b.ToTable("Logs");
                 });
 
-            modelBuilder.Entity("DPTS.Domains.Message", b =>
-                {
-                    b.Property<string>("MessageId")
-                        .HasColumnType("text")
-                        .HasColumnName("message_id");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("content");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("OrderId")
-                        .HasColumnType("text")
-                        .HasColumnName("order_id");
-
-                    b.Property<string>("ReceiverId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("receiver_id");
-
-                    b.Property<string>("SenderId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("sender_id");
-
-                    b.HasKey("MessageId");
-
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("ReceiverId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("Messages");
-                });
-
             modelBuilder.Entity("DPTS.Domains.Order", b =>
                 {
                     b.Property<string>("OrderId")
@@ -251,9 +211,9 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<bool>("IsPaied")
+                    b.Property<bool>("IsPaid")
                         .HasColumnType("boolean")
-                        .HasColumnName("Is Paied");
+                        .HasColumnName("is_paid");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric")
@@ -322,6 +282,14 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<int>("Discount")
+                        .HasColumnType("integer")
+                        .HasColumnName("discount");
+
+                    b.Property<decimal>("OriginalPrice")
+                        .HasColumnType("numeric")
+                        .HasColumnName("original_price");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric")
                         .HasColumnName("price");
@@ -331,24 +299,34 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("product_name");
 
-                    b.Property<string>("SellerId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("seller_id");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer")
                         .HasColumnName("status");
+
+                    b.Property<string>("StoreId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("store_id");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("summary");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("SellerId");
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Products");
                 });
@@ -447,6 +425,63 @@ namespace DPTS.Infrastructures.Migrations
                     b.HasKey("RoleId");
 
                     b.ToTable("Roles");
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = "Admin",
+                            Description = "",
+                            RoleName = "Admin"
+                        },
+                        new
+                        {
+                            RoleId = "Buyer",
+                            Description = "",
+                            RoleName = "Buyer"
+                        },
+                        new
+                        {
+                            RoleId = "Seller",
+                            Description = "",
+                            RoleName = "Seller"
+                        });
+                });
+
+            modelBuilder.Entity("DPTS.Domains.Store", b =>
+                {
+                    b.Property<string>("StoreId")
+                        .HasColumnType("text")
+                        .HasColumnName("store_id");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("create_at");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<string>("StoreImage")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("store_image");
+
+                    b.Property<string>("StoreName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("store_name");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("StoreId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Stores");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Trade", b =>
@@ -595,6 +630,64 @@ namespace DPTS.Infrastructures.Migrations
                     b.ToTable("Wallets");
                 });
 
+            modelBuilder.Entity("Message", b =>
+                {
+                    b.Property<string>("MessageId")
+                        .HasColumnType("text")
+                        .HasColumnName("message_id");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("create_at");
+
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_system");
+
+                    b.Property<string>("ReceiverStoreId")
+                        .HasColumnType("text")
+                        .HasColumnName("receiver_store_id");
+
+                    b.Property<string>("ReceiverUserId")
+                        .HasColumnType("text")
+                        .HasColumnName("receiver_user_id");
+
+                    b.Property<string>("SenderStoreId")
+                        .HasColumnType("text")
+                        .HasColumnName("sender_store_id");
+
+                    b.Property<string>("SenderUserId")
+                        .HasColumnType("text")
+                        .HasColumnName("sender_user_id");
+
+                    b.Property<string>("StoreId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StoreId1")
+                        .HasColumnType("text");
+
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("ReceiverStoreId");
+
+                    b.HasIndex("ReceiverUserId");
+
+                    b.HasIndex("SenderStoreId");
+
+                    b.HasIndex("SenderUserId");
+
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("StoreId1");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("DPTS.Domains.Complaint", b =>
                 {
                     b.HasOne("DPTS.Domains.Order", "Order")
@@ -641,15 +734,15 @@ namespace DPTS.Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DPTS.Domains.User", "Seller")
+                    b.HasOne("DPTS.Domains.Store", "Store")
                         .WithMany()
-                        .HasForeignKey("SellerId")
+                        .HasForeignKey("StoreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
 
-                    b.Navigation("Seller");
+                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Log", b =>
@@ -659,32 +752,6 @@ namespace DPTS.Infrastructures.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("DPTS.Domains.Message", b =>
-                {
-                    b.HasOne("DPTS.Domains.Order", "Order")
-                        .WithMany("Messages")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("DPTS.Domains.User", "Receiver")
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DPTS.Domains.User", "Sender")
-                        .WithMany("SentMessages")
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Order");
-
-                    b.Navigation("Receiver");
-
-                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Order", b =>
@@ -725,15 +792,19 @@ namespace DPTS.Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DPTS.Domains.User", "Seller")
-                        .WithMany("Products")
-                        .HasForeignKey("SellerId")
+                    b.HasOne("DPTS.Domains.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("DPTS.Domains.User", null)
+                        .WithMany("Products")
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Category");
 
-                    b.Navigation("Seller");
+                    b.Navigation("Store");
                 });
 
             modelBuilder.Entity("DPTS.Domains.ProductImage", b =>
@@ -762,6 +833,17 @@ namespace DPTS.Infrastructures.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.Store", b =>
+                {
+                    b.HasOne("DPTS.Domains.User", "User")
+                        .WithOne("Store")
+                        .HasForeignKey("DPTS.Domains.Store", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -856,6 +938,45 @@ namespace DPTS.Infrastructures.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Message", b =>
+                {
+                    b.HasOne("DPTS.Domains.Store", "ReceiverStore")
+                        .WithMany()
+                        .HasForeignKey("ReceiverStoreId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DPTS.Domains.User", "ReceiverUser")
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("ReceiverUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DPTS.Domains.Store", "SenderStore")
+                        .WithMany()
+                        .HasForeignKey("SenderStoreId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DPTS.Domains.User", "SenderUser")
+                        .WithMany("SentMessages")
+                        .HasForeignKey("SenderUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("DPTS.Domains.Store", null)
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("StoreId");
+
+                    b.HasOne("DPTS.Domains.Store", null)
+                        .WithMany("SentMessages")
+                        .HasForeignKey("StoreId1");
+
+                    b.Navigation("ReceiverStore");
+
+                    b.Navigation("ReceiverUser");
+
+                    b.Navigation("SenderStore");
+
+                    b.Navigation("SenderUser");
+                });
+
             modelBuilder.Entity("DPTS.Domains.Category", b =>
                 {
                     b.Navigation("Products");
@@ -872,8 +993,6 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.Navigation("Escrow")
                         .IsRequired();
-
-                    b.Navigation("Messages");
 
                     b.Navigation("OrderItems");
                 });
@@ -892,6 +1011,13 @@ namespace DPTS.Infrastructures.Migrations
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("DPTS.Domains.Store", b =>
+                {
+                    b.Navigation("ReceivedMessages");
+
+                    b.Navigation("SentMessages");
+                });
+
             modelBuilder.Entity("DPTS.Domains.User", b =>
                 {
                     b.Navigation("Complaints");
@@ -907,6 +1033,8 @@ namespace DPTS.Infrastructures.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("SentMessages");
+
+                    b.Navigation("Store");
 
                     b.Navigation("Trades");
 
