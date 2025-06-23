@@ -35,10 +35,10 @@ else
 }
 
     app.MapControllers();
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await DataSeeder.SeedAllAsync(services);
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+//    await DataSeeder.SeedAllAsync(services);
+//}
 
 app.Run();

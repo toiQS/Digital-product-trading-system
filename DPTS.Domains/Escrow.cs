@@ -14,8 +14,8 @@ namespace DPTS.Domains
         public string OrderId { get; set; } = string.Empty;
 
         [Required]
-        [Column("seller_id")]
-        public string SellerId { get; set; } = string.Empty;
+        [Column("store_id")]
+        public string StoreId { get; set; } = string.Empty;
 
         [Column("amount")]
         public decimal Amount { get; set; }
@@ -30,7 +30,7 @@ namespace DPTS.Domains
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual Order Order { get; set; } = null!;
-        public virtual User Seller { get; set; } = null!;
+        public virtual Store Store { get; set; } = null!;
     }
 
     public enum EscrowStatus

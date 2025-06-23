@@ -1,35 +1,38 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using DPTS.Domains;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DPTS.Domains
+public class Message
 {
-    public class Message
-    {
-        [Key]
-        [Column("message_id")]
-        public string MessageId { get; set; } = string.Empty;
+    [Key]
+    [Column("message_id")]
+    public string MessageId { get; set; } = string.Empty;
+    [Column("sender_user_id")]
+    public string? SenderUserId { get; set; }
+    [Column("sender_store_id")]
+    public string? SenderStoreId { get; set; }
+    [Column("receiver_user_id")]
+    public string? ReceiverUserId { get; set; }
+    [Column("receiver_store_id")]
+    public string? ReceiverStoreId { get; set; }
 
-        [Column("sender_id")]
-        public string SenderId { get; set; } = string.Empty;
+    [Required]
+    [Column("content")]
+    public string Content { get; set; } = string.Empty;
+    [Column("create_at")]
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [Column("is_system")]
+    public bool IsSystem { get; set; }
 
-        [Column("receiver_id")]
-        public string ReceiverId { get; set; } = string.Empty;
+    [ForeignKey("SenderUserId")]
+    public virtual User? SenderUser { get; set; }
 
-        [Column("order_id")]
-        public string? OrderId { get; set; }
+    [ForeignKey("SenderStoreId")]
+    public virtual Store? SenderStore { get; set; }
 
-        [Required]
-        [Column("content")]
-        public string Content { get; set; } = string.Empty;
+    [ForeignKey("ReceiverUserId")]
+    public virtual User? ReceiverUser { get; set; }
 
-        [Column("created_at")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-       
-        public virtual User Sender { get; set; } = null!;
-
-        public virtual User Receiver { get; set; } = null!;
-
-        public virtual Order? Order { get; set; }
-    }
+    [ForeignKey("ReceiverStoreId")]
+    public virtual Store? ReceiverStore { get; set; }
 }

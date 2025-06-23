@@ -10,8 +10,8 @@ namespace DPTS.Domains
         [Column("product_id")]
         public string ProductId { get; set; } = string.Empty;
 
-        [Column("seller_id")]
-        public string SellerId { get; set; } = string.Empty;
+        [Column("store_id")]
+        public string StoreId { get; set; } = string.Empty;
 
         [Required]
         [Column("product_name")]
@@ -21,12 +21,16 @@ namespace DPTS.Domains
         public string? Description { get; set; }
 
         [Required]
+        [Column("original_price")]
+        public decimal OriginalPrice { get; set; }
+        [Column(name:"discount")]
+        public int Discount { get; set; }
         [Column("price")]
         public decimal Price { get; set; }
-
         [Column("category")]
-        public string CategoryId { get; set; }= string.Empty;   
-
+        public string CategoryId { get; set; }= string.Empty;
+        [Column("summary")]
+        public string Summary { get; set; }= string.Empty;
         [Column("status")]
         public ProductStatus Status { get; set; }
 
@@ -37,7 +41,7 @@ namespace DPTS.Domains
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
        
-        public virtual User Seller { get; set; } = null!;
+        public virtual Store Store { get; set; } = null!;
         public virtual Category Category { get; set; } = null!;
         public virtual ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
         public virtual ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();

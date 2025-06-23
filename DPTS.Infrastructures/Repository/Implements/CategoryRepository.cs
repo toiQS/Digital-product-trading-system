@@ -30,14 +30,20 @@ namespace DPTS.Infrastructures.Repository.Implements
         }
 
 
-        public async Task<Category?> GetByIdAsync(string id)
+        public async Task<Category?> GetByIdAsync(string id, bool includeProduct = false)
         {
             if (string.IsNullOrWhiteSpace(id))
                 return null;
 
-            return await _context.Categories
-                .Include(c => c.Products)
-                .FirstOrDefaultAsync(c => c.CategoryId == id);
+            var query = _context.Categories.AsQueryable();
+
+            if (string.IsNullOrWhiteSpace(id))
+                query = query.Where(x => x.CategoryId == id);
+
+            if(includeProduct)
+                query = query.Include(x => x.Products);
+
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task AddAsync(Category category)

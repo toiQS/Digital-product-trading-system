@@ -15,11 +15,8 @@ namespace DPTS.Domains
         [Column("total_amount")]
         public decimal TotalAmount { get; set; }
 
-        //[Column("status")]
-        //public string Status { get; set; } = string.Empty;
-
-        [Column("Is Paied")]
-        public bool IsPaied { get; set; }
+        [Column("is_paid")]
+        public bool IsPaid { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -30,7 +27,6 @@ namespace DPTS.Domains
         public virtual User Buyer { get; set; } = null!;
         public virtual Escrow Escrow { get; set; } = null!;
         public virtual ICollection<Complaint> Complaints { get; set; } = new List<Complaint>();
-        public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>(); 
     }
 

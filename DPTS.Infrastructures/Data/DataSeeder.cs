@@ -14,9 +14,9 @@ public static class DataSeeder
         // Seed Roles
         var roles = new[]
         {
-            new Role { RoleId = "admin", RoleName = "Admin", Description = "Admin" },
-            new Role { RoleId = "buyer", RoleName = "Buyer", Description = "Buyer" },
-            new Role { RoleId = "seller", RoleName = "Seller", Description = "Seller" }
+            new Role { RoleId = "Admin", RoleName = "Admin", Description = "Admin" },
+            new Role { RoleId = "Buyer", RoleName = "Buyer", Description = "Buyer" },
+            new Role { RoleId = "Seller", RoleName = "Seller", Description = "Seller" }
         };
         await context.Roles.AddRangeAsync(roles);
     }
