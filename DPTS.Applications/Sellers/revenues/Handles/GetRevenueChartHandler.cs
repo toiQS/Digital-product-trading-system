@@ -25,7 +25,7 @@ namespace DPTS.Applications.Sellers.revenues.Handles
 
         public async Task<ServiceResult<IEnumerable<RevenueChartPointDto>>> Handle(GetRevenueChartQuery query, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation("Generating revenue chart for seller: {SellerId}, last {CountDay} days", query.SellerId, query.CountDay);
+            _logger.LogInformation("GeneRatingOverall revenue chart for seller: {SellerId}, last {CountDay} days", query.SellerId, query.CountDay);
 
             if (query.CountDay <= 0 || query.CountDay > 60)
             {
@@ -71,7 +71,7 @@ namespace DPTS.Applications.Sellers.revenues.Handles
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error while generating revenue chart for seller: {SellerId}", query.SellerId);
+                _logger.LogError(ex, "Unexpected error while geneRatingOverall revenue chart for seller: {SellerId}", query.SellerId);
                 return ServiceResult<IEnumerable<RevenueChartPointDto>>.Error("Lỗi khi tạo biểu đồ doanh thu.");
             }
         }
