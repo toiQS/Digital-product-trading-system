@@ -389,9 +389,9 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("product_id");
 
-                    b.Property<int>("Rating")
+                    b.Property<int>("RatingOverall")
                         .HasColumnType("integer")
-                        .HasColumnName("rating");
+                        .HasColumnName("RatingOverall");
 
                     b.Property<string>("UserId")
                         .IsRequired()
