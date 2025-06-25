@@ -4,8 +4,8 @@
     {
         public string ProductId { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
-        public double RatingAverage { get; set; }
-        //public int RatingCount { get; set; }
+        public double RatingOverallAverage { get; set; }
+        //public int RatingOverallCount { get; set; }
         public int QuantitySold { get; set; }
 
         public string ProductImage {  get; set; } = string.Empty;
