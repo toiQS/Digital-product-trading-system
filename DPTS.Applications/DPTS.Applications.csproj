@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Buyers\reviews\Dtos\" />
     <Folder Include="Shareds\Dtos\" />
     <Folder Include="Shareds\Handles\" />
     <Folder Include="Shareds\Queries\" />
