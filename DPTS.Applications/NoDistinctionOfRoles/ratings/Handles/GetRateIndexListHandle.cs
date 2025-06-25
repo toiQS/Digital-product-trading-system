@@ -35,7 +35,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.ratings.Handles
                                 select new QueryResult
                                 {
                                     ProductId = grouped.Key,
-                                    RatingAverate = grouped.Average(a => a.Rating),
+                                    RatingOverallAverate = grouped.Average(a => a.RatingOverall),
                                 };
                     queryResults = query.ToList();
                     _logger.LogInformation("Đã tính toán xong trung bình đánh giá cho {Count} sản phẩm.", queryResults.Count);
@@ -47,22 +47,22 @@ namespace DPTS.Applications.NoDistinctionOfRoles.ratings.Handles
                 }
 
                 // Lọc và phân loại các đánh giá
-                var vote1 = queryResults.Where(x => x.RatingAverate >= 1 && x.RatingAverate <= 2).ToList();
-                var vote2 = queryResults.Where(x => x.RatingAverate >= 2 && x.RatingAverate <= 3).ToList();
-                var vote3 = queryResults.Where(x => x.RatingAverate >= 3 && x.RatingAverate < 4).ToList();
-                var vote4 = queryResults.Where(x => x.RatingAverate >= 4 && x.RatingAverate < 5).ToList();
-                var vote5 = queryResults.Where(x => x.RatingAverate == 5).ToList();
+                var vote1 = queryResults.Where(x => x.RatingOverallAverate >= 1 && x.RatingOverallAverate <= 2).ToList();
+                var vote2 = queryResults.Where(x => x.RatingOverallAverate >= 2 && x.RatingOverallAverate <= 3).ToList();
+                var vote3 = queryResults.Where(x => x.RatingOverallAverate >= 3 && x.RatingOverallAverate < 4).ToList();
+                var vote4 = queryResults.Where(x => x.RatingOverallAverate >= 4 && x.RatingOverallAverate < 5).ToList();
+                var vote5 = queryResults.Where(x => x.RatingOverallAverate == 5).ToList();
 
                 _logger.LogInformation("Phân loại thành công: {Vote1Count} sản phẩm có điểm từ 1-2, {Vote2Count} sản phẩm có điểm từ 2-3, {Vote3Count} sản phẩm có điểm từ 3-4, {Vote4Count} sản phẩm có điểm từ 4-5, {Vote5Count} sản phẩm có điểm 5.",
                     vote1.Count, vote2.Count, vote3.Count, vote4.Count, vote5.Count);
 
                 var result = new List<RateIndexListDto>
                 {
-                    new RateIndexListDto { Rating = 1, Count = vote1.Count },
-                    new RateIndexListDto { Rating = 2, Count = vote2.Count },
-                    new RateIndexListDto { Rating = 3, Count = vote3.Count },
-                    new RateIndexListDto { Rating = 4, Count = vote4.Count },
-                    new RateIndexListDto { Rating = 5, Count = vote5.Count }
+                    new RateIndexListDto { RatingOverall = 1, Count = vote1.Count },
+                    new RateIndexListDto { RatingOverall = 2, Count = vote2.Count },
+                    new RateIndexListDto { RatingOverall = 3, Count = vote3.Count },
+                    new RateIndexListDto { RatingOverall = 4, Count = vote4.Count },
+                    new RateIndexListDto { RatingOverall = 5, Count = vote5.Count }
                 };
 
                 return ServiceResult<IEnumerable<RateIndexListDto>>.Success(result);
@@ -77,7 +77,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.ratings.Handles
         private class QueryResult
         {
             public string ProductId { get; set; } = string.Empty;
-            public double RatingAverate { get; set; }
+            public double RatingOverallAverate { get; set; }
         }
 
     }
