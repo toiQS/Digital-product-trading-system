@@ -6,7 +6,7 @@ using DPTS.Infrastructures.Repository.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace DPTS.Applications.Buyers.orders.Handles
+namespace DPTS.Applications.Buyers.payments.Handles
 {
     public class GetCheckoutHandler : IRequestHandler<GetCheckoutQuery, ServiceResult<CheckoutDto>>
     {
@@ -69,7 +69,7 @@ namespace DPTS.Applications.Buyers.orders.Handles
                         product.ProductId,
                         product.ProductName,
                         product.Price,
-                        Quantity = item.Quantity,
+                        item.Quantity,
                         Amount = item.Quantity * product.Price,
                         ProductImage = images.FirstOrDefault(i => i.ProductId == product.ProductId)?.ImagePath ?? string.Empty,
                         StoreName = product.Store?.StoreName ?? "Không rõ"
@@ -86,7 +86,7 @@ namespace DPTS.Applications.Buyers.orders.Handles
                 }).ToList();
 
                 var subTotal = items.Sum(x => x.Amount);
-                var total = subTotal + (subTotal * taxSystem.Rate / 100);
+                var total = subTotal + subTotal * taxSystem.Rate / 100;
 
                 var summary = new CheckoutSummaryDto
                 {
