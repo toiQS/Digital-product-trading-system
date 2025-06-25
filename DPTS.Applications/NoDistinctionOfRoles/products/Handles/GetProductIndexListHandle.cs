@@ -23,7 +23,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.products.Handles
 
         public async Task<ServiceResult<IEnumerable<ProductIndexListDto>>> Handle(GetProductIndexListQuery query, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Bắt đầu xử lý GetProductIndexList với Text: {Text}, CategoryId: {CategoryId}, Rating: {Rating}", query.Text, query.CategoryId, query.Rating);
+            _logger.LogInformation("Bắt đầu xử lý GetProductIndexList với Text: {Text}, CategoryId: {CategoryId}, RatingOverall: {RatingOverall}", query.Text, query.CategoryId, query.RatingOverall);
             try
             {
                 var products = await _productRepository.GetsAsync(
@@ -63,7 +63,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.products.Handles
 
                 var productsResult = products.Select(p =>
                 {
-                    var rating = p.Reviews.Any() ? p.Reviews.Average(x => x.Rating) : 0;
+                    var RatingOverall = p.Reviews.Any() ? p.Reviews.Average(x => x.RatingOverall) : 0;
                     var quantitySold = queryResults.FirstOrDefault(x => x.ProductId == p.ProductId)?.SumQuantity ?? 0;
                     return new ProductIndexListDto
                     {
@@ -72,15 +72,15 @@ namespace DPTS.Applications.NoDistinctionOfRoles.products.Handles
                         Price = p.Price,
                         CategoryName = p.Category.CategoryName,
                         ProductImage = p.Images.FirstOrDefault(x => x.IsPrimary)?.ImagePath ?? "N/A",
-                        RatingAverage = rating,
+                        RatingOverallAverage = RatingOverall,
                         QuantitySold = quantitySold
                     };
                 }).ToList();
 
-                if (query.Rating > 0)
+                if (query.RatingOverall > 0)
                 {
-                    productsResult = productsResult.Where(x => x.RatingAverage > query.Rating).ToList();
-                    _logger.LogInformation("Lọc sản phẩm theo Rating > {Rating}, còn lại {Count} sản phẩm.", query.Rating, productsResult.Count);
+                    productsResult = productsResult.Where(x => x.RatingOverallAverage > query.RatingOverall).ToList();
+                    _logger.LogInformation("Lọc sản phẩm theo RatingOverall > {RatingOverall}, còn lại {Count} sản phẩm.", query.RatingOverall, productsResult.Count);
                 }
 
                 var orderedResult = productsResult.OrderByDescending(p => p.QuantitySold).ToList();
