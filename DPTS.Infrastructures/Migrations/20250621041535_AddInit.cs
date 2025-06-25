@@ -422,7 +422,7 @@ namespace DPTS.Infrastructures.Migrations
                     review_id = table.Column<string>(type: "text", nullable: false),
                     product_id = table.Column<string>(type: "text", nullable: false),
                     user_id = table.Column<string>(type: "text", nullable: false),
-                    rating = table.Column<int>(type: "integer", nullable: false),
+                    RatingOverall = table.Column<int>(type: "integer", nullable: false),
                     comment = table.Column<string>(type: "text", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     likes = table.Column<int>(type: "integer", nullable: false)
