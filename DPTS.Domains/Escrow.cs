@@ -28,6 +28,8 @@ namespace DPTS.Domains
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        [Column("expired")]
+        public DateTime Expired {  get; set; } = DateTime.UtcNow;
 
         public virtual Order Order { get; set; } = null!;
         public virtual Store Store { get; set; } = null!;
