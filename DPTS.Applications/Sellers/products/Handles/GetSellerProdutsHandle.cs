@@ -79,10 +79,10 @@ namespace DPTS.Applications.Sellers.products.Handles
                 {
                     var productReviews = await _productReviewRepository.GetsAsync(productId: product.ProductId);
                     var reviewCount = productReviews.Count();
-                    var totalRating = productReviews.Sum(x => x.Rating);
+                    var totalRatingOverall = productReviews.Sum(x => x.RatingOverall);
 
                     var quantitySold = soldQuantities.FirstOrDefault(x => x.ProductId == product.ProductId)?.TotalQuantity ?? 0;
-                    var ratingAvg = reviewCount > 0 ? (double)totalRating / reviewCount : 0;
+                    var RatingOverallAvg = reviewCount > 0 ? (double)totalRatingOverall / reviewCount : 0;
 
                     var primaryImage = product.Images.FirstOrDefault(x => x.IsPrimary)?.ImagePath ?? "no-image.jpg";
 
@@ -95,7 +95,7 @@ namespace DPTS.Applications.Sellers.products.Handles
                         Image = primaryImage,
                         QuantitySelled = quantitySold,
                         Status = EnumHandle.HandleProductStatus(product.Status),
-                        Rating = ratingAvg
+                        RatingOverall = RatingOverallAvg
                     });
                 }
 
