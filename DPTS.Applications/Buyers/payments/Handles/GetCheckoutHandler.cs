@@ -1,152 +1,143 @@
 ﻿using DPTS.Applications.Buyers.payments.Dtos;
 using DPTS.Applications.Buyers.payments.Queries;
 using DPTS.Applications.Shareds;
+using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace DPTS.Applications.Buyers.payments.Handles
+namespace DPTS.Applications.Buyers.orders.Handles
 {
     public class GetCheckoutHandler : IRequestHandler<GetCheckoutQuery, ServiceResult<CheckoutDto>>
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
+        private readonly ILogger<GetCheckoutHandler> _logger;
         private readonly ICategoryRepository _categoryRepository;
         private readonly ITaxRepository _taxRepository;
-        private readonly ILogger<GetCheckoutHandler> _logger;
+        private readonly ILogRepository _logRepository;
 
         public GetCheckoutHandler(
             IOrderRepository orderRepository,
             IProductRepository productRepository,
+            ILogger<GetCheckoutHandler> logger,
             ICategoryRepository categoryRepository,
             ITaxRepository taxRepository,
-            ILogger<GetCheckoutHandler> logger)
+            ILogRepository logRepository)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
+            _logger = logger;
             _categoryRepository = categoryRepository;
             _taxRepository = taxRepository;
-            _logger = logger;
+            _logRepository = logRepository;
         }
 
         public async Task<ServiceResult<CheckoutDto>> Handle(GetCheckoutQuery request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Bắt đầu xử lý GetCheckout cho Buyer");
+            _logger.LogInformation("Bắt đầu xử lý GetCheckout cho buyerId: {BuyerId}", request.BuyerId);
 
             try
             {
-                // Lấy đơn hàng chưa thanh toán
                 var orders = (await _orderRepository.GetsAsync(includeOrderItems: true))
-                    .Where(x => !x.IsPaid)
+                    .Where(x => x.IsPaid == false && x.BuyerId == request.BuyerId)
                     .ToList();
 
-                if (orders.Count == 0)
+                if (!orders.Any() || orders.Count > 1)
                 {
-                    _logger.LogWarning("Không có đơn hàng chưa thanh toán.");
-                    return ServiceResult<CheckoutDto>.Error("Không có đơn hàng chưa thanh toán.");
-                }
-
-                if (orders.Count > 1)
-                {
-                    _logger.LogError("Tồn tại nhiều đơn hàng chưa thanh toán.");
-                    return ServiceResult<CheckoutDto>.Error("Dữ liệu đơn hàng không hợp lệ.");
+                    _logger.LogWarning("Không tìm thấy hoặc có nhiều hơn một đơn chưa thanh toán cho buyerId: {BuyerId}", request.BuyerId);
+                    return ServiceResult<CheckoutDto>.Error("Không thể xử lý đơn hàng.");
                 }
 
                 var order = orders.Single();
-                var items = order.OrderItems;
-
-                // Lấy dữ liệu sản phẩm, thuế
                 var products = await _productRepository.GetsAsync(includeStore: true, includeImages: true);
-                var taxes = await _taxRepository.GetsAsync();
+                var images = products.SelectMany(x => x.Images).Where(x => x.IsPrimary).ToList();
+                var taxs = await _taxRepository.GetsAsync();
+                var taxSystem = taxs.FirstOrDefault(x => x.CategoryId == string.Empty && x.TaxStatus == TaxStatus.Active);
 
-                var taxSystem = taxes.SingleOrDefault(x => x.CategoryId == string.Empty && x.TaxStatus == Domains.TaxStatus.Active);
                 if (taxSystem == null)
                 {
-                    _logger.LogError("Không tìm thấy thuế hệ thống đang hoạt động.");
-                    return ServiceResult<CheckoutDto>.Error("Không tìm thấy thuế hệ thống.");
+                    _logger.LogError("Không tìm thấy cấu hình thuế hệ thống.");
+                    return ServiceResult<CheckoutDto>.Error("Cấu hình thuế không hợp lệ.");
                 }
 
-                var primaryImages = products
-                    .SelectMany(p => p.Images)
-                    .Where(i => i.IsPrimary)
-                    .ToDictionary(i => i.ProductId, i => i.ImagePath);
+                var resultQuery = (
+                    from item in order.OrderItems
+                    join product in products on item.ProductId equals product.ProductId
+                    select new
+                    {
+                        product.ProductId,
+                        product.ProductName,
+                        product.Price,
+                        Quantity = item.Quantity,
+                        Amount = item.Quantity * product.Price,
+                        ProductImage = images.FirstOrDefault(i => i.ProductId == product.ProductId)?.ImagePath ?? string.Empty,
+                        StoreName = product.Store?.StoreName ?? "Không rõ"
+                    }).ToList();
 
-                // Join dữ liệu
-                List<QueryResult> queryResults;
-                try
-                {
-                    queryResults = (
-                        from item in items
-                        join product in products on item.ProductId equals product.ProductId
-                        select new QueryResult
-                        {
-                            ProductId = product.ProductId,
-                            ProductName = product.ProductName,
-                            Price = product.Price,
-                            Quantity = item.Quantity,
-                            Amount = product.Price * item.Quantity,
-                            ProductImage = primaryImages.ContainsKey(product.ProductId)
-                                ? primaryImages[product.ProductId]
-                                : "/images/default-product.png",
-                            StoreName = product.Store?.StoreName ?? "Không rõ"
-                        }).ToList();
-
-                    _logger.LogInformation("Đã xử lý {Count} sản phẩm trong giỏ hàng.", queryResults.Count);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Lỗi khi join dữ liệu sản phẩm.");
-                    return ServiceResult<CheckoutDto>.Error("Không thể xử lý dữ liệu giỏ hàng.");
-                }
-
-                // Mapping ra DTO
-                var itemResult = queryResults.Select(x => new CheckoutItemDto
+                var items = resultQuery.Select(x => new CheckoutItemDto
                 {
                     ProductId = x.ProductId,
                     ProductName = x.ProductName,
                     Price = x.Price,
-                    Amount = x.Amount,
                     ProductImage = x.ProductImage,
-                    StoreName = x.StoreName
+                    StoreName = x.StoreName,
+                    Amount = x.Amount
                 }).ToList();
 
-                var subTotal = itemResult.Sum(x => x.Amount);
-                var taxRate = taxSystem.Rate;
-                var total = subTotal + subTotal * taxRate / 100;
+                var subTotal = items.Sum(x => x.Amount);
+                var total = subTotal + (subTotal * taxSystem.Rate / 100);
 
                 var summary = new CheckoutSummaryDto
                 {
                     Subtotal = subTotal,
-                    PlatformFee = taxRate,
-                    Tax = 0,
+                    PlatformFee = taxSystem.Rate,
+                    Tax = 0, // giữ nguyên nếu chưa tách loại thuế riêng
                     Total = total
                 };
 
+                try
+                {
+                    order.TotalAmount = total;
+                    order.UpdatedAt = DateTime.UtcNow;
+                    await _orderRepository.UpdateAsync(order);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Cập nhật đơn hàng thất bại cho orderId: {OrderId}", order.OrderId);
+                    return ServiceResult<CheckoutDto>.Error("Cập nhật đơn hàng thất bại.");
+                }
+
+                try
+                {
+                    await _logRepository.AddAsync(new Log
+                    {
+                        LogId = Guid.NewGuid().ToString(),
+                        Action = $"[{request.BuyerId}] cập nhật giỏ hàng cá nhân.",
+                        CreatedAt = DateTime.UtcNow,
+                        UserId = request.BuyerId
+                    });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Ghi log thất bại cho buyerId: {BuyerId}", request.BuyerId);
+                    // Không return lỗi vì không ảnh hưởng logic chính
+                }
+
                 var result = new CheckoutDto
                 {
-                    Items = itemResult,
+                    Items = items,
                     Summary = summary
                 };
 
-                _logger.LogInformation("Trả về giỏ hàng cho buyer với tổng cộng {Count} sản phẩm.", itemResult.Count);
+                _logger.LogInformation("Hoàn tất xử lý GetCheckout cho buyerId: {BuyerId}", request.BuyerId);
                 return ServiceResult<CheckoutDto>.Success(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Lỗi không xác định trong GetCheckoutHandler.");
-                return ServiceResult<CheckoutDto>.Error("Không thể lấy thông tin giỏ hàng.");
+                _logger.LogError(ex, "Lỗi khi xử lý GetCheckout cho buyerId: {BuyerId}", request.BuyerId);
+                return ServiceResult<CheckoutDto>.Error("Có lỗi xảy ra khi xử lý thanh toán.");
             }
-        }
-
-        private class QueryResult
-        {
-            public string ProductId { get; set; } = string.Empty;
-            public string ProductName { get; set; } = string.Empty;
-            public decimal Price { get; set; }
-            public int Quantity { get; set; }
-            public decimal Amount { get; set; }
-            public string ProductImage { get; set; } = string.Empty;
-            public string StoreName { get; set; } = string.Empty;
         }
     }
 }
