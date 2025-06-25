@@ -24,6 +24,7 @@ namespace DPTS.Infrastructures.Data
         public DbSet <User> Users { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<Store> Stores { get; set; }
+        public DbSet<Tax> Taxs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

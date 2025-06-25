@@ -14,12 +14,15 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<Category>> GetsAsync(string? text = null, bool includeProduct = true)
+        public async Task<IEnumerable<Category>> GetsAsync(string? text = null, bool includeProduct = true, bool includeTax = false)
         {
             var query = _context.Categories.AsQueryable();
 
             if (includeProduct)
                 query = query.Include(c => c.Products);
+
+            if (includeTax)
+                query = query.Include(c => c.Taxes);
 
             if (!string.IsNullOrWhiteSpace(text))
             {
@@ -29,22 +32,24 @@ namespace DPTS.Infrastructures.Repository.Implements
             return await query.ToListAsync();
         }
 
-
-        public async Task<Category?> GetByIdAsync(string id, bool includeProduct = false)
+        public async Task<Category?> GetByIdAsync(string id, bool includeProduct = false, bool includeTax = false)
         {
             if (string.IsNullOrWhiteSpace(id))
                 return null;
 
             var query = _context.Categories.AsQueryable();
 
-            if (string.IsNullOrWhiteSpace(id))
-                query = query.Where(x => x.CategoryId == id);
+            query = query.Where(x => x.CategoryId == id);
 
-            if(includeProduct)
+            if (includeProduct)
                 query = query.Include(x => x.Products);
+
+            if (includeTax)
+                query = query.Include(x => x.Taxes);
 
             return await query.FirstOrDefaultAsync();
         }
+
 
         public async Task AddAsync(Category category)
         {

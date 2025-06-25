@@ -5,7 +5,7 @@ using DPTS.Applications.Shareds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DPTS.Api.Controllers.NoDistinctionOfRoles
+namespace DPTS.APIs.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
