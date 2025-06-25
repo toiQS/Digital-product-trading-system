@@ -8,7 +8,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.products.Queries
     {
         public string Text { get; set; } = string.Empty;
         public string CategoryId { get; set; } = string.Empty;
-        public int Rating { get; set; }
+        public int RatingOverall { get; set; }
         public int PageSize { get; set; }
         public int PageNumber { get; set; }
     }
