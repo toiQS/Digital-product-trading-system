@@ -65,8 +65,8 @@ namespace DPTS.Applications.NoDistinctionOfRoles.homePages.Handles
                         Price = g.First().product.Price,
                         TotalSoldQuantity = g.Sum(x => x.item.Quantity),
                         ReviewCount = g.SelectMany(x => x.reviews).Count(),
-                        AverageRating = g.SelectMany(x => x.reviews).Any()
-                            ? g.SelectMany(x => x.reviews).Average(r => r.Rating)
+                        AverageRatingOverall = g.SelectMany(x => x.reviews).Any()
+                            ? g.SelectMany(x => x.reviews).Average(r => r.RatingOverall)
                             : 0,
                         PrimaryImagePath = g.First().primaryImage
                     }
@@ -83,7 +83,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.homePages.Handles
                         ProductName = x.ProductName,
                         Price = x.Price,
                         SoldQuantity = x.TotalSoldQuantity,
-                        Rating = x.AverageRating,
+                        RatingOverall = x.AverageRatingOverall,
                         ImageUrl = x.PrimaryImagePath
                     })
                     .ToList();
@@ -104,7 +104,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.homePages.Handles
             public int TotalSoldQuantity { get; set; }
             public decimal Price { get; set; }
             public int ReviewCount { get; set; }
-            public double AverageRating { get; set; }
+            public double AverageRatingOverall { get; set; }
             public string PrimaryImagePath { get; set; } = string.Empty;
         }
     }
