@@ -8,7 +8,7 @@
         public string UserName { get; set; } = string.Empty;
         public string ImageUser { get; set; } = string.Empty;
         public string Comment { get; set; } = string.Empty;
-        public int Rating { get; set; }
+        public int RatingOverall { get; set; }
         public int Likes { get; set; }
         public string CreatedAt { get; set; } = string.Empty;
     }
