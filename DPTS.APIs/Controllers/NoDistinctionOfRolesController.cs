@@ -1,6 +1,8 @@
 ﻿using DPTS.Applications.NoDistinctionOfRoles.auths.Queries;
+using DPTS.Applications.NoDistinctionOfRoles.categories.Queries;
 using DPTS.Applications.NoDistinctionOfRoles.homePages.Queries;
 using DPTS.Applications.NoDistinctionOfRoles.products.Queries;
+using DPTS.Applications.NoDistinctionOfRoles.ratings.Queries;
 using DPTS.Applications.Shareds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -69,6 +71,29 @@ namespace DPTS.APIs.Controllers
             var result = await _mediator.Send(new GetProductDetailQuery { ProductId = productId });
             return StatusCodeResult(result);
         }
+        [HttpGet("products")]
+        public async Task<IActionResult> GetProductIndexList([FromQuery] GetProductIndexListQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeResult(result);
+        }
+
+        // Category
+        [HttpGet("categories")]
+        public async Task<IActionResult> GetCategoryIndexList()
+        {
+            var result = await _mediator.Send(new GetCategoryIndexListQuery());
+            return StatusCodeResult(result);
+        }
+       
+        // Rating
+        [HttpGet("ratings")]
+        public async Task<IActionResult> GetRateIndexList()
+        {
+            var result = await _mediator.Send(new GetRateIndexListQuery());
+            return StatusCodeResult(result);
+        }
+
 
         // Helper: Đọc ServiceResult và trả về status HTTP tương ứng
         private IActionResult StatusCodeResult<T>(ServiceResult<T> result)
