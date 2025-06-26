@@ -1,4 +1,7 @@
-﻿using DPTS.Applications.NoDistinctionOfRoles.auths.Queries;
+﻿using DPTS.Applications.Buyers;
+using DPTS.Applications.NoDistinctionOfRoles;
+using DPTS.Applications.NoDistinctionOfRoles.auths.Queries;
+using DPTS.Applications.Sellers;
 using DPTS.Applications.Sellers.overviews.Queries;
 using DPTS.Infrastructures.Data;
 using DPTS.Infrastructures.Repository.Implements;
@@ -29,8 +32,9 @@ namespace DPTS.Applications
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssemblies(
-                    typeof(GetSellerOverviewQuery).Assembly,   
-                    typeof(LoginQuery).Assembly                 
+                    typeof(BuyerAssemblyMarker).Assembly,   
+                    typeof(SellersAssemblyMarker).Assembly,      
+                    typeof(NoDistinctionOfRoleAssemblyMarker).Assembly                 
                 );
             });
         }
