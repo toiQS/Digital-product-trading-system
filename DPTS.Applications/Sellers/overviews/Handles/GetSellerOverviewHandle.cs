@@ -54,19 +54,19 @@ namespace DPTS.Applications.Sellers.overviews.Handles
                 var products = await _productRepository.GetsAsync(storeId: store.StoreId);
                 var reviews = await _productReviewRepository.GetsAsync();
 
-                // --- Ratings ---
+                // --- RatingOveralls ---
                 var joinedReviews = from p in products
                                     join r in reviews on p.ProductId equals r.ProductId
-                                    select r.Rating;
+                                    select r.RatingOverall;
 
-                var ratingCount = joinedReviews.Count();
-                var averageRating = ratingCount > 0 ? Math.Round((decimal)joinedReviews.Sum() / ratingCount, 1) : 0;
+                var RatingOverallCount = joinedReviews.Count();
+                var averageRatingOverall = RatingOverallCount > 0 ? Math.Round((decimal)joinedReviews.Sum() / RatingOverallCount, 1) : 0;
 
-                var ratingDto = new SellerOverviewDto
+                var RatingOverallDto = new SellerOverviewDto
                 {
                     OverViewName = "Đánh giá",
-                    Information = $"Dựa trên {ratingCount} đánh giá.",
-                    Value = averageRating
+                    Information = $"Dựa trên {RatingOverallCount} đánh giá.",
+                    Value = averageRatingOverall
                 };
 
                 // --- Products ---
@@ -131,11 +131,11 @@ namespace DPTS.Applications.Sellers.overviews.Handles
                 };
 
                 _logger.LogInformation("Successfully built overview for seller {SellerId}", query.SellerId);
-                return ServiceResult<IEnumerable<SellerOverviewDto>>.Success(new[] { revenueDto, orderDto, productDto, ratingDto });
+                return ServiceResult<IEnumerable<SellerOverviewDto>>.Success(new[] { revenueDto, orderDto, productDto, RatingOverallDto });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while generating seller overview for SellerId: {SellerId}", query.SellerId);
+                _logger.LogError(ex, "Error while geneRatingOverall seller overview for SellerId: {SellerId}", query.SellerId);
                 return ServiceResult<IEnumerable<SellerOverviewDto>>.Error("Không thể lấy thống kê tổng quan.");
             }
         }

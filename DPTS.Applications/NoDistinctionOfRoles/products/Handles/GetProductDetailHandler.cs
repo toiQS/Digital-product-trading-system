@@ -65,14 +65,14 @@ namespace DPTS.Applications.NoDistinctionOfRoles.products.Handles
                     Discount = product.Discount,
                     OriginalPrice = product.OriginalPrice,
                     Price = product.Price,
-                    Rating = productReviews.Any() ? productReviews.Average(x => x.Rating) : 0,
+                    RatingOverall = productReviews.Any() ? productReviews.Average(x => x.RatingOverall) : 0,
                     CountReviews = productReviews.Count(),
                     ProductImage = productImages.Select(x => x.ImagePath).ToList(),
-                    Vote1 = productReviews.Count(x => x.Rating == 1),
-                    Vote2 = productReviews.Count(x => x.Rating == 2),
-                    Vote3 = productReviews.Count(x => x.Rating == 3),
-                    Vote4 = productReviews.Count(x => x.Rating == 4),
-                    Vote5 = productReviews.Count(x => x.Rating == 5),
+                    Vote1 = productReviews.Count(x => x.RatingOverall == 1),
+                    Vote2 = productReviews.Count(x => x.RatingOverall == 2),
+                    Vote3 = productReviews.Count(x => x.RatingOverall == 3),
+                    Vote4 = productReviews.Count(x => x.RatingOverall == 4),
+                    Vote5 = productReviews.Count(x => x.RatingOverall == 5),
                     ProductReviewIndex = productReviews.Select(x => new ProductReviewIndexDto
                     {
                         ReviewId = x.ReviewId,
@@ -81,7 +81,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.products.Handles
                         FullName = x.User?.FullName,
                         ImageUser = x.User?.ImageUrl,
                         Comment = x.Comment,
-                        Rating = x.Rating,
+                        RatingOverall = x.RatingOverall,
                         Likes = x.Likes,
                         CreatedAt = x.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
                     }).ToList()

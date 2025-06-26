@@ -17,11 +17,26 @@ namespace DPTS.Domains
         [Column("user_id")]
         public string UserId { get; set; } = string.Empty;
 
-        [Column("rating")]
-        public int Rating { get; set; } = 0;
+        [Column("rating_overall")]
+        public int RatingOverall { get; set; } = 0;
+
+        [Column("rating_quality")]
+        public int RatingQuality { get; set; } = 0;
+
+        [Column("rating_value")]
+        public int RatingValue { get; set; } = 0;
+
+        [Column("rating_usability")]
+        public int RatingUsability { get; set; } = 0;
+
+        [Column("review_title")]
+        public string ReviewTitle { get; set; } = string.Empty;
 
         [Column("comment")]
         public string Comment { get; set; } = string.Empty;
+
+        [Column("recommend_to_others")]
+        public bool RecommendToOthers { get; set; } = false;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

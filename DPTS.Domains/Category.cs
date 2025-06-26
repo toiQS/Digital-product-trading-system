@@ -19,5 +19,6 @@ namespace DPTS.Domains
         public DateTime CreateAt { get; set; }
 
         public List<Product> Products { get; set; } = new();
+        public List<Tax> Taxes { get; set; } = new();
     }
 }

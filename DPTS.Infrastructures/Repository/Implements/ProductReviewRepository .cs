@@ -18,8 +18,8 @@ namespace DPTS.Infrastructures.Repository.Implements
             string? search = null,
             string? productId = null,
             string? userId = null,
-            int? minRating = null,
-            int? maxRating = null,
+            int? minRatingOverall = null,
+            int? maxRatingOverall = null,
             DateTime? from = null,
             DateTime? to = null,
             bool includeUser = false,
@@ -42,11 +42,11 @@ namespace DPTS.Infrastructures.Repository.Implements
             if (!string.IsNullOrWhiteSpace(userId))
                 query = query.Where(r => r.UserId == userId);
 
-            if (minRating.HasValue)
-                query = query.Where(r => r.Rating >= minRating.Value);
+            if (minRatingOverall.HasValue)
+                query = query.Where(r => r.RatingOverall >= minRatingOverall.Value);
 
-            if (maxRating.HasValue)
-                query = query.Where(r => r.Rating <= maxRating.Value);
+            if (maxRatingOverall.HasValue)
+                query = query.Where(r => r.RatingOverall <= maxRatingOverall.Value);
 
             if (from.HasValue)
                 query = query.Where(r => r.CreatedAt >= from.Value);

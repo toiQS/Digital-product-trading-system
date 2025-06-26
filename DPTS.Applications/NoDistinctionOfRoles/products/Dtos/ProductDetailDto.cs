@@ -7,7 +7,7 @@ namespace DPTS.Applications.NoDistinctionOfRoles.products.Dtos
         // Header
         public string ProductId { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
-        public double Rating { get; set; }
+        public double RatingOverall { get; set; }
         public int CountReviews { get; set; }
         public string StoreImage { get; set; } = string.Empty;
         public string StoreName { get; set; } = string.Empty;

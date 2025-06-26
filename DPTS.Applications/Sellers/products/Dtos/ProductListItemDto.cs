@@ -10,6 +10,6 @@
         public int QuantitySelled { get; set; }
         public decimal Price { get; set; }
         public string Status { get; set; } = string.Empty;
-        public double Rating { get; set; }
+        public double RatingOverall { get; set; }
     }
 }
