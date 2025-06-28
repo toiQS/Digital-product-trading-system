@@ -9,9 +9,6 @@ namespace DPTS.Domains
         [Column("user_id")]
         public string UserId { get; set; } = string.Empty;
 
-        [Column("role_id")]
-        public string RoleId { get; set; } = string.Empty;
-
         [Required]
         [MaxLength(50)]
         [Column("username")]
@@ -19,26 +16,11 @@ namespace DPTS.Domains
 
         [Required]
         [MaxLength(100)]
-        [Column("email")]
+        [Column(" email")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [Column("password_hash")]
-        public string PasswordHash { get; set; } = string.Empty;
-
-        [Column("full_name")]
-        public string? FullName { get; set; }
-
-        [Column("phone")]
-        public string? Phone { get; set; }
-
-        public Address Address { get; set; } = new Address();
-
-        [Column("two_factor_enabled")]
-        public bool TwoFactorEnabled { get; set; } = false;
-
-        [Column("two_factor_secret")]
-        public string? TwoFactorSecret { get; set; }
+        [Column("role_id")]
+        public string RoleId { get; set; } = string.Empty;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -46,20 +28,19 @@ namespace DPTS.Domains
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        [Column("image_url")]
-        public string ImageUrl { get; set; } = string.Empty;
+        [Column("is_active")]
+        public bool IsActive { get; set; }
 
+        // Navigation
         public virtual Role Role { get; set; } = null!;
-        public virtual Wallet Wallet { get; set; } = null!;
+        public virtual UserProfile Profile { get; set; } = null!;
+        public virtual UserSecurity Security { get; set; } = null!;
+
+        // Optional relations
+        public virtual Wallet? Wallet { get; set; }
         public virtual Store? Store { get; set; }
 
-        public virtual ICollection<Product> Products { get; set; } = new List<Product>();
-        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-        public virtual ICollection<ProductReview> Reviews { get; set; } = new List<ProductReview>();
-        public virtual ICollection<Complaint> Complaints { get; set; } = new List<Complaint>();
-        public virtual ICollection<Message> SentMessages { get; set; } = new List<Message>();
-        public virtual ICollection<Message> ReceivedMessages { get; set; } = new List<Message>();
-        public virtual ICollection<Log> Logs { get; set; } = new List<Log>();
-        public virtual ICollection<Trade> Trades { get; set; } = new List<Trade>();
+        // Collections
+        public virtual ICollection<PaymentMethod> PaymentMethods { get; set; } = new List<PaymentMethod>();
     }
 }

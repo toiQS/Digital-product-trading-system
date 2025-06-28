@@ -36,18 +36,18 @@ namespace DPTS.Applications.Buyers.profiles.Handles
                     return ServiceResult<string>.Error("Người dùng không tồn tại.");
                 }
 
-                // Đảm bảo Address không null
-                if (user.Address == null)
-                    user.Address = new Address();
+                //// Đảm bảo Address không null
+                //if (user.Address == null)
+                //    user.Address = new Address();
 
-                user.FullName = request.FullName ?? user.FullName;
-                user.Phone = request.PhoneNumber ?? user.Phone;
-                user.Address.Street = request.Street ?? user.Address.Street;
-                user.Address.City = request.City ?? user.Address.City;
-                user.Address.District = request.District ?? user.Address.District;
-                user.Address.Country = request.Country ?? user.Address.Country;
-                user.Address.PostalCode = request.PostalCode ?? user.Address.PostalCode;
-                user.UpdatedAt = DateTime.UtcNow;
+                //user.FullName = request.FullName ?? user.FullName;
+                //user.Phone = request.PhoneNumber ?? user.Phone;
+                //user.Address.Street = request.Street ?? user.Address.Street;
+                //user.Address.City = request.City ?? user.Address.City;
+                //user.Address.District = request.District ?? user.Address.District;
+                //user.Address.Country = request.Country ?? user.Address.Country;
+                //user.Address.PostalCode = request.PostalCode ?? user.Address.PostalCode;
+                //user.UpdatedAt = DateTime.UtcNow;
 
                 try
                 {

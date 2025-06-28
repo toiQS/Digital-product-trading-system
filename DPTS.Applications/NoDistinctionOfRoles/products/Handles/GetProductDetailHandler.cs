@@ -75,15 +75,15 @@ namespace DPTS.Applications.NoDistinctionOfRoles.products.Handles
                     Vote5 = productReviews.Count(x => x.RatingOverall == 5),
                     ProductReviewIndex = productReviews.Select(x => new ProductReviewIndexDto
                     {
-                        ReviewId = x.ReviewId,
-                        UserId = x.UserId,
-                        UserName = x.User?.Username,
-                        FullName = x.User?.FullName,
-                        ImageUser = x.User?.ImageUrl,
-                        Comment = x.Comment,
-                        RatingOverall = x.RatingOverall,
-                        Likes = x.Likes,
-                        CreatedAt = x.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
+                        //ReviewId = x.ReviewId,
+                        //UserId = x.UserId,
+                        //UserName = x.User?.Username,
+                        //FullName = x.User?.FullName,
+                        //ImageUser = x.User?.ImageUrl,
+                        //Comment = x.Comment,
+                        //RatingOverall = x.RatingOverall,
+                        //Likes = x.Likes,
+                        //CreatedAt = x.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")
                     }).ToList()
                 };
 

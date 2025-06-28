@@ -50,23 +50,23 @@ public static class EnumHandle
     //    };
     //}
 
-    public static string HandleWalletUnitCurrency(UnitCurrency unitCurrency)
-    {
-        return unitCurrency switch
-        {
-            UnitCurrency.USD => "USD",
-            UnitCurrency.VND => "VND",
-            _ => "Không xác định"
-        };
-    }
-    public static string HandleTradeStatus(TradeStatus status)
-    {
-        return status switch
-        {
-            TradeStatus.Done => "Hoàn thành",
-            TradeStatus.Resolving => "Đang xử lý",
-            TradeStatus.Errored => "Xảy ra vấn đề",
-            _ => "Không xác định"
-        };
-    }
+    //public static string HandleWalletUnitCurrency(UnitCurrency unitCurrency)
+    //{
+    //    return unitCurrency switch
+    //    {
+    //        UnitCurrency.USD => "USD",
+    //        UnitCurrency.VND => "VND",
+    //        _ => "Không xác định"
+    //    };
+    //}
+    //public static string HandleTradeStatus(TradeStatus status)
+    //{
+    //    return status switch
+    //    {
+    //        TradeStatus.Done => "Hoàn thành",
+    //        TradeStatus.Resolving => "Đang xử lý",
+    //        TradeStatus.Errored => "Xảy ra vấn đề",
+    //        _ => "Không xác định"
+    //    };
+    //}
 }

@@ -7,26 +7,14 @@ namespace DPTS.Domains
     {
         [Key]
         [Column("wallet_id")]
-        public string WalletId { get; set; } = string.Empty;    
-
+        public string WalletId { get; set; } = string.Empty;
+        [Required]
         [Column("user_id")]
         public string UserId { get; set; } = string.Empty;
+        [Column("balance")]
+        public decimal Balance { get; set; }
 
-        [Column("avaibable_balance")]
-        public decimal AvaibableBalance { get; set; }
-
-        [Column("currency")]
-        [MaxLength(10)]
-        public UnitCurrency Currency { get; set; } = UnitCurrency.VND;
-
-        public virtual User User { get; set; } = null!;
-        public virtual ICollection<Trade> TradeFroms { get; set; } = new List<Trade>();
-        public virtual ICollection<Trade> TradeTos { get; set; } = new List<Trade> { };
-    }
-    public enum UnitCurrency
-    {
-        VND,
-        USD
+        public List<WalletTransaction> Transactions { get; set; } = new();
     }
 
 }

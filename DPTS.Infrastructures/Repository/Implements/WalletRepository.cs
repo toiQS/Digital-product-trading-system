@@ -14,93 +14,54 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<Wallet?> GetByIdAsync(string walletId, bool includeUser = false)
-        {
-            if (string.IsNullOrWhiteSpace(walletId)) return null;
-
-            var query = _context.Wallets.AsQueryable();
-
-            if (includeUser)
-                query = query.Include(w => w.User);
-
-            return await query
-                .AsNoTracking()
-                .FirstOrDefaultAsync(w => w.WalletId == walletId);
-        }
-
-        public async Task<Wallet?> GetByUserIdAsync(string userId, bool includeUser = false)
-        {
-            if (string.IsNullOrWhiteSpace(userId)) return null;
-
-            var query = _context.Wallets.AsQueryable();
-
-            if (includeUser)
-                query = query.Include(w => w.User);
-
-            return await query
-                .AsNoTracking()
-                .FirstOrDefaultAsync(w => w.UserId == userId);
-        }
-
-        public async Task<IEnumerable<Wallet>> GetsAsync(
-            UnitCurrency? currency = null,
-            decimal? minBalance = null,
-            decimal? maxBalance = null,
-            string? userKeyword = null,
-            bool includeUser = false)
-        {
-            var query = _context.Wallets.AsQueryable();
-
-            if (currency.HasValue)
-                query = query.Where(w => w.Currency == currency.Value);
-
-            if (minBalance.HasValue)
-                query = query.Where(w => w.AvaibableBalance >= minBalance.Value);
-
-            if (maxBalance.HasValue)
-                query = query.Where(w => w.AvaibableBalance <= maxBalance.Value);
-
-            if (!string.IsNullOrWhiteSpace(userKeyword))
-            {
-                var lowered = userKeyword.ToLower();
-                query = query.Where(w =>
-                    w.User.Username.ToLower().Contains(lowered) ||
-                    w.User.Email.ToLower().Contains(lowered));
-            }
-
-            if (includeUser)
-                query = query.Include(w => w.User);
-
-            return await query
-                .AsNoTracking()
-                .ToListAsync();
-        }
-
         public async Task AddAsync(Wallet wallet)
         {
-            if (wallet == null) throw new ArgumentNullException(nameof(wallet));
             _context.Wallets.Add(wallet);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Wallet wallet)
         {
-            if (wallet == null) throw new ArgumentNullException(nameof(wallet));
             _context.Wallets.Update(wallet);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Wallet wallet)
+        public async Task DeleteAsync(string walletId)
         {
-            if (wallet == null) return;
-            _context.Wallets.Remove(wallet);
+            var entity = await _context.Wallets.FindAsync(walletId);
+            if (entity == null) return;
+            _context.Wallets.Remove(entity);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> ExistsAsync(string walletId)
+        public async Task<Wallet?> GetByIdAsync(string walletId)
         {
-            if (string.IsNullOrWhiteSpace(walletId)) return false;
-            return await _context.Wallets.AnyAsync(w => w.WalletId == walletId);
+            if (string.IsNullOrWhiteSpace(walletId)) return null;
+
+            return await _context.Wallets
+                .AsNoTracking()
+                .FirstOrDefaultAsync(w => w.WalletId == walletId);
+        }
+
+        public async Task<IEnumerable<Wallet>> GetsAsync(
+            string? userId = null,
+            decimal? minBalance = null,
+            decimal? maxBalance = null)
+        {
+            var query = _context.Wallets.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(userId))
+                query = query.Where(w => w.UserId == userId);
+
+            if (minBalance.HasValue)
+                query = query.Where(w => w.Balance >= minBalance);
+
+            if (maxBalance.HasValue)
+                query = query.Where(w => w.Balance <= maxBalance);
+
+            return await query
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

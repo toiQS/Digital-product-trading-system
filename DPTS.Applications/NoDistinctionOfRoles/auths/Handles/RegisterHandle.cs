@@ -2,112 +2,119 @@
 using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
-using MailKit.Net.Smtp;
 using MediatR;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MimeKit;
 
 namespace DPTS.Applications.NoDistinctionOfRoles.auths.Handles
 {
     public class RegisterHandle : IRequestHandler<RegisterQuery, ServiceResult<string>>
     {
         private readonly IUserRepository _userRepository;
-        private readonly ILogger<RegisterHandle> _logger;
+        private readonly IUserSecurityRepository _userSecurityRepository;
+        private readonly IUserProfileRepository _profileRepository;
         private readonly ILogRepository _logRepository;
-        private readonly IConfiguration _configuration;
+        private readonly IStoreRepository _storeRepository;
+        private readonly ILogger<RegisterHandle> _logger;
 
         public RegisterHandle(
             IUserRepository userRepository,
-            ILogger<RegisterHandle> logger,
+            IUserSecurityRepository userSecurityRepository,
+            IUserProfileRepository profileRepository,
             ILogRepository logRepository,
-            IConfiguration configuration)
+            IStoreRepository storeRepository,
+            ILogger<RegisterHandle> logger)
         {
             _userRepository = userRepository;
-            _logger = logger;
+            _userSecurityRepository = userSecurityRepository;
+            _profileRepository = profileRepository;
             _logRepository = logRepository;
-            _configuration = configuration;
+            _storeRepository = storeRepository;
+            _logger = logger;
         }
 
-        public async Task<ServiceResult<string>> Handle(RegisterQuery query, CancellationToken cancellationToken = default)
+        public async Task<ServiceResult<string>> Handle(RegisterQuery request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Register request received for email: {Email}", query.Email);
+            _logger.LogInformation("Bắt đầu xử lý đăng ký tài khoản cho email: {Email}", request.Email);
+
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            {
+                _logger.LogWarning("Thiếu thông tin email hoặc password.");
+                return ServiceResult<string>.Error("Thông tin đăng ký không hợp lệ.");
+            }
+
+            var existingUser = await _userRepository.GetByEmailAsync(request.Email);
+            if (existingUser != null)
+            {
+                _logger.LogWarning("Email đã được sử dụng: {Email}", request.Email);
+                return ServiceResult<string>.Error("Email đã tồn tại trong hệ thống.");
+            }
+
+            var userId = Guid.NewGuid().ToString();
+            var now = DateTime.UtcNow;
+
+            var user = new User
+            {
+                UserId = userId,
+                Email = request.Email,
+                RoleId = request.IsBuyer ? "Buyer" : "Seller",
+                CreatedAt = now,
+                UpdatedAt = now,
+                IsActive = true
+            };
+
+            var userSecurity = new UserSecurity
+            {
+                UserId = userId,
+                PasswordHash = PasswordHasher.Hash(request.Password),
+                TwoFactorEnabled = false,
+                LockoutUntil = now,
+                FailedLoginAttempts = 0
+            };
+
+            var userProfile = new UserProfile
+            {
+                UserId = userId,
+                Bio = string.Empty,
+                BirthDate = default,
+            };
+
+            var log = new Log
+            {
+                LogId = Guid.NewGuid().ToString(),
+                Action = "Người dùng đăng ký tài khoản",
+                CreatedAt = now,
+                UserId = userId
+            };
 
             try
             {
-                var userId = Guid.NewGuid().ToString();
-                var twoFactorSecret = Guid.NewGuid().ToString();
+                await _userRepository.AddAsync(user);
+                await _userSecurityRepository.AddAsync(userSecurity);
+                await _profileRepository.AddAsync(userProfile);
 
-                var user = new User
+                if (!request.IsBuyer)
                 {
-                    UserId = userId,
-                    Email = query.Email,
-                    PasswordHash = query.Password, 
-                    Username = query.Email.Split('@')[0],
-                    RoleId = query.IsBuyer ? "Buyer" : "Seller",
-                    TwoFactorEnabled = false,
-                    TwoFactorSecret = twoFactorSecret
-                };
+                    var store = new Store
+                    {
+                        StoreId = Guid.NewGuid().ToString(),
+                        UserId = userId,
+                        StoreName = $"Store of {request.Email}",
+                        CreateAt = now,
+                        Status = StoreStatus.Active
+                    };
 
-                var roleText = query.IsBuyer ? "người mua" : "người bán";
-                var log = new Log
-                {
-                    LogId = Guid.NewGuid().ToString(),
-                    CreatedAt = DateTime.UtcNow,
-                    Action = $"Có một {roleText} đăng ký vào hệ thống."
-                };
-
-                var isMailSent = SendMail(user.Email, user.TwoFactorSecret);
-                if (!isMailSent)
-                {
-                    _logger.LogWarning("Failed to send registration email to {Email}", user.Email);
-                    return ServiceResult<string>.Error("Không thể gửi email xác nhận.");
+                    await _storeRepository.AddAsync(store);
                 }
 
-                await _userRepository.AddAsync(user);
                 await _logRepository.AddAsync(log);
 
-                return ServiceResult<string>.Success("Đăng ký thành công. Vui lòng kiểm tra email để lấy mã 2FA.");
+                _logger.LogInformation("Đăng ký tài khoản thành công cho email: {Email}", request.Email);
+                return ServiceResult<string>.Success("Đăng ký tài khoản thành công.");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred during registration for email: {Email}", query.Email);
-                return ServiceResult<string>.Error("Đăng ký thất bại do lỗi hệ thống.");
-            }
-        }
-
-        /// <summary>
-        /// Gửi email xác nhận đăng ký với mã 2FA.
-        /// </summary>
-        private bool SendMail(string toAddress, string twoFactorSecret)
-        {
-            try
-            {
-                var email = new MimeMessage();
-                email.From.Add(MailboxAddress.Parse(_configuration["Mail:From"]));
-                email.To.Add(MailboxAddress.Parse(toAddress));
-                email.Subject = "Welcome to DPTS!";
-                email.Body = new TextPart("plain")
-                {
-                    Text = $"Cảm ơn bạn đã đăng ký tại DPTS.\nMã xác thực hai bước (2FA) của bạn là: {twoFactorSecret}"
-                };
-
-                using var smtp = new SmtpClient();
-                smtp.Connect(
-                    _configuration["Mail:SmtpHost"],
-                    int.Parse(_configuration["Mail:SmtpPort"]!),
-                    MailKit.Security.SecureSocketOptions.StartTls);
-
-                smtp.Authenticate(_configuration["Mail:Username"], _configuration["Mail:Password"]);
-                smtp.Send(email);
-                smtp.Disconnect(true);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to send email to {Email}", toAddress);
-                return false;
+                _logger.LogError(ex, "Lỗi trong quá trình đăng ký tài khoản.");
+                return ServiceResult<string>.Error("Có lỗi xảy ra khi tạo tài khoản.");
             }
         }
     }

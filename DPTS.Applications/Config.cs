@@ -1,14 +1,14 @@
 ﻿using DPTS.Applications.Buyers;
 using DPTS.Applications.NoDistinctionOfRoles;
-using DPTS.Applications.NoDistinctionOfRoles.auths.Queries;
 using DPTS.Applications.Sellers;
-using DPTS.Applications.Sellers.overviews.Queries;
 using DPTS.Infrastructures.Data;
-using DPTS.Infrastructures.Repository.Implements;
 using DPTS.Infrastructures.Repository.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace DPTS.Applications
 {
@@ -19,6 +19,7 @@ namespace DPTS.Applications
             services.InitializeConnect(configuration);
             services.InitializeRepository();
             services.InitializeService();
+            services.InitializeJwt(configuration);
         }
 
         private static void InitializeConnect(this IServiceCollection services, IConfiguration configuration)
@@ -41,21 +42,36 @@ namespace DPTS.Applications
 
         private static void InitializeRepository(this IServiceCollection services)
         {
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IComplaintRepository, ComplaintRepository>();
-            services.AddScoped<IComplaintImageRepository, ComplaintImageRepository>();
-            services.AddScoped<IEscrowRepository, EscrowRepository>();
-            services.AddScoped<ILogRepository, LogRepository>();
-            services.AddScoped<IMessageRepository, MessageRepository>();
-            services.AddScoped<IOrderItemRepository, OrderItemRepository>();
-            services.AddScoped<IOrderRepository, OrderRepository>();
-            services.AddScoped<IProductRepository, ProductRepository>();
-            services.AddScoped<IProductImageRepository, ProductImageRepository>();
-            services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
-            services.AddScoped<IStoreRepository, StoreRepository>();
-            services.AddScoped<ITradeRepository, TradeRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IWalletRepository, WalletRepository>();
+            services.Scan(scan => scan
+                    .FromAssemblyOf<ICategoryRepository>()
+                    .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Repository")))
+                    .AsMatchingInterface()
+                    .WithScopedLifetime());
+
+        }
+        private static void InitializeJwt(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddAuthentication(options =>
+            {
+
+
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = configuration.GetSection("Jwt:Issuer").Value,
+                    ValidAudience = configuration.GetSection("Jwt:Audience").Value,
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("Jwt:SecretKey").Value!))
+                };
+            });
         }
     }
 }

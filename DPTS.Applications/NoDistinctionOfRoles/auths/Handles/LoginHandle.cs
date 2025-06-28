@@ -16,71 +16,80 @@ namespace DPTS.Applications.NoDistinctionOfRoles.auths.Handles
     public class LoginHandle : IRequestHandler<LoginQuery, ServiceResult<LoginDto>>
     {
         private readonly IUserRepository _userRepository;
-        private readonly ILogRepository _logRepository;
         private readonly ILogger<LoginHandle> _logger;
+        private readonly ILogRepository _logRepository;
         private readonly IConfiguration _configuration;
 
         public LoginHandle(
             IUserRepository userRepository,
-            ILogRepository logRepository,
             ILogger<LoginHandle> logger,
+            ILogRepository logRepository,
             IConfiguration configuration)
         {
             _userRepository = userRepository;
-            _logRepository = logRepository;
             _logger = logger;
+            _logRepository = logRepository;
             _configuration = configuration;
         }
 
-        public async Task<ServiceResult<LoginDto>> Handle(LoginQuery query, CancellationToken cancellationToken = default)
+        public async Task<ServiceResult<LoginDto>> Handle(LoginQuery request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Login attempt for email: {Email}", query.Email);
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            {
+                _logger.LogWarning("Thiếu email hoặc mật khẩu.");
+                return ServiceResult<LoginDto>.Error("Thông tin đăng nhập không hợp lệ.");
+            }
 
             try
             {
-                var user = await _userRepository.GetByEmailAsync(query.Email);
+                var user = await _userRepository.GetByEmailAsync(request.Email, includeSecurity: true);
 
-                if (user == null)
+                if (user == null || user.Security == null)
                 {
-                    _logger.LogWarning("Login failed: Email not found - {Email}", query.Email);
-                    return ServiceResult<LoginDto>.Error("Tài khoản không tồn tại.");
+                    _logger.LogWarning("Người dùng không tồn tại hoặc thiếu thông tin bảo mật: {Email}", request.Email);
+                    return ServiceResult<LoginDto>.Error("Email hoặc mật khẩu không đúng.");
                 }
 
-                if (user.PasswordHash != query.Password) // Cần hash password để so sánh nếu dùng thực tế
+                
+                if (!PasswordHasher.Verify(request.Password, user.Security.PasswordHash))
                 {
-                    _logger.LogWarning("Login failed: Incorrect password for user - {Email}", query.Email);
-                    return ServiceResult<LoginDto>.Error("Sai mật khẩu.");
+                    _logger.LogWarning("Mật khẩu không hợp lệ cho email: {Email}", request.Email);
+                    return ServiceResult<LoginDto>.Error("Email hoặc mật khẩu không đúng.");
                 }
 
-                var log = new Log
+                if (!user.IsActive)
                 {
-                    LogId = Guid.NewGuid().ToString(),
-                    Action = $"{user.Username} vừa đăng nhập",
-                    CreatedAt = DateTime.UtcNow,
-                    UserId = user.UserId
-                };
-                await _logRepository.AddAsync(log);
+                    _logger.LogWarning("Tài khoản bị khóa: {UserId}", user.UserId);
+                    return ServiceResult<LoginDto>.Error("Tài khoản của bạn đang bị khóa.");
+                }
 
                 var token = GenerateToken(user);
+
+                await _logRepository.AddAsync(new Log
+                {
+                    LogId = Guid.NewGuid().ToString(),
+                    UserId = user.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    Action = "Đăng nhập thành công"
+                });
+
                 var result = new LoginDto
                 {
-                    Token = token,
-                    Expiry = DateTime.UtcNow.AddMinutes(30)
+                    Expiry = DateTime.UtcNow.AddMinutes(30),
+                    Token = token
                 };
 
-                _logger.LogInformation("Login successful for user: {Email}", query.Email);
+                _logger.LogInformation("Đăng nhập thành công cho userId: {UserId}", user.UserId);
+
                 return ServiceResult<LoginDto>.Success(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error during login for user: {Email}", query.Email);
-                return ServiceResult<LoginDto>.Error("Đăng nhập thất bại do lỗi hệ thống.");
+                _logger.LogError(ex, "Lỗi hệ thống khi xử lý đăng nhập.");
+                return ServiceResult<LoginDto>.Error("Có lỗi xảy ra trong quá trình đăng nhập.");
             }
         }
 
-        /// <summary>
-        /// Tạo JWT Token chứa thông tin cơ bản của người dùng.
-        /// </summary>
         private string GenerateToken(User user)
         {
             var claims = new[]
@@ -98,7 +107,8 @@ namespace DPTS.Applications.NoDistinctionOfRoles.auths.Handles
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(30),
-                signingCredentials: credentials);
+                signingCredentials: credentials
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(jwtToken);
         }

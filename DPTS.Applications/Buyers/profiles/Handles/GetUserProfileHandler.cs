@@ -24,16 +24,16 @@ namespace DPTS.Applications.Buyers.profiles.Handles
                 }
                 var result = new UserProfileDto()
                 {
-                    FullName  = user.FullName,
-                    PhoneNumber = user.Phone,
-                    City = user.Address.City,
-                    Country = user.Address.Country,
-                    District = user.Address.District,
-                    Email = user.Email,
-                    IsEmailVerified = user.TwoFactorEnabled,
-                    PostalCode = user.Address.PostalCode,
-                    Street = user.Address.Street,
-                    UserId = user.UserId,
+                    //FullName  = user.FullName,
+                    //PhoneNumber = user.Phone,
+                    //City = user.Address.City,
+                    //Country = user.Address.Country,
+                    //District = user.Address.District,
+                    //Email = user.Email,
+                    //IsEmailVerified = user.TwoFactorEnabled,
+                    //PostalCode = user.Address.PostalCode,
+                    //Street = user.Address.Street,
+                    //UserId = user.UserId,
                 };
                 return ServiceResult<UserProfileDto>.Success(result);
             }
