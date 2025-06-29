@@ -20,6 +20,9 @@ namespace DPTS.Domains
         [Column("two_factor_secret")]
         public string? TwoFactorSecret { get; set; }
 
+        [Column("email_verified")]
+        public bool EmailVerified { get; set; } = false;
+
         [Column("failed_login_attempts")]
         public int FailedLoginAttempts { get; set; } = 0;
 
