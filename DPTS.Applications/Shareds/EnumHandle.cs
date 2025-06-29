@@ -1,72 +1,82 @@
 ﻿using DPTS.Domains;
 
-public static class EnumHandle
+namespace DPTS.Helpers
 {
-    public static string HandleComplaintStatus(ComplaintStatus status)
+    public static class EnumHandle
     {
-        return status switch
+        public static string HandleComplaintStatus(ComplaintStatus status) => status switch
         {
             ComplaintStatus.Pending => "Đang chờ xử lý",
             ComplaintStatus.Unknown => "Không rõ",
             ComplaintStatus.Resolved => "Đã xử lý",
             _ => "Không xác định"
         };
-    }
 
-    public static string HandleEscrowStatus(EscrowStatus status)
-    {
-        return status switch
+        public static string HandleEscrowStatus(EscrowStatus status) => status switch
         {
             EscrowStatus.Unknown => "Không rõ",
-            EscrowStatus.WaitingComfirm => "Chờ xác nhận",
-            EscrowStatus.Comfirmed => "Đã xác nhận",
+            EscrowStatus.WaitingConfirm => "Chờ người mua xác nhận",
+            EscrowStatus.BuyerConfirmed => "Người mua đã xác nhận",
             EscrowStatus.Done => "Hoàn tất",
-            EscrowStatus.Canceled => "Đã hủy",
+            EscrowStatus.Canceled => "Đã huỷ",
             _ => "Không xác định"
         };
-    }
 
-    public static string HandleProductStatus(ProductStatus status)
-    {
-        return status switch
+        public static string HandleAdjustmentType(AdjustmentType type) => type switch
+        {
+            AdjustmentType.Tax => "Thuế",
+            AdjustmentType.Discount => "Giảm giá",
+            AdjustmentType.PlatformFee => "Phí nền tảng",
+            _ => "Không xác định"
+        };
+
+        public static string HandleRuleStatus(RuleStatus status) => status switch
+        {
+            RuleStatus.Active => "Đang áp dụng",
+            RuleStatus.Inactive => "Tạm ngưng",
+            RuleStatus.Expired => "Hết hạn",
+            _ => "Không xác định"
+        };
+
+        public static string HandleParticipantType(ParticipantType type) => type switch
+        {
+            ParticipantType.User => "Người dùng",
+            ParticipantType.Store => "Cửa hàng",
+            _ => "Không xác định"
+        };
+
+        public static string HandlePaymentProvider(PaymentProvider provider) => provider switch
+        {
+            PaymentProvider.Vietcombank => "Vietcombank",
+            PaymentProvider.MoMo => "MoMo",
+            PaymentProvider.ZaloPay => "ZaloPay",
+            _ => "Không xác định"
+        };
+
+        public static string HandleProductStatus(ProductStatus status) => status switch
         {
             ProductStatus.Unknown => "Không rõ",
-            ProductStatus.Pending => "Chờ duyệt",
-            ProductStatus.Available => "Có sẵn",
+            ProductStatus.Pending => "Chờ kiểm duyệt",
+            ProductStatus.Available => "Đang bán",
             ProductStatus.Blocked => "Bị chặn",
             _ => "Không xác định"
         };
+
+        public static string HandleStoreStatus(StoreStatus status) => status switch
+        {
+            StoreStatus.Active => "Hoạt động",
+            StoreStatus.Inactive => "Tạm ngưng",
+            StoreStatus.Unknown => "Không rõ",
+            _ => "Không xác định"
+        };
+
+        public static string HandleTransactionType(TransactionType type) => type switch
+        {
+            TransactionType.Deposit => "Nạp tiền",
+            TransactionType.Withdraw => "Rút tiền",
+            TransactionType.Purchase => "Mua hàng",
+            TransactionType.Refund => "Hoàn tiền",
+            _ => "Không xác định"
+        };
     }
-
-    //public static string HandleProductHagtag(ProductHagtag tag)
-    //{
-    //    return tag switch
-    //    {
-    //        ProductHagtag.None => "",
-    //        ProductHagtag.Newest => "Mới nhất",
-    //        ProductHagtag.BestSeller => "Bán chạy",
-    //        ProductHagtag.StopSelling => "Ngừng kinh doanh",
-    //        _ => "Không xác định"
-    //    };
-    //}
-
-    //public static string HandleWalletUnitCurrency(UnitCurrency unitCurrency)
-    //{
-    //    return unitCurrency switch
-    //    {
-    //        UnitCurrency.USD => "USD",
-    //        UnitCurrency.VND => "VND",
-    //        _ => "Không xác định"
-    //    };
-    //}
-    //public static string HandleTradeStatus(TradeStatus status)
-    //{
-    //    return status switch
-    //    {
-    //        TradeStatus.Done => "Hoàn thành",
-    //        TradeStatus.Resolving => "Đang xử lý",
-    //        TradeStatus.Errored => "Xảy ra vấn đề",
-    //        _ => "Không xác định"
-    //    };
-    //}
 }

@@ -1,11 +1,10 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
-using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class LogRepository : ILogRepository
+    public class LogRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -14,43 +13,7 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<Log>> GetsAsync(
-            string? userId = null,
-            string? actionKeyword = null,
-            DateTime? fromDate = null,
-            DateTime? toDate = null,
-            bool includeUser = false)
-        {
-            var query = _context.Logs.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(userId))
-                query = query.Where(l => l.UserId == userId);
-
-            if (!string.IsNullOrWhiteSpace(actionKeyword))
-                query = query.Where(l => l.Action.Contains(actionKeyword));
-
-            if (fromDate.HasValue)
-                query = query.Where(l => l.CreatedAt >= fromDate.Value);
-
-            if (toDate.HasValue)
-                query = query.Where(l => l.CreatedAt <= toDate.Value);
-
-            if (includeUser)
-                query = query.Include(l => l.User);
-
-            return await query
-                .OrderByDescending(l => l.CreatedAt)
-                .ToListAsync();
-        }
-
-        public async Task<Log?> GetByIdAsync(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id)) return null;
-
-            return await _context.Logs
-                .Include(l => l.User)
-                .FirstOrDefaultAsync(l => l.LogId == id);
-        }
+        #region Create
 
         public async Task AddAsync(Log log)
         {
@@ -58,15 +21,70 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task AddRangeAsync(IEnumerable<Log> logs)
         {
-            var log = await _context.Logs.FindAsync(id);
-            if (log != null)
-            {
-                _context.Logs.Remove(log);
-                await _context.SaveChangesAsync();
-            }
+            _context.Logs.AddRange(logs);
+            await _context.SaveChangesAsync();
         }
-    }
 
+        #endregion
+
+        #region Read
+
+        public async Task<IEnumerable<Log>> GetByUserIdAsync(
+            string userId,
+            DateTime? from = null,
+            DateTime? to = null,
+            int skip = 0,
+            int take = 50)
+        {
+            var query = _context.Logs.AsQueryable()
+                .Where(l => l.UserId == userId);
+
+            if (from.HasValue)
+                query = query.Where(l => l.CreatedAt >= from.Value);
+
+            if (to.HasValue)
+                query = query.Where(l => l.CreatedAt <= to.Value);
+
+            return await query
+                .OrderByDescending(l => l.CreatedAt)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Log>> GetByTargetAsync(
+            string targetType,
+            string? targetId = null,
+            DateTime? from = null,
+            DateTime? to = null)
+        {
+            var query = _context.Logs.AsQueryable()
+                .Where(l => l.TargetType == targetType);
+
+            if (!string.IsNullOrWhiteSpace(targetId))
+                query = query.Where(l => l.TargetId == targetId);
+
+            if (from.HasValue)
+                query = query.Where(l => l.CreatedAt >= from.Value);
+
+            if (to.HasValue)
+                query = query.Where(l => l.CreatedAt <= to.Value);
+
+            return await query
+                .OrderByDescending(l => l.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Log>> GetRecentActionsAsync(int limit = 100)
+        {
+            return await _context.Logs
+                .OrderByDescending(l => l.CreatedAt)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        #endregion
+    }
 }

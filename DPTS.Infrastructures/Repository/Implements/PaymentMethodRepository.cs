@@ -1,11 +1,10 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
-using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class PaymentMethodRepository : IPaymentMethodRepository
+    public class PaymentMethodRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -13,6 +12,8 @@ namespace DPTS.Infrastructures.Repository.Implements
         {
             _context = context;
         }
+
+        #region Create / Update / Delete
 
         public async Task AddAsync(PaymentMethod method)
         {
@@ -28,45 +29,50 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         public async Task DeleteAsync(string methodId)
         {
-            var entity = await _context.PaymentMethods.FindAsync(methodId);
-            if (entity == null) return;
-            _context.PaymentMethods.Remove(entity);
-            await _context.SaveChangesAsync();
+            var method = await _context.PaymentMethods.FindAsync(methodId);
+            if (method != null)
+            {
+                _context.PaymentMethods.Remove(method);
+                await _context.SaveChangesAsync();
+            }
         }
+
+        #endregion
+
+        #region Read
 
         public async Task<PaymentMethod?> GetByIdAsync(string methodId)
         {
-            if (string.IsNullOrWhiteSpace(methodId)) return null;
-
-            return await _context.PaymentMethods
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.PaymentMethodId == methodId);
+            return await _context.PaymentMethods.FindAsync(methodId);
         }
 
-        public async Task<IEnumerable<PaymentMethod>> GetsAsync(
-            string? userId = null,
-            PaymentProvider? provider = null,
-            bool? isVerified = null,
-            bool? isDefault = null)
+        public async Task<IEnumerable<PaymentMethod>> GetByUserIdAsync(string userId)
         {
-            var query = _context.PaymentMethods.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(userId))
-                query = query.Where(p => p.UserId == userId);
-
-            if (provider.HasValue)
-                query = query.Where(p => p.Provider == provider);
-
-            if (isVerified.HasValue)
-                query = query.Where(p => p.IsVerified == isVerified);
-
-            if (isDefault.HasValue)
-                query = query.Where(p => p.IsDefault == isDefault);
-
-            return await query
+            return await _context.PaymentMethods
+                .Where(p => p.UserId == userId)
                 .OrderByDescending(p => p.IsDefault)
-                .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<PaymentMethod?> GetDefaultByUserIdAsync(string userId)
+        {
+            return await _context.PaymentMethods
+                .FirstOrDefaultAsync(p => p.UserId == userId && p.IsDefault);
+        }
+
+        public async Task<bool> IsProviderLinkedAsync(string userId, PaymentProvider provider)
+        {
+            return await _context.PaymentMethods
+                .AnyAsync(p => p.UserId == userId && p.Provider == provider);
+        }
+
+        public async Task<IEnumerable<PaymentMethod>> GetVerifiedByUserIdAsync(string userId)
+        {
+            return await _context.PaymentMethods
+                .Where(p => p.UserId == userId && p.IsVerified)
+                .ToListAsync();
+        }
+
+        #endregion
     }
 }

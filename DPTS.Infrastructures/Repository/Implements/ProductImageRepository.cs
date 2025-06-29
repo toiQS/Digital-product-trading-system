@@ -1,11 +1,10 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
-using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class ProductImageRepository : IProductImageRepository
+    public class ProductImageRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -14,99 +13,71 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<ProductImage>> GetsAsync(
-            string? search = null,
-            bool? isPrimary = null,
-            DateTime? from = null,
-            DateTime? to = null,
-            string? productId = null,
-            bool includeProduct = false)
-        {
-            var query = _context.ProductImages.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var lowered = search.ToLower();
-                query = query.Where(i =>
-                    i.ImagePath.ToLower().Contains(lowered) ||
-                    i.ProductId.ToLower().Contains(lowered));
-            }
-
-            if (!string.IsNullOrWhiteSpace(productId))
-            {
-                query = query.Where(i => i.ProductId == productId);
-            }
-
-            if (isPrimary.HasValue)
-            {
-                query = query.Where(i => i.IsPrimary == isPrimary.Value);
-            }
-
-            if (from.HasValue)
-            {
-                query = query.Where(i => i.CreatedAt >= from.Value);
-            }
-
-            if (to.HasValue)
-            {
-                query = query.Where(i => i.CreatedAt <= to.Value);
-            }
-
-            if (includeProduct)
-            {
-                query = query.Include(i => i.Product);
-            }
-
-            return await query
-                .AsNoTracking()
-                .ToListAsync();
-        }
-
-        public async Task<ProductImage?> GetByIdAsync(string id, bool includeProduct = false)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-                return null;
-
-            var query = _context.ProductImages.AsQueryable();
-
-            if (includeProduct)
-                query = query.Include(i => i.Product);
-
-            return await query
-                .FirstOrDefaultAsync(i => i.ImageId == id);
-        }
+        #region Create / Update / Delete
 
         public async Task AddAsync(ProductImage image)
         {
-            if (image == null)
-                throw new ArgumentNullException(nameof(image));
-
-            image.CreatedAt = DateTime.UtcNow;
             _context.ProductImages.Add(image);
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(ProductImage image)
+        public async Task AddRangeAsync(IEnumerable<ProductImage> images)
         {
-            if (image == null)
-                throw new ArgumentNullException(nameof(image));
-
-            _context.ProductImages.Update(image);
+            _context.ProductImages.AddRange(images);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task DeleteAsync(string imageId)
         {
-            if (string.IsNullOrWhiteSpace(id))
-                return;
-
-            var image = await _context.ProductImages.FindAsync(id);
+            var image = await _context.ProductImages.FindAsync(imageId);
             if (image != null)
             {
                 _context.ProductImages.Remove(image);
                 await _context.SaveChangesAsync();
             }
         }
-    }
 
+        public async Task DeleteByProductIdAsync(string productId)
+        {
+            var images = await _context.ProductImages
+                .Where(p => p.ProductId == productId)
+                .ToListAsync();
+
+            _context.ProductImages.RemoveRange(images);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SetPrimaryAsync(string productId, string imageId)
+        {
+            var images = await _context.ProductImages
+                .Where(i => i.ProductId == productId)
+                .ToListAsync();
+
+            foreach (var img in images)
+                img.IsPrimary = (img.ImageId == imageId);
+
+            await _context.SaveChangesAsync();
+        }
+
+        #endregion
+
+        #region Read
+
+        public async Task<IEnumerable<ProductImage>> GetByProductIdAsync(string productId)
+        {
+            return await _context.ProductImages
+                .Where(p => p.ProductId == productId)
+                .OrderByDescending(p => p.IsPrimary)
+                .ThenBy(p => p.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<ProductImage?> GetPrimaryAsync(string productId)
+        {
+            return await _context.ProductImages
+                .FirstOrDefaultAsync(p => p.ProductId == productId && p.IsPrimary);
+        }
+
+        #endregion
+    }
 }

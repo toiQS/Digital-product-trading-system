@@ -1,11 +1,10 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
-using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class OrderItemRepository : IOrderItemRepository
+    public class OrderItemRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -14,60 +13,58 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<OrderItem>> GetsAsync(
-            string? orderId = null,
-            string? productId = null,
-            decimal? minAmount = null,
-            decimal? maxAmount = null,
-            int? minQuantity = null,
-            int? maxQuantity = null,
-            bool includeProduct = false,
-            bool includeOrder = false)
+        #region Get Methods
+
+        public async Task<OrderItem?> GetByIdAsync(string orderItemId, bool includeProduct = false)
         {
+            if (string.IsNullOrWhiteSpace(orderItemId))
+                return null;
+
             var query = _context.OrderItems.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(orderId))
-                query = query.Where(oi => oi.OrderId == orderId);
-
-            if (!string.IsNullOrWhiteSpace(productId))
-                query = query.Where(oi => oi.ProductId == productId);
-
-            if (minAmount != null)
-                query = query.Where(oi => oi.TotalAmount >= minAmount);
-
-            if (maxAmount != null)
-                query = query.Where(oi => oi.TotalAmount <= maxAmount);
-
-            if (minQuantity != null)
-                query = query.Where(oi => oi.Quantity >= minQuantity);
-
-            if (maxQuantity != null)
-                query = query.Where(oi => oi.Quantity <= maxQuantity);
 
             if (includeProduct)
                 query = query.Include(oi => oi.Product);
 
-            if (includeOrder)
-                query = query.Include(oi => oi.Order);
+            return await query.FirstOrDefaultAsync(oi => oi.OrderItemId == orderItemId);
+        }
+
+        public async Task<IEnumerable<OrderItem>> GetByOrderIdAsync(string orderId, bool includeProduct = false)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+                return Enumerable.Empty<OrderItem>();
+
+            var query = _context.OrderItems.Where(oi => oi.OrderId == orderId);
+
+            if (includeProduct)
+                query = query.Include(oi => oi.Product);
 
             return await query.ToListAsync();
         }
 
-        public async Task<OrderItem?> GetByIdAsync(
-            string id,
-            bool includeProduct = false,
-            bool includeOrder = false)
+        public async Task<IEnumerable<OrderItem>> GetByProductIdAsync(string productId)
         {
-            var query = _context.OrderItems.Where(oi => oi.OrderItemId == id);
-
-            if (includeProduct)
-                query = query.Include(oi => oi.Product);
-
-            if (includeOrder)
-                query = query.Include(oi => oi.Order);
-
-            return await query.FirstOrDefaultAsync();
+            return await _context.OrderItems
+                .Where(oi => oi.ProductId == productId)
+                .ToListAsync();
         }
+
+        public async Task<decimal> GetTotalFinalByOrderIdAsync(string orderId)
+        {
+            return await _context.OrderItems
+                .Where(oi => oi.OrderId == orderId)
+                .SumAsync(oi => oi.FinalPrice);
+        }
+
+        public async Task<int> GetTotalQuantitySoldAsync(string productId)
+        {
+            return await _context.OrderItems
+                .Where(oi => oi.ProductId == productId)
+                .SumAsync(oi => oi.Quantity);
+        }
+
+        #endregion
+
+        #region CRUD
 
         public async Task AddAsync(OrderItem item)
         {
@@ -75,20 +72,22 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(OrderItem item)
+        public async Task AddRangeAsync(IEnumerable<OrderItem> items)
         {
-            _context.OrderItems.Update(item);
+            _context.OrderItems.AddRange(items);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task DeleteByOrderIdAsync(string orderId)
         {
-            var item = await _context.OrderItems.FindAsync(id);
-            if (item != null)
-            {
-                _context.OrderItems.Remove(item);
-                await _context.SaveChangesAsync();
-            }
+            var items = await _context.OrderItems
+                .Where(oi => oi.OrderId == orderId)
+                .ToListAsync();
+
+            _context.OrderItems.RemoveRange(items);
+            await _context.SaveChangesAsync();
         }
+
+        #endregion
     }
 }

@@ -1,11 +1,10 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
-using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class UserSecurityRepository : IUserSecurityRepository
+    public class UserSecurityRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -13,6 +12,23 @@ namespace DPTS.Infrastructures.Repository.Implements
         {
             _context = context;
         }
+
+        #region Read
+
+        public async Task<UserSecurity?> GetByUserIdAsync(string userId)
+        {
+            return await _context.UserSecurities
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
+
+        public async Task<bool> ExistsAsync(string userId)
+        {
+            return await _context.UserSecurities.AnyAsync(s => s.UserId == userId);
+        }
+
+        #endregion
+
+        #region Create / Update
 
         public async Task AddAsync(UserSecurity security)
         {
@@ -26,27 +42,41 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string userId)
+        #endregion
+
+        #region Login Control
+
+        public async Task IncrementFailedLoginAsync(string userId)
         {
-            var entity = await _context.UserSecurities.FindAsync(userId);
-            if (entity == null) return;
-            _context.UserSecurities.Remove(entity);
-            await _context.SaveChangesAsync();
+            var security = await _context.UserSecurities.FindAsync(userId);
+            if (security != null)
+            {
+                security.FailedLoginAttempts++;
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public async Task<UserSecurity?> GetByIdAsync(string userId)
+        public async Task ResetFailedLoginAsync(string userId)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return null;
-
-            return await _context.UserSecurities
-                .AsNoTracking()
-                .FirstOrDefaultAsync(s => s.UserId == userId);
+            var security = await _context.UserSecurities.FindAsync(userId);
+            if (security != null)
+            {
+                security.FailedLoginAttempts = 0;
+                security.LockoutUntil = null;
+                await _context.SaveChangesAsync();
+            }
         }
 
-        public async Task<bool> ExistsAsync(string userId)
+        public async Task SetLockoutAsync(string userId, DateTime until)
         {
-            return await _context.UserSecurities.AnyAsync(s => s.UserId == userId);
+            var security = await _context.UserSecurities.FindAsync(userId);
+            if (security != null)
+            {
+                security.LockoutUntil = until;
+                await _context.SaveChangesAsync();
+            }
         }
+
+        #endregion
     }
-
 }

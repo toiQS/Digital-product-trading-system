@@ -1,11 +1,10 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
-using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class UserProfileRepository : IUserProfileRepository
+    public class UserProfileRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -13,6 +12,24 @@ namespace DPTS.Infrastructures.Repository.Implements
         {
             _context = context;
         }
+
+        #region Read
+
+        public async Task<UserProfile?> GetByUserIdAsync(string userId)
+        {
+            return await _context.UserProfiles
+                .Include(p => p.User)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+        }
+
+        public async Task<bool> ExistsAsync(string userId)
+        {
+            return await _context.UserProfiles.AnyAsync(p => p.UserId == userId);
+        }
+
+        #endregion
+
+        #region Create / Update / Delete
 
         public async Task AddAsync(UserProfile profile)
         {
@@ -28,49 +45,14 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         public async Task DeleteAsync(string userId)
         {
-            var entity = await _context.UserProfiles.FindAsync(userId);
-            if (entity == null) return;
-            _context.UserProfiles.Remove(entity);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<UserProfile?> GetByIdAsync(string userId)
-        {
-            if (string.IsNullOrWhiteSpace(userId)) return null;
-
-            return await _context.UserProfiles
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.UserId == userId);
-        }
-
-        public async Task<IEnumerable<UserProfile>> GetsAsync(
-            string? keyword = null,
-            string? phone = null)
-        {
-            var query = _context.UserProfiles.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(keyword))
+            var profile = await _context.UserProfiles.FindAsync(userId);
+            if (profile != null)
             {
-                var lowered = keyword.ToLower();
-                query = query.Where(p =>
-                    p.FullName!.ToLower().Contains(lowered) ||
-                    p.User.Username.ToLower().Contains(lowered) ||
-                    p.User.Email.ToLower().Contains(lowered));
+                _context.UserProfiles.Remove(profile);
+                await _context.SaveChangesAsync();
             }
-
-            if (!string.IsNullOrWhiteSpace(phone))
-                query = query.Where(p => p.Phone!.Contains(phone));
-
-            return await query
-                .Include(p => p.User)
-                .AsNoTracking()
-                .ToListAsync();
         }
 
-        public async Task<bool> ExistsAsync(string userId)
-        {
-            return await _context.UserProfiles.AnyAsync(p => p.UserId == userId);
-        }
+        #endregion
     }
-
 }
