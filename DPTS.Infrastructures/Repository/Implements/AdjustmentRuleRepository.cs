@@ -1,10 +1,11 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
+using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class AdjustmentRuleRepository
+    public class AdjustmentRuleRepository : IAdjustmentRuleRepository
     {
         private readonly ApplicationDbContext _context;
 

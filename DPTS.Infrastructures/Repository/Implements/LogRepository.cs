@@ -1,10 +1,11 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
+using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class LogRepository
+    public class LogRepository : ILogRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -17,6 +18,7 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         public async Task AddAsync(Log log)
         {
+
             _context.Logs.Add(log);
             await _context.SaveChangesAsync();
         }

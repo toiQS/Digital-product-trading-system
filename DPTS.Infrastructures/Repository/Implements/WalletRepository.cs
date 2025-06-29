@@ -1,10 +1,11 @@
 ﻿using DPTS.Domains;
 using DPTS.Infrastructures.Data;
+using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace DPTS.Infrastructures.Repository.Implements
 {
-    public class WalletRepository
+    public class WalletRepository : IWalletRepository
     {
         private readonly ApplicationDbContext _context;
 

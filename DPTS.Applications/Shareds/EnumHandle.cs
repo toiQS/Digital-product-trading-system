@@ -1,6 +1,6 @@
 ﻿using DPTS.Domains;
 
-namespace DPTS.Helpers
+namespace DPTS.Applications.Shareds
 {
     public static class EnumHandle
     {
