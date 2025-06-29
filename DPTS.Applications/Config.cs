@@ -1,14 +1,8 @@
-﻿using DPTS.Applications.Buyers;
-using DPTS.Applications.NoDistinctionOfRoles;
-using DPTS.Applications.Sellers;
-using DPTS.Infrastructures.Data;
-using DPTS.Infrastructures.Repository.Interfaces;
+﻿using DPTS.Infrastructures.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace DPTS.Applications
 {
@@ -26,27 +20,28 @@ namespace DPTS.Applications
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("PostgreConnectString")));
+
         }
 
         private static void InitializeService(this IServiceCollection services)
         {
             services.AddMediatR(cfg =>
             {
-                cfg.RegisterServicesFromAssemblies(
-                    typeof(BuyerAssemblyMarker).Assembly,   
-                    typeof(SellersAssemblyMarker).Assembly,      
-                    typeof(NoDistinctionOfRoleAssemblyMarker).Assembly                 
-                );
+                //cfg.RegisterServicesFromAssemblies(
+                //    typeof(BuyerAssemblyMarker).Assembly,   
+                //    typeof(SellersAssemblyMarker).Assembly,      
+                //    typeof(NoDistinctionOfRoleAssemblyMarker).Assembly                 
+                //);
             });
         }
 
         private static void InitializeRepository(this IServiceCollection services)
         {
-            services.Scan(scan => scan
-                    .FromAssemblyOf<ICategoryRepository>()
-                    .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Repository")))
-                    .AsMatchingInterface()
-                    .WithScopedLifetime());
+            //services.Scan(scan => scan
+            //        .FromAssemblyOf<ICategoryRepository>()
+            //        .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Repository")))
+            //        .AsMatchingInterface()
+            //        .WithScopedLifetime());
 
         }
         private static void InitializeJwt(this IServiceCollection services, IConfiguration configuration)
