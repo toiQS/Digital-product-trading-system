@@ -110,6 +110,7 @@ namespace DPTS.Applications.Buyer.Handles
                     Price = finalPrice
                 });
             }
+            result.ProductIndexList.OrderByDescending(x => x.RatingOverallCount).Skip((request.PageSize - 1) * request.PageSize).ToList();
 
             _logger.LogInformation("Hoàn tất xử lý danh sách sản phẩm");
             return ServiceResult<ProductIndexListDto>.Success(result);

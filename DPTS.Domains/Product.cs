@@ -28,9 +28,9 @@ namespace DPTS.Domains
         [Column("category_id")]
         public string CategoryId { get; set; } = string.Empty;
 
-        [Column("summary")]
-        public string Summary { get; set; } = string.Empty;
-
+        [Column("summary feature")]
+        public string SummaryFeature { get; set; } = string.Empty;
+            
         [Column("status")]
         public ProductStatus Status { get; set; }
 

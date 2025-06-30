@@ -44,12 +44,12 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         public async Task<IEnumerable<ProductReview>> GetByProductIdAsync(string productId, int skip = 0, int take = 10)
         {
-            return await _context.ProductReviews
-                .Where(r => r.ProductId == productId)
-                .OrderByDescending(r => r.CreatedAt)
-                .Skip(skip)
-                .Take(take)
-                .ToListAsync();
+            var query = _context.ProductReviews.Where(x => x.ProductId == productId).AsQueryable();
+            if(skip > 0 && take > 0)
+            {
+                query = query.Skip(skip).Take(take);
+            }
+            return await query.ToListAsync();
         }
 
         public async Task<ProductReview?> GetByUserAndProductAsync(string userId, string productId)
