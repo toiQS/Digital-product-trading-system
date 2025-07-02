@@ -12,7 +12,7 @@ namespace DPTS.Applications.Shareds
     public class ServiceResult<T>
     {
         public StatusResult Status { get; set; }
-        public  T? Data { get; set; }
+        public required T Data { get; set; } 
         public string MessageResult { get; set; } = string.Empty;
 
         public static ServiceResult<T> Success(T data)

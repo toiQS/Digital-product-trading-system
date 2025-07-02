@@ -14,51 +14,52 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<AdjustmentRule>> GetAllAsync(AdjustmentType? type = null, RuleStatus? status = null)
+        #region Read
+
+        public async Task<AdjustmentRule?> GetByIdAsync(string ruleId)
         {
-            var query = _context.AdjustmentRules.AsQueryable();
+            return await _context.AdjustmentRules
+                .Include(r => r.ProductAdjustments)
+                .FirstOrDefaultAsync(r => r.RuleId == ruleId);
+        }
+
+        public async Task<IEnumerable<AdjustmentRule>> GetAllAsync()
+        {
+            return await _context.AdjustmentRules.ToListAsync();
+        }
+
+        public async Task<IEnumerable<AdjustmentRule>> GetActiveRulesAsync(AdjustmentType? type = null, AdjustmentScope? scope = null)
+        {
+            var now = DateTime.UtcNow;
+
+            var query = _context.AdjustmentRules
+                .Where(r => r.Status == RuleStatus.Active &&
+                            (!r.From.HasValue || r.From <= now) &&
+                            (!r.To.HasValue || r.To >= now));
 
             if (type.HasValue)
                 query = query.Where(r => r.Type == type.Value);
 
-            if (status.HasValue)
-                query = query.Where(r => r.Status == status.Value);
+            if (scope.HasValue)
+                query = query.Where(r => r.Scope == scope.Value);
 
-            return await query
-                .OrderByDescending(r => r.Version)
-                .ThenByDescending(r => r.From)
-                .ToListAsync();
+            return await query.ToListAsync();
         }
 
-        public async Task<AdjustmentRule?> GetByIdAsync(string ruleId)
+        public async Task<AdjustmentRule?> GetByVoucherCodeAsync(string code)
         {
-            if (string.IsNullOrWhiteSpace(ruleId))
-                return null;
-
+            var now = DateTime.UtcNow;
             return await _context.AdjustmentRules
-                .FirstOrDefaultAsync(r => r.RuleId == ruleId);
+                .FirstOrDefaultAsync(r =>
+                    r.VoucherCode == code &&
+                    r.Status == RuleStatus.Active &&
+                    (!r.From.HasValue || r.From <= now) &&
+                    (!r.To.HasValue || r.To >= now));
         }
 
-        public async Task<AdjustmentRule?> GetDefaultAsync(AdjustmentType type)
-        {
-            return await _context.AdjustmentRules
-                .Where(r => r.Type == type && r.IsDefaultForNewProducts && r.Status == RuleStatus.Active)
-                .OrderByDescending(r => r.Version)
-                .FirstOrDefaultAsync();
-        }
+        #endregion
 
-        public async Task<AdjustmentRule?> GetLatestByTypeAsync(AdjustmentType type)
-        {
-            return await _context.AdjustmentRules
-                .Where(r => r.Type == type)
-                .OrderByDescending(r => r.Version)
-                .FirstOrDefaultAsync();
-        }
-
-        public async Task<bool> ExistsAsync(string ruleId)
-        {
-            return await _context.AdjustmentRules.AnyAsync(r => r.RuleId == ruleId);
-        }
+        #region Write
 
         public async Task AddAsync(AdjustmentRule rule)
         {
@@ -81,5 +82,7 @@ namespace DPTS.Infrastructures.Repository.Implements
                 await _context.SaveChangesAsync();
             }
         }
+
+        #endregion
     }
 }

@@ -18,11 +18,35 @@ namespace DPTS.Domains
         [Column("type")]
         public AdjustmentType Type { get; set; }
 
+        [Column("scope")]
+        public AdjustmentScope Scope { get; set; }
+
+        [Column("target_logic")]
+        public TargetLogic TargetLogic { get; set; }
+
+        [Column("source")]
+        public AdjustmentSource Source { get; set; }
+
         [Column("is_percentage")]
         public bool IsPercentage { get; set; } = true;
 
         [Column("value")]
         public decimal Value { get; set; } = 0.0m;
+
+        [Column("max_cap")]
+        public decimal? MaxCap { get; set; }
+
+        [Column("min_order_amount")]
+        public decimal? MinOrderAmount { get; set; }
+
+        [Column("voucher_code")]
+        public string? VoucherCode { get; set; }
+
+        [Column("usage_limit")]
+        public int? UsageLimit { get; set; }
+
+        [Column("per_user_limit")]
+        public int? PerUserLimit { get; set; }
 
         [Column("effective_from")]
         public DateTime? From { get; set; }
@@ -30,14 +54,11 @@ namespace DPTS.Domains
         [Column("effective_to")]
         public DateTime? To { get; set; }
 
-        [Column("version")]
-        public int Version { get; set; } = 1;
-
-        [Column("is_default")]
-        public bool IsDefaultForNewProducts { get; set; } = false;
-
         [Column("status")]
         public RuleStatus Status { get; set; } = RuleStatus.Active;
+
+        [Column("conditions_json")]
+        public string? ConditionsJson { get; set; }
 
         public virtual ICollection<ProductAdjustment> ProductAdjustments { get; set; } = new List<ProductAdjustment>();
     }
@@ -47,6 +68,26 @@ namespace DPTS.Domains
         Tax,
         Discount,
         PlatformFee
+    }
+
+    public enum AdjustmentScope
+    {
+        PerProduct,
+        PerOrder
+    }
+
+    public enum TargetLogic
+    {
+        Auto,
+        Voucher,
+        Campaign
+    }
+
+    public enum AdjustmentSource
+    {
+        Platform,
+        Seller,
+        System
     }
 
     public enum RuleStatus

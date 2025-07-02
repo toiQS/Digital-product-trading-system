@@ -26,6 +26,20 @@ namespace DPTS.Domains
         [Column("platform_fee_amount")]
         public decimal PlatformFeeAmount { get; set; }
 
+        [Column("tax_rate")]
+        public decimal TaxRate { get; set; }
+
+        [Column("tax_amount")]
+        public decimal TaxAmount { get; set; }
+        [Column("actual_amount")]
+        public decimal ActualAmount { get; set; }
+        [Column("released_at")]
+        public DateTime? ReleasedAt { get; set; }
+
+        [Column("released_by")]
+        public string? ReleasedBy { get; set; }  // e.g. "System", "Admin:duyanh", etc.
+
+
         [Column("status")]
         public EscrowStatus Status { get; set; } = EscrowStatus.Unknown;
 

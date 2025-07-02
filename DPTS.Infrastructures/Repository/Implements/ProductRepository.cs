@@ -81,7 +81,7 @@ namespace DPTS.Infrastructures.Repository.Implements
             var query = _context.Products.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(keyword))
-                query = query.Where(p => p.ProductName.Contains(keyword) || p.Summary.Contains(keyword));
+                query = query.Where(p => p.ProductName.Contains(keyword) || p.SummaryFeature.Contains(keyword));
 
             if (!string.IsNullOrWhiteSpace(categoryId))
                 query = query.Where(p => p.CategoryId == categoryId);
