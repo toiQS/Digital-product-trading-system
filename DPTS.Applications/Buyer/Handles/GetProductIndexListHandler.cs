@@ -93,7 +93,7 @@ namespace DPTS.Applications.Buyer.Handles
                     return ServiceResult<ProductIndexListDto>.Error("Không xác định được danh mục sản phẩm.");
                 }
 
-                var priceResult = await _adjustmentHandle.HandleDiscountAnđPriceForProduct(product);
+                var priceResult = await _adjustmentHandle.HandleDiscountAndPriceForProduct(product);
                 if (priceResult.Status != StatusResult.Success || priceResult.Data == null)
                 {
                     _logger.LogError("Adjustment calculation failed for productId: {ProductId}", product.ProductId);

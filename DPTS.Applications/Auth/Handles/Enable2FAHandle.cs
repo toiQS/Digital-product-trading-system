@@ -66,9 +66,6 @@ public class Enable2FAHandle : IRequestHandler<Enable2FAQuery, ServiceResult<str
             CreatedAt = DateTime.UtcNow,
             TargetId = user.UserId,
             TargetType = "User",
-            IpAddress = "",
-            UserAgent = "",
-            UserType = "User"
         };
 
         try

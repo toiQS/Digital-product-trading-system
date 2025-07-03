@@ -72,9 +72,6 @@ public class SendMessageToStoreHandle : IRequestHandler<SendMessageToStoreQuery,
             TargetId = store.StoreId,
             TargetType = "Store",
             CreatedAt = DateTime.UtcNow,
-            IpAddress = "",      // Nên truyền qua request nếu cần
-            UserAgent = "",      // Nên truyền qua request nếu cần
-            UserType = "User"
         };
 
         try

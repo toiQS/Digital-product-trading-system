@@ -60,7 +60,7 @@ namespace DPTS.Applications.Shareds
             return ServiceResult<ClassifyAdjustmentDto>.Success(result);
         }
 
-        public async Task<ServiceResult<MathResultDto>> HandleDiscountAnđPriceForProduct(Product product)
+        public async Task<ServiceResult<MathResultDto>> HandleDiscountAndPriceForProduct(Product product)
         {
             _logger.LogInformation("Handling discount and price for product...");
             var productAdjustments = await _productAdjustmentRepository.GetRulesByProductIdAsync(product.ProductId);

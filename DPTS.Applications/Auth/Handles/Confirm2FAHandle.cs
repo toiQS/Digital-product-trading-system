@@ -58,9 +58,6 @@ namespace DPTS.Applications.Auth.Handles
                 CreatedAt = DateTime.UtcNow,
                 TargetId = user.UserId,
                 TargetType = "User",
-                IpAddress = "",
-                UserAgent = "",
-                UserType = "User"
             };
 
             try

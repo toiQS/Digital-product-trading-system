@@ -5,7 +5,7 @@ namespace DPTS.Applications.Shareds
 {
     public interface IAdjustmentHandle
     {
-        Task<ServiceResult<MathResultDto>> HandleDiscountAnđPriceForProduct(Product product);
+        Task<ServiceResult<MathResultDto>> HandleDiscountAndPriceForProduct(Product product);
         Task<ServiceResult<MathResultDto>> HandleDiscountForOrderAndPayment(string keyCode, Order order);
     }
 }

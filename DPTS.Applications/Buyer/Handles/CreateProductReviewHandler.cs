@@ -78,9 +78,6 @@ public class CreateProductReviewHandler : IRequestHandler<CreateProductReviewQue
             TargetId = product.ProductId,
             TargetType = "Product",
             CreatedAt = DateTime.UtcNow,
-            UserType = "User",
-            IpAddress = "",     // Nên truyền từ request nếu cần
-            UserAgent = ""      // Nên truyền từ request nếu cần
         };
 
         // Tạo message hệ thống gửi tới store

@@ -110,9 +110,7 @@ public class RegisterHandle : IRequestHandler<RegisterQuery, ServiceResult<Regis
             CreatedAt = DateTime.UtcNow,
             TargetId = userId,
             TargetType = "User",
-            UserAgent = "", // Có thể gán từ controller
-            IpAddress = "", // Có thể gán từ controller
-            UserType = role
+            
         };
 
         try

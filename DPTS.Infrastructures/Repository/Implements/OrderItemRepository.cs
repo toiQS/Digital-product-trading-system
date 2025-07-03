@@ -14,58 +14,27 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        #region Get Methods
+        #region Read
 
-        public async Task<OrderItem?> GetByIdAsync(string orderItemId, bool includeProduct = false)
-        {
-            if (string.IsNullOrWhiteSpace(orderItemId))
-                return null;
-
-            var query = _context.OrderItems.AsQueryable();
-
-            if (includeProduct)
-                query = query.Include(oi => oi.Product);
-
-            return await query.FirstOrDefaultAsync(oi => oi.OrderItemId == orderItemId);
-        }
-
-        public async Task<IEnumerable<OrderItem>> GetByOrderIdAsync(string orderId, bool includeProduct = false)
-        {
-            if (string.IsNullOrWhiteSpace(orderId))
-                return Enumerable.Empty<OrderItem>();
-
-            var query = _context.OrderItems.Where(oi => oi.OrderId == orderId);
-
-            if (includeProduct)
-                query = query.Include(oi => oi.Product);
-
-            return await query.ToListAsync();
-        }
-
-        public async Task<IEnumerable<OrderItem>> GetByProductIdAsync(string productId)
+        public async Task<IEnumerable<OrderItem>> GetByOrderIdAsync(string orderId)
         {
             return await _context.OrderItems
-                .Where(oi => oi.ProductId == productId)
+                .Include(oi => oi.Product)
+                .Where(oi => oi.OrderId == orderId)
                 .ToListAsync();
         }
 
-        public async Task<decimal> GetTotalFinalByOrderIdAsync(string orderId)
+        public async Task<OrderItem?> GetByIdAsync(string orderItemId)
         {
             return await _context.OrderItems
-                .Where(oi => oi.OrderId == orderId)
-                .SumAsync(oi => oi.FinalPrice);
-        }
-
-        public async Task<int> GetTotalQuantitySoldAsync(string productId)
-        {
-            return await _context.OrderItems
-                .Where(oi => oi.ProductId == productId)
-                .SumAsync(oi => oi.Quantity);
+                .Include(oi => oi.Product)
+                .Include(oi => oi.Order)
+                .FirstOrDefaultAsync(oi => oi.OrderItemId == orderItemId);
         }
 
         #endregion
 
-        #region CRUD
+        #region Write
 
         public async Task AddAsync(OrderItem item)
         {
@@ -73,20 +42,26 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
-        public async Task AddRangeAsync(IEnumerable<OrderItem> items)
+        public async Task AddManyAsync(IEnumerable<OrderItem> items)
         {
             _context.OrderItems.AddRange(items);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteByOrderIdAsync(string orderId)
+        public async Task UpdateAsync(OrderItem item)
         {
-            var items = await _context.OrderItems
-                .Where(oi => oi.OrderId == orderId)
-                .ToListAsync();
-
-            _context.OrderItems.RemoveRange(items);
+            _context.OrderItems.Update(item);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteAsync(string orderItemId)
+        {
+            var item = await _context.OrderItems.FindAsync(orderItemId);
+            if (item != null)
+            {
+                _context.OrderItems.Remove(item);
+                await _context.SaveChangesAsync();
+            }
         }
 
         #endregion

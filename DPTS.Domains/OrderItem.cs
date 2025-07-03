@@ -17,21 +17,11 @@ namespace DPTS.Domains
         [Column("quantity")]
         public int Quantity { get; set; } = 1;
 
-        [Required]
-        [Column("original_price")]
-        public decimal OriginalPrice { get; set; }
+        [Column("price_for_each_product")]
+        public decimal PriceForeachProduct { get; set; }
 
-        [Column("discount_amount")]
-        public decimal DiscountAmount { get; set; } = 0;
-
-        [Column("tax_amount")]
-        public decimal TaxAmount { get; set; } = 0;
-
-        [Column("platform_fee_amount")]
-        public decimal PlatformFeeAmount { get; set; } = 0;
-
-        [Column("final_price")]
-        public decimal FinalPrice { get; set; }
+        [Column("total_price")]
+        public decimal TotalPrice { get; set; } 
 
         [Required]
         [Column("order_id")]

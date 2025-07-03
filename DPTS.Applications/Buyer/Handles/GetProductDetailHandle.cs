@@ -63,7 +63,7 @@ namespace DPTS.Applications.Buyer.Handles
             }
 
             // Tính toán giảm giá và giá cuối cùng
-            var discountAndFinalPriceProduct = await _adjustmentHandle.HandleDiscountAnđPriceForProduct(product);
+            var discountAndFinalPriceProduct = await _adjustmentHandle.HandleDiscountAndPriceForProduct(product);
             if (discountAndFinalPriceProduct.Status == StatusResult.Errored)
             {
                 _logger.LogError("Lỗi khi tính giá sản phẩm.");
@@ -166,7 +166,7 @@ namespace DPTS.Applications.Buyer.Handles
 
                 var averageRating = await _productReviewRepository.GetAverageOverallRatingAsync(product.ProductId);
                 var reviewCount = await _productReviewRepository.CountByProductIdAsync(product.ProductId);
-                var discountAndFinalPriceProduct = await _adjustmentHandle.HandleDiscountAnđPriceForProduct(product);
+                var discountAndFinalPriceProduct = await _adjustmentHandle.HandleDiscountAndPriceForProduct(product);
                 if (discountAndFinalPriceProduct.Status == StatusResult.Errored)
                 {
                     _logger.LogError("Không thể tính toán giá cho sản phẩm gợi ý {ProductId}", product.ProductId);
