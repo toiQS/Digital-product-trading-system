@@ -17,8 +17,9 @@ namespace DPTS.Domains
         [Column("quantity")]
         public int Quantity { get; set; } = 1;
 
-        [Column("base_price")]
-        public decimal BasePrice { get; set; }
+        [Required]
+        [Column("original_price")]
+        public decimal OriginalPrice { get; set; }
 
         [Column("discount_amount")]
         public decimal DiscountAmount { get; set; } = 0;
