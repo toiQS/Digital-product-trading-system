@@ -1,4 +1,8 @@
-﻿using DPTS.Infrastructures.Data;
+﻿using DPTS.Applications.Auth;
+using DPTS.Applications.Shareds;
+using DPTS.Infrastructures.Data;
+using DPTS.Infrastructures.Repository.Implements;
+using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,21 +31,40 @@ namespace DPTS.Applications
         {
             services.AddMediatR(cfg =>
             {
-                //cfg.RegisterServicesFromAssemblies(
-                //    typeof(BuyerAssemblyMarker).Assembly,   
-                //    typeof(SellersAssemblyMarker).Assembly,      
-                //    typeof(NoDistinctionOfRoleAssemblyMarker).Assembly                 
-                //);
+                cfg.RegisterServicesFromAssemblies(
+                    //typeof(BuyerAssemblyMarker).Assembly,
+                    //typeof(SellersAssemblyMarker).Assembly,
+                    //typeof(NoDistinctionOfRoleAssemblyMarker).Assembly
+                    typeof(AuthAssemblyMarker).Assembly
+                );
             });
         }
 
         private static void InitializeRepository(this IServiceCollection services)
         {
-            //services.Scan(scan => scan
-            //        .FromAssemblyOf<ICategoryRepository>()
-            //        .AddClasses(classes => classes.Where(type => type.Name.EndsWith("Repository")))
-            //        .AsMatchingInterface()
-            //        .WithScopedLifetime());
+           services.AddScoped<IAdjustmentRuleRepository, AdjustmentRuleRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IComplaintRepository, ComplaintRepository>();
+            services.AddScoped<IEscrowRepository, EscrowRepository>();
+            services.AddScoped<ILogRepository, LogRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+            services.AddScoped<IOrderPaymentRepository, OrderPaymentRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IPaymentMethodRepository,PaymentMethodRepository>();
+            services.AddScoped<IProductAdjustmentRepository, ProductAdjustmentRepository>();
+            services.AddScoped<IProductImageRepository, ProductImageRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductReviewRepository, ProductReviewRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IStoreRepository, StoreRepository>();
+            services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+            services.AddScoped<IUserSecurityRepository, UserSecurityRepository>();
+            services.AddScoped<IWalletRepository, WalletRepository>();
+            services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IAdjustmentHandle, AdjustmentHandle>();
+
 
         }
         private static void InitializeJwt(this IServiceCollection services, IConfiguration configuration)
