@@ -9,7 +9,7 @@ namespace DPTS.Applications.Buyer.Handles;
 /// <summary>
 /// Handler xử lý cập nhật thông tin hồ sơ rút gọn (mini) của người dùng.
 /// </summary>
-public class UpdateUserProfileMiniHandle : IRequestHandler<UpdateUserProfileMiniCommand, ServiceResult<string>>
+public class UpdateUserProfileMiniHandle : IRequestHandler<UpdateUserProfileMiniQuery, ServiceResult<string>>
 {
     private readonly ILogger<UpdateUserProfileMiniHandle> _logger;
     private readonly IUserRepository _userRepository;
@@ -31,7 +31,7 @@ public class UpdateUserProfileMiniHandle : IRequestHandler<UpdateUserProfileMini
         _userProfileRepository = userProfileRepository;
     }
 
-    public async Task<ServiceResult<string>> Handle(UpdateUserProfileMiniCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResult<string>> Handle(UpdateUserProfileMiniQuery request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Handling mini profile update for user: {UserId}", request.UserId);
 
