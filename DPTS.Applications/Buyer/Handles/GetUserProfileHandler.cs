@@ -1,4 +1,5 @@
-﻿using DPTS.Applications.Buyer.Queries;
+﻿using DPTS.Applications.Buyer.Dtos;
+using DPTS.Applications.Buyer.Queries;
 using DPTS.Applications.Shareds;
 using DPTS.Infrastructures.Repository.Interfaces;
 using MediatR;
@@ -7,40 +8,37 @@ using Microsoft.Extensions.Logging;
 namespace DPTS.Applications.Buyer.Handles;
 
 /// <summary>
-/// Handler xử lý cập nhật thông tin hồ sơ rút gọn (mini) của người dùng.
+/// Handler xử lý lấy thông tin hồ sơ chi tiết của người dùng.
 /// </summary>
-public class UpdateUserProfileMiniHandle : IRequestHandler<UpdateUserProfileMiniCommand, ServiceResult<string>>
+public class GetUserProfileHandler : IRequestHandler<GetUserProfileQuery, ServiceResult<UserProfileDto>>
 {
-    private readonly ILogger<UpdateUserProfileMiniHandle> _logger;
     private readonly IUserRepository _userRepository;
-    private readonly ILogRepository _logRepository;
-    private readonly IUserSecurityRepository _userSecurityRepository;
+    private readonly ILogger<GetUserProfileHandler> _logger;
     private readonly IUserProfileRepository _userProfileRepository;
+    private readonly IUserSecurityRepository _userSecurityRepository;
 
-    public UpdateUserProfileMiniHandle(
-        ILogger<UpdateUserProfileMiniHandle> logger,
+    public GetUserProfileHandler(
         IUserRepository userRepository,
-        ILogRepository logRepository,
-        IUserSecurityRepository userSecurityRepository,
-        IUserProfileRepository userProfileRepository)
+        ILogger<GetUserProfileHandler> logger,
+        IUserProfileRepository userProfileRepository,
+        IUserSecurityRepository userSecurityRepository)
     {
-        _logger = logger;
         _userRepository = userRepository;
-        _logRepository = logRepository;
-        _userSecurityRepository = userSecurityRepository;
+        _logger = logger;
         _userProfileRepository = userProfileRepository;
+        _userSecurityRepository = userSecurityRepository;
     }
 
-    public async Task<ServiceResult<string>> Handle(UpdateUserProfileMiniCommand request, CancellationToken cancellationToken)
+    public async Task<ServiceResult<UserProfileDto>> Handle(GetUserProfileQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Handling mini profile update for user: {UserId}", request.UserId);
+        _logger.LogInformation("Fetching profile for user: {UserId}", request.UserId);
 
-        // 1. Lấy thông tin người dùng
+        // 1. Lấy thông tin user
         var user = await _userRepository.GetByIdAsync(request.UserId);
         if (user == null)
         {
             _logger.LogError("User not found: {UserId}", request.UserId);
-            return ServiceResult<string>.Error("Không tìm thấy người dùng.");
+            return ServiceResult<UserProfileDto>.Error("Không tìm thấy người dùng.");
         }
 
         // 2. Lấy thông tin hồ sơ người dùng
@@ -48,40 +46,33 @@ public class UpdateUserProfileMiniHandle : IRequestHandler<UpdateUserProfileMini
         if (profile == null)
         {
             _logger.LogError("User profile not found: {UserId}", request.UserId);
-            return ServiceResult<string>.Error("Không tìm thấy hồ sơ người dùng.");
+            return ServiceResult<UserProfileDto>.Error("Không tìm thấy hồ sơ người dùng.");
         }
 
-        // 3. Lấy thông tin bảo mật người dùng
+        // 3. Lấy thông tin bảo mật
         var security = await _userSecurityRepository.GetByUserIdAsync(user.UserId);
         if (security == null)
         {
             _logger.LogError("User security not found: {UserId}", request.UserId);
-            return ServiceResult<string>.Error("Không tìm thấy thông tin bảo mật.");
+            return ServiceResult<UserProfileDto>.Error("Không tìm thấy thông tin bảo mật.");
         }
 
-        try
+        // 4. Mapping kết quả trả về
+        var result = new UserProfileDto
         {
-            // 4. Cập nhật thông tin người dùng và hồ sơ
-            if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != user.Email)
-            {
-                user.Email = request.Email;
-                security.EmailVerified = false;
-            }
+            UserId = user.UserId,
+            FullName = profile.FullName ?? "Chưa có tên",
+            PhoneNumber = profile.Phone ?? "Chưa có số điện thoại",
+            Email = user.Email,
+            IsEmailVerified = security.TwoFactorEnabled,
 
-            profile.FullName = request.FullName ?? profile.FullName;
-            profile.ImageUrl = request.ImageUser ?? profile.ImageUrl;
+            City = profile.Address?.City ?? "Error",
+            District = profile.Address?.District ?? "Error",
+            Country = profile.Address?.Country ?? "Error",
+            Street = profile.Address?.Street ?? "Error",
+            PostalCode = profile.Address?.PostalCode ?? "Error"
+        };
 
-            // 5. Cập nhật cơ sở dữ liệu
-            await _userRepository.UpdateAsync(user);
-            await _userProfileRepository.UpdateAsync(profile);
-            await _userSecurityRepository.UpdateAsync(security);
-
-            return ServiceResult<string>.Success("Cập nhật hồ sơ thành công.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Lỗi khi cập nhật hồ sơ mini cho người dùng: {UserId}", request.UserId);
-            return ServiceResult<string>.Error("Đã xảy ra lỗi khi cập nhật hồ sơ.");
-        }
+        return ServiceResult<UserProfileDto>.Success(result);
     }
 }
