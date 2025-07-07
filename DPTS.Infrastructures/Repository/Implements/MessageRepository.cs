@@ -1,4 +1,5 @@
-﻿using DPTS.Infrastructures.Data;
+﻿using DPTS.Domains;
+using DPTS.Infrastructures.Data;
 using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,124 +14,7 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<Message>> GetsAsync(
-            string? senderId = null,
-            string? receiverId = null,
-            DateTime? fromDate = null,
-            DateTime? toDate = null,
-            bool isSystem = false,
-            bool includeSender = false,
-            bool includeReceiver = false)
-        {
-            var query = _context.Messages.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(senderId))
-            {
-                query = query.Where(m =>
-                    m.SenderUserId == senderId ||
-                    m.SenderStoreId == senderId);
-            }
-
-            if (!string.IsNullOrWhiteSpace(receiverId))
-            {
-                query = query.Where(m =>
-                    m.ReceiverUserId == receiverId ||
-                    m.ReceiverStoreId == receiverId);
-            }
-
-            if (isSystem)
-            {
-                query = query.Where(m => m.IsSystem);
-            }
-
-            if (fromDate.HasValue)
-            {
-                query = query.Where(m => m.CreatedAt >= fromDate.Value);
-            }
-
-            if (toDate.HasValue)
-            {
-                query = query.Where(m => m.CreatedAt <= toDate.Value);
-            }
-
-            if (includeSender)
-            {
-                query = query
-                    .Include(m => m.SenderUser)
-                    .Include(m => m.SenderStore);
-            }
-
-            if (includeReceiver)
-            {
-                query = query
-                    .Include(m => m.ReceiverUser)
-                    .Include(m => m.ReceiverStore);
-            }
-
-            return await query
-                .OrderByDescending(m => m.CreatedAt)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Message>> GetConversationAsync(
-            string user1Id,
-            string user2Id,
-            bool includeSender = false,
-            bool includeReceiver = false)
-        {
-            var query = _context.Messages
-                .Where(m =>
-                    ((m.SenderUserId == user1Id || m.SenderStoreId == user1Id) &&
-                     (m.ReceiverUserId == user2Id || m.ReceiverStoreId == user2Id)) ||
-
-                    ((m.SenderUserId == user2Id || m.SenderStoreId == user2Id) &&
-                     (m.ReceiverUserId == user1Id || m.ReceiverStoreId == user1Id)))
-                .AsQueryable();
-
-            if (includeSender)
-            {
-                query = query
-                    .Include(m => m.SenderUser)
-                    .Include(m => m.SenderStore);
-            }
-
-            if (includeReceiver)
-            {
-                query = query
-                    .Include(m => m.ReceiverUser)
-                    .Include(m => m.ReceiverStore);
-            }
-
-            return await query
-                .OrderBy(m => m.CreatedAt)
-                .ToListAsync();
-        }
-
-        public async Task<Message?> GetByIdAsync(
-            string id,
-            bool includeSender = false,
-            bool includeReceiver = false)
-        {
-            var query = _context.Messages
-                .Where(m => m.MessageId == id)
-                .AsQueryable();
-
-            if (includeSender)
-            {
-                query = query
-                    .Include(m => m.SenderUser)
-                    .Include(m => m.SenderStore);
-            }
-
-            if (includeReceiver)
-            {
-                query = query
-                    .Include(m => m.ReceiverUser)
-                    .Include(m => m.ReceiverStore);
-            }
-
-            return await query.FirstOrDefaultAsync();
-        }
+        #region Create
 
         public async Task AddAsync(Message message)
         {
@@ -138,14 +22,71 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task AddRangeAsync(IEnumerable<Message> messages)
         {
-            var message = await _context.Messages.FindAsync(id);
-            if (message != null)
-            {
-                _context.Messages.Remove(message);
-                await _context.SaveChangesAsync();
-            }
+            _context.Messages.AddRange(messages);
+            await _context.SaveChangesAsync();
         }
+
+        #endregion
+
+        #region Read
+
+        public async Task<IEnumerable<Message>> GetConversationAsync(
+            ParticipantType participantAType,
+            string participantAId,
+            ParticipantType participantBType,
+            string participantBId,
+            int skip = 0,
+            int take = 50)
+        {
+            var query = _context.Messages.Where(m =>
+                (m.SenderType == participantAType && m.SenderId == participantAId &&
+                 m.ReceiverType == participantBType && m.ReceiverId == participantBId)
+                ||
+                (m.SenderType == participantBType && m.SenderId == participantBId &&
+                 m.ReceiverType == participantAType && m.ReceiverId == participantAId)
+            );
+
+            return await query
+                .OrderByDescending(m => m.CreatedAt)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Message>> GetAllByParticipantAsync(
+            ParticipantType type,
+            string participantId,
+            int skip = 0,
+            int take = 50)
+        {
+            return await _context.Messages
+                .Where(m => (m.SenderType == type && m.SenderId == participantId) ||
+                            (m.ReceiverType == type && m.ReceiverId == participantId))
+                .OrderByDescending(m => m.CreatedAt)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Message>> GetSystemMessagesAsync(
+            ParticipantType receiverType,
+            string receiverId,
+            DateTime? from = null,
+            DateTime? to = null)
+        {
+            var query = _context.Messages
+                .Where(m => m.IsSystem && m.ReceiverType == receiverType && m.ReceiverId == receiverId);
+
+            if (from.HasValue)
+                query = query.Where(m => m.CreatedAt >= from.Value);
+            if (to.HasValue)
+                query = query.Where(m => m.CreatedAt <= to.Value);
+
+            return await query.OrderByDescending(m => m.CreatedAt).ToListAsync();
+        }
+
+        #endregion
     }
 }

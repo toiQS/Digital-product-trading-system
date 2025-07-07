@@ -14,76 +14,84 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<Complaint>> GetsAsync(
-            string? userId = null,
-            string? productId = null,
-            string? orderId = null,
-            string? text = null,
-            ComplaintStatus? status = null,
+        #region Query Builder
+        private IQueryable<Complaint> BuildBaseQuery(
+            bool includeProduct = false,
             bool includeUser = false,
             bool includeOrder = false,
-            bool includeProduct = false,
             bool includeImages = false)
         {
             var query = _context.Complaints.AsQueryable();
 
-            // Filtering by ID fields
-            if (!string.IsNullOrWhiteSpace(userId)) query = query.Where(x => x.UserId == userId);
-            if (!string.IsNullOrWhiteSpace(productId)) query = query.Where(x => x.ProductId == productId);
-            if (!string.IsNullOrWhiteSpace(orderId)) query = query.Where(x => x.OrderId == orderId);
+            if (includeProduct)
+                query = query.Include(c => c.Product);
 
-            // Conditional includes
-            if (includeUser) query = query.Include(x => x.User);
-            if (includeOrder) query = query.Include(x => x.Order);
-            if (includeProduct) query = query.Include(x => x.Product);
-            if (includeImages) query = query.Include(x => x.Images);
+            if (includeUser)
+                query = query.Include(c => c.User);
 
-            // Text search
-            if (!string.IsNullOrWhiteSpace(text))
-            {
-                var pattern = $"%{text}%";
-                query = query.Where(c =>
-                    EF.Functions.Like(c.Title, pattern) ||
-                    EF.Functions.Like(c.Description, pattern) ||
-                    EF.Functions.Like(c.UserId, pattern) ||
-                    EF.Functions.Like(c.OrderId, pattern) ||
-                    EF.Functions.Like(c.ProductId, pattern));
-            }
+            if (includeOrder)
+                query = query.Include(c => c.Order);
 
-            // Filter by status
-            if (status.HasValue) query = query.Where(x => x.Status == status);
+            if (includeImages)
+                query = query.Include(c => c.Images);
 
-            return await query.ToListAsync();
+            return query;
         }
+        #endregion
 
-        public async Task<Complaint?> GetByIdAsync(string id)
+        #region Gets
+        public async Task<IEnumerable<Complaint>> GetAllAsync(
+            ComplaintStatus? status = null,
+            string? userId = null,
+            bool includeProduct = false,
+            bool includeUser = false,
+            bool includeOrder = false,
+            bool includeImages = false)
         {
-            if (string.IsNullOrWhiteSpace(id)) return null;
+            var query = BuildBaseQuery(includeProduct, includeUser, includeOrder, includeImages);
 
-            return await _context.Complaints
-                .Include(x => x.User)
-                .Include(x => x.Order)
-                .Include(x => x.Product)
-                .Include(x => x.Images)
-                .FirstOrDefaultAsync(x => x.ComplaintId == id);
-        }
+            if (status.HasValue)
+                query = query.Where(c => c.Status == status.Value);
 
-        public async Task<IEnumerable<Complaint>> GetByUserIdAsync(string userId)
-        {
-            return await _context.Complaints
-                .Where(x => x.UserId == userId)
-                .Include(x => x.Images)
+            if (!string.IsNullOrWhiteSpace(userId))
+                query = query.Where(c => c.UserId == userId);
+
+            return await query
+                .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
+        }
+
+        public async Task<Complaint?> GetByIdAsync(
+            string complaintId,
+            bool includeProduct = false,
+            bool includeUser = false,
+            bool includeOrder = false,
+            bool includeImages = false)
+        {
+            if (string.IsNullOrWhiteSpace(complaintId))
+                return null;
+
+            return await BuildBaseQuery(includeProduct, includeUser, includeOrder, includeImages)
+                .FirstOrDefaultAsync(c => c.ComplaintId == complaintId);
         }
 
         public async Task<IEnumerable<Complaint>> GetByOrderIdAsync(string orderId)
         {
+            if (string.IsNullOrWhiteSpace(orderId))
+                return Enumerable.Empty<Complaint>();
+
             return await _context.Complaints
-                .Where(x => x.OrderId == orderId)
-                .Include(x => x.Images)
+                .Where(c => c.OrderId == orderId)
                 .ToListAsync();
         }
 
+        public async Task<bool> ExistsAsync(string complaintId)
+        {
+            return await _context.Complaints.AnyAsync(c => c.ComplaintId == complaintId);
+        }
+        #endregion
+
+        #region CRUD
         public async Task AddAsync(Complaint complaint)
         {
             _context.Complaints.Add(complaint);
@@ -96,14 +104,15 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task DeleteAsync(string complaintId)
         {
-            var complaint = await _context.Complaints.FindAsync(id);
+            var complaint = await _context.Complaints.FindAsync(complaintId);
             if (complaint != null)
             {
                 _context.Complaints.Remove(complaint);
                 await _context.SaveChangesAsync();
             }
         }
+        #endregion
     }
 }

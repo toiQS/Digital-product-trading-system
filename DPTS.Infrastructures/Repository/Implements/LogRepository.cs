@@ -14,43 +14,7 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<Log>> GetsAsync(
-            string? userId = null,
-            string? actionKeyword = null,
-            DateTime? fromDate = null,
-            DateTime? toDate = null,
-            bool includeUser = false)
-        {
-            var query = _context.Logs.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(userId))
-                query = query.Where(l => l.UserId == userId);
-
-            if (!string.IsNullOrWhiteSpace(actionKeyword))
-                query = query.Where(l => l.Action.Contains(actionKeyword));
-
-            if (fromDate.HasValue)
-                query = query.Where(l => l.CreatedAt >= fromDate.Value);
-
-            if (toDate.HasValue)
-                query = query.Where(l => l.CreatedAt <= toDate.Value);
-
-            if (includeUser)
-                query = query.Include(l => l.User);
-
-            return await query
-                .OrderByDescending(l => l.CreatedAt)
-                .ToListAsync();
-        }
-
-        public async Task<Log?> GetByIdAsync(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id)) return null;
-
-            return await _context.Logs
-                .Include(l => l.User)
-                .FirstOrDefaultAsync(l => l.LogId == id);
-        }
+        #region Create
 
         public async Task AddAsync(Log log)
         {
@@ -58,15 +22,42 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task AddManyAsync(IEnumerable<Log> logs)
         {
-            var log = await _context.Logs.FindAsync(id);
-            if (log != null)
-            {
-                _context.Logs.Remove(log);
-                await _context.SaveChangesAsync();
-            }
+            _context.Logs.AddRange(logs);
+            await _context.SaveChangesAsync();
         }
-    }
 
+        #endregion
+
+        #region Read
+
+        public async Task<IEnumerable<Log>> GetAllAsync(int take = 100)
+        {
+            return await _context.Logs
+                .Include(l => l.User)
+                .OrderByDescending(l => l.CreatedAt)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Log>> GetByUserIdAsync(string userId, int take = 100)
+        {
+            return await _context.Logs
+                .Where(l => l.UserId == userId)
+                .OrderByDescending(l => l.CreatedAt)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Log>> GetByTargetAsync(string targetType, string targetId)
+        {
+            return await _context.Logs
+                .Where(l => l.TargetType == targetType && l.TargetId == targetId)
+                .OrderByDescending(l => l.CreatedAt)
+                .ToListAsync();
+        }
+
+        #endregion
+    }
 }

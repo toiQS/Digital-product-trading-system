@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 namespace DPTS.Infrastructures.Repository.Implements
 {
     public class EscrowRepository : IEscrowRepository
-
     {
         private readonly ApplicationDbContext _context;
 
@@ -15,66 +14,85 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<IEnumerable<Escrow>> GetsAsync(
-            string? storeId = null,
-            EscrowStatus? status = null,
-            DateTime? fromDate = null,
-            DateTime? toDate = null,
+        #region Query Builder
+        private IQueryable<Escrow> BuildBaseQuery(
             bool includeOrder = false,
-            bool includeSeller = false)
+            bool includeStore = false)
         {
             var query = _context.Escrows.AsQueryable();
 
-            // Ưu tiên lọc theo seller
-            if (!string.IsNullOrWhiteSpace(storeId))
-                query = query.Where(e => e.StoreId == storeId);
+            if (includeOrder)
+                query = query.Include(e => e.Order);
 
-            // Lọc theo trạng thái
+            if (includeStore)
+                query = query.Include(e => e.Store);
+
+            return query;
+        }
+        #endregion
+
+        #region Get Methods
+
+        public async Task<IEnumerable<Escrow>> GetAllAsync(
+            EscrowStatus? status = null,
+            string? storeId = null,
+            bool includeOrder = false,
+            bool includeStore = false)
+        {
+            var query = BuildBaseQuery(includeOrder, includeStore);
+
             if (status.HasValue)
                 query = query.Where(e => e.Status == status.Value);
 
-            if (fromDate.HasValue)
-                query = query.Where(e => e.CreatedAt >= fromDate.Value);
+            if (!string.IsNullOrWhiteSpace(storeId))
+                query = query.Where(e => e.StoreId == storeId);
 
-            if (toDate.HasValue)
-                query = query.Where(e => e.CreatedAt <= toDate.Value);
-
-            // Điều kiện include
-            if (includeOrder) query = query.Include(e => e.Order);
-            if (includeSeller) query = query.Include(e => e.Store);
-
-            return await query.ToListAsync();
+            return await query
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
         }
 
-        public async Task<Escrow?> GetByIdAsync(string id)
+        public async Task<Escrow?> GetByIdAsync(string escrowId, bool includeOrder = false, bool includeStore = false)
         {
-            if (string.IsNullOrWhiteSpace(id)) return null;
+            if (string.IsNullOrWhiteSpace(escrowId))
+                return null;
 
-            return await _context.Escrows
-                .Include(e => e.Order)
-                .Include(e => e.Store)
-                .FirstOrDefaultAsync(e => e.EscrowId == id);
+            return await BuildBaseQuery(includeOrder, includeStore)
+                .FirstOrDefaultAsync(e => e.EscrowId == escrowId);
         }
 
         public async Task<Escrow?> GetByOrderIdAsync(string orderId)
         {
-            if (string.IsNullOrWhiteSpace(orderId)) return null;
+            if (string.IsNullOrWhiteSpace(orderId))
+                return null;
 
             return await _context.Escrows
-                .Include(e => e.Order)
-                .Include(e => e.Store)
                 .FirstOrDefaultAsync(e => e.OrderId == orderId);
         }
 
-        public async Task<IEnumerable<Escrow>> GetBystoreIdAsync(string storeId)
+        public async Task<IEnumerable<Escrow>> GetExpiredAsync(DateTime? before = null)
         {
-            if (string.IsNullOrWhiteSpace(storeId)) return Enumerable.Empty<Escrow>();
-
+            var now = before ?? DateTime.UtcNow;
             return await _context.Escrows
-                .Where(e => e.StoreId == storeId)
-                .Include(e => e.Order)
+                .Where(e => e.Expired <= now && e.Status == EscrowStatus.WaitingConfirm)
                 .ToListAsync();
         }
+
+        public async Task<bool> ExistsAsync(string escrowId)
+        {
+            return await _context.Escrows.AnyAsync(e => e.EscrowId == escrowId);
+        }
+
+        public async Task<decimal> GetTotalHeldAmountAsync(string storeId)
+        {
+            return await _context.Escrows
+                .Where(e => e.StoreId == storeId && e.Status == EscrowStatus.WaitingConfirm)
+                .SumAsync(e => e.Amount - e.PlatformFeeAmount);
+        }
+
+        #endregion
+
+        #region CRUD
 
         public async Task AddAsync(Escrow escrow)
         {
@@ -88,14 +106,16 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task DeleteAsync(string escrowId)
         {
-            var escrow = await _context.Escrows.FindAsync(id);
+            var escrow = await _context.Escrows.FindAsync(escrowId);
             if (escrow != null)
             {
                 _context.Escrows.Remove(escrow);
                 await _context.SaveChangesAsync();
             }
         }
+
+        #endregion
     }
 }

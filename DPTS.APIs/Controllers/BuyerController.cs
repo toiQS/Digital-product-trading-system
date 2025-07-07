@@ -1,9 +1,11 @@
-﻿using DPTS.Applications.Buyers.payments.Dtos;
-using DPTS.Applications.Buyers.payments.Queries;
-using DPTS.Applications.Buyers.reviews.Queries;
+﻿using DPTS.Applications.Buyer.Queries.chat;
+using DPTS.Applications.Buyer.Queries.order;
+using DPTS.Applications.Buyer.Queries.product;
+using DPTS.Applications.Buyer.Queries.profile;
+using DPTS.Applications.Buyer.Queries.review;
+using DPTS.Applications.Buyer.Queries.security;
 using DPTS.Applications.Shareds;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -20,48 +22,106 @@ namespace DPTS.APIs.Controllers
             _mediator = mediator;
         }
 
-        /// <summary>
-        /// Lấy thông tin trang thanh toán của buyer
-        /// </summary>
-        [HttpGet("checkout/{buyerId}")]
-        [ProducesResponseType(typeof(ServiceResult<CheckoutDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetCheckoutAsync(string buyerId)
+        // --------------------- Cart ---------------------
+        [HttpPost("add-to-cart")]
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartQuery query)
         {
-            var result = await _mediator.Send(new GetCheckoutQuery { BuyerId = buyerId });
-            return StatusCode(ConvertStatus(result.Status), result);
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
         }
 
-        /// <summary>
-        /// Lấy kết quả thanh toán của buyer
-        /// </summary>
-        [HttpGet("payment-result/{buyerId}")]
-        [ProducesResponseType(typeof(ServiceResult<PaymentResultDto>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPaymentResultAsync(string buyerId)
+        // --------------------- Product ---------------------
+        [HttpGet("product-detail")]
+        public async Task<IActionResult> GetProductDetail([FromQuery] GetProductDetailQuery query)
         {
-            var result = await _mediator.Send(new GetPaymentResultQuery { BuyerId = buyerId });
-            return StatusCode(ConvertStatus(result.Status), result);
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
         }
 
-        /// <summary>
-        /// Buyer tạo đánh giá sản phẩm
-        /// </summary>
-        [HttpPost("review")]
-        [ProducesResponseType(typeof(ServiceResult<string>), StatusCodes.Status201Created)]
-        public async Task<IActionResult> CreateReviewAsync([FromBody] CreateProductReviewCommand command)
+        [HttpGet("product-index")]
+        public async Task<IActionResult> GetProductIndex([FromQuery] GetProductIndexListQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpPost("review-product")]
+        public async Task<IActionResult> CreateProductReview([FromBody] CreateProductReviewQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        // --------------------- Profile ---------------------
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetUserProfile([FromQuery] GetUserProfileQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpGet("profile-mini")]
+        public async Task<IActionResult> GetUserProfileMini([FromQuery] GetUserProfileMiniQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpPut("profile-update")]
+        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpPut("profile-mini-update")]
+        public async Task<IActionResult> UpdateUserProfileMini([FromBody] UpdateUserProfileMiniQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        // --------------------- Checkout ---------------------
+        [HttpGet("checkout")]
+        public async Task<IActionResult> GetCheckout([FromQuery] GetCheckoutQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        // --------------------- Chat ---------------------
+        [HttpGet("chat")]
+        public async Task<IActionResult> GetChat([FromQuery] GetChatQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpPost("send-message")]
+        public async Task<IActionResult> SendMessageToStore([FromBody] SendMessageToStoreQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        // --------------------- Account ---------------------
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
         {
             var result = await _mediator.Send(command);
-            return StatusCode(ConvertStatus(result.Status), result);
+            return StatusCodeFromResult(result);
         }
 
-        private int ConvertStatus(StatusResult status)
+        // --------------------- Helper ---------------------
+        private IActionResult StatusCodeFromResult<T>(ServiceResult<T> result)
         {
-            return status switch
+            return result.Status switch
             {
-                StatusResult.Success => StatusCodes.Status200OK,
-                StatusResult.Warning => StatusCodes.Status200OK,
-                StatusResult.Failed => StatusCodes.Status404NotFound,
-                StatusResult.Errored => StatusCodes.Status500InternalServerError,
-                _ => StatusCodes.Status500InternalServerError
+                StatusResult.Success => Ok(result),
+                StatusResult.Warning => Ok(result),
+                StatusResult.Failed => NotFound(result),
+                StatusResult.Errored => StatusCode(500, result),
+                _ => StatusCode(500, result),
             };
         }
     }

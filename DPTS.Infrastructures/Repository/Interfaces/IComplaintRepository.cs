@@ -5,11 +5,11 @@ namespace DPTS.Infrastructures.Repository.Interfaces
     public interface IComplaintRepository
     {
         Task AddAsync(Complaint complaint);
-        Task DeleteAsync(string id);
-        Task<Complaint?> GetByIdAsync(string id);
+        Task DeleteAsync(string complaintId);
+        Task<bool> ExistsAsync(string complaintId);
+        Task<IEnumerable<Complaint>> GetAllAsync(ComplaintStatus? status = null, string? userId = null, bool includeProduct = false, bool includeUser = false, bool includeOrder = false, bool includeImages = false);
+        Task<Complaint?> GetByIdAsync(string complaintId, bool includeProduct = false, bool includeUser = false, bool includeOrder = false, bool includeImages = false);
         Task<IEnumerable<Complaint>> GetByOrderIdAsync(string orderId);
-        Task<IEnumerable<Complaint>> GetByUserIdAsync(string userId);
-        Task<IEnumerable<Complaint>> GetsAsync(string? userId = null, string? productId = null, string? orderId = null, string? text = null, ComplaintStatus? status = null, bool includeUser = false, bool includeOrder = false, bool includeProduct = false, bool includeImages = false);
         Task UpdateAsync(Complaint complaint);
     }
 }

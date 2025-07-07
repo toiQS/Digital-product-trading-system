@@ -7,9 +7,10 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task AddAsync(Store store);
         Task DeleteAsync(string storeId);
         Task<bool> ExistsAsync(string storeId);
-        Task<Store?> GetByIdAsync(string storeId, bool includeUser = false);
-        Task<Store?> GetByUserIdAsync(string userId, bool includeUser = false);
-        Task<IEnumerable<Store>> GetsAsync(string? userId = null, string? storeName = null, StoreStatus? status = null, DateTime? from = null, DateTime? to = null, bool includeUser = false);
+        Task<IEnumerable<Store>> GetAllAsync();
+        Task<Store?> GetByIdAsync(string storeId);
+        Task<IEnumerable<Store>> GetByStatusAsync(StoreStatus status);
+        Task<Store?> GetByUserIdAsync(string userId);
         Task UpdateAsync(Store store);
     }
 }

@@ -14,93 +14,90 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<Wallet?> GetByIdAsync(string walletId, bool includeUser = false)
+        #region Read
+
+        // Lấy ví theo WalletId, có tùy chọn include danh sách giao dịch
+        public async Task<Wallet?> GetByIdAsync(string walletId, bool includeTransactions = false)
         {
-            if (string.IsNullOrWhiteSpace(walletId)) return null;
+            if (string.IsNullOrWhiteSpace(walletId))
+                return null;
 
             var query = _context.Wallets.AsQueryable();
 
-            if (includeUser)
-                query = query.Include(w => w.User);
+            if (includeTransactions)
+                query = query.Include(w => w.Transactions);
 
-            return await query
-                .AsNoTracking()
-                .FirstOrDefaultAsync(w => w.WalletId == walletId);
+            return await query.FirstOrDefaultAsync(w => w.WalletId == walletId);
         }
 
-        public async Task<Wallet?> GetByUserIdAsync(string userId, bool includeUser = false)
+        // Lấy ví theo UserId
+        public async Task<Wallet?> GetByUserIdAsync(string userId, bool includeTransactions = false)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return null;
+            if (string.IsNullOrWhiteSpace(userId))
+                return null;
 
             var query = _context.Wallets.AsQueryable();
 
-            if (includeUser)
-                query = query.Include(w => w.User);
+            if (includeTransactions)
+                query = query.Include(w => w.Transactions);
 
-            return await query
-                .AsNoTracking()
-                .FirstOrDefaultAsync(w => w.UserId == userId);
+            return await query.FirstOrDefaultAsync(w => w.UserId == userId);
         }
 
-        public async Task<IEnumerable<Wallet>> GetsAsync(
-            UnitCurrency? currency = null,
-            decimal? minBalance = null,
-            decimal? maxBalance = null,
-            string? userKeyword = null,
-            bool includeUser = false)
+        // Kiểm tra sự tồn tại của ví cho một User
+        public async Task<bool> ExistsByUserIdAsync(string userId)
         {
-            var query = _context.Wallets.AsQueryable();
-
-            if (currency.HasValue)
-                query = query.Where(w => w.Currency == currency.Value);
-
-            if (minBalance.HasValue)
-                query = query.Where(w => w.AvaibableBalance >= minBalance.Value);
-
-            if (maxBalance.HasValue)
-                query = query.Where(w => w.AvaibableBalance <= maxBalance.Value);
-
-            if (!string.IsNullOrWhiteSpace(userKeyword))
-            {
-                var lowered = userKeyword.ToLower();
-                query = query.Where(w =>
-                    w.User.Username.ToLower().Contains(lowered) ||
-                    w.User.Email.ToLower().Contains(lowered));
-            }
-
-            if (includeUser)
-                query = query.Include(w => w.User);
-
-            return await query
-                .AsNoTracking()
-                .ToListAsync();
+            return await _context.Wallets.AnyAsync(w => w.UserId == userId);
         }
 
+        #endregion
+
+        #region Create / Update / Delete
+
+        // Tạo mới một ví
         public async Task AddAsync(Wallet wallet)
         {
-            if (wallet == null) throw new ArgumentNullException(nameof(wallet));
             _context.Wallets.Add(wallet);
             await _context.SaveChangesAsync();
         }
 
+        // Cập nhật thông tin ví, ví dụ: số dư
         public async Task UpdateAsync(Wallet wallet)
         {
-            if (wallet == null) throw new ArgumentNullException(nameof(wallet));
             _context.Wallets.Update(wallet);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Wallet wallet)
+        // Xoá ví theo WalletId
+        public async Task DeleteAsync(string walletId)
         {
-            if (wallet == null) return;
-            _context.Wallets.Remove(wallet);
+            var wallet = await _context.Wallets.FindAsync(walletId);
+            if (wallet != null)
+            {
+                _context.Wallets.Remove(wallet);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        #endregion
+
+        #region Transaction Helpers (Nếu cần tích hợp thêm WalletTransaction)
+
+        // Ví dụ: Thêm một giao dịch và cập nhật số dư
+        public async Task AddTransactionAsync(string walletId, WalletTransaction transaction)
+        {
+            var wallet = await GetByIdAsync(walletId, includeTransactions: true);
+            if (wallet == null)
+                throw new ArgumentException("Wallet not found", nameof(walletId));
+
+            // Thêm giao dịch vào danh sách
+            wallet.Transactions.Add(transaction);
+            // Cập nhật số dư
+            wallet.Balance += transaction.Amount;
+
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> ExistsAsync(string walletId)
-        {
-            if (string.IsNullOrWhiteSpace(walletId)) return false;
-            return await _context.Wallets.AnyAsync(w => w.WalletId == walletId);
-        }
+        #endregion
     }
 }

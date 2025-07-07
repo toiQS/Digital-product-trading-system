@@ -18,7 +18,7 @@ namespace DPTS.Domains
         public string UserId { get; set; } = string.Empty;
 
         [Column("rating_overall")]
-        public int RatingOverall { get; set; } = 0;
+        public double RatingOverall { get; set; } = 0;
 
         [Column("rating_quality")]
         public int RatingQuality { get; set; } = 0;

@@ -14,68 +14,45 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<Store?> GetByIdAsync(string storeId, bool includeUser = false)
+        #region Read
+
+        public async Task<Store?> GetByIdAsync(string storeId)
         {
-            if (string.IsNullOrWhiteSpace(storeId)) return null;
-
-            var query = _context.Stores.AsQueryable();
-
-            if (includeUser)
-                query = query.Include(s => s.User);
-
-            return await query.FirstOrDefaultAsync(s => s.StoreId == storeId);
+            return await _context.Stores
+                .Include(s => s.User)
+                .FirstOrDefaultAsync(s => s.StoreId == storeId);
         }
 
-        public async Task<Store?> GetByUserIdAsync(string userId, bool includeUser = false)
+        public async Task<Store?> GetByUserIdAsync(string userId)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return null;
-
-            var query = _context.Stores.AsQueryable();
-
-            if (includeUser)
-                query = query.Include(s => s.User);
-
-            return await query.FirstOrDefaultAsync(s => s.UserId == userId);
+            return await _context.Stores
+                .FirstOrDefaultAsync(s => s.UserId == userId);
         }
 
-        public async Task<IEnumerable<Store>> GetsAsync(
-            string? userId = null,
-            string? storeName = null,
-            StoreStatus? status = null,
-            DateTime? from = null,
-            DateTime? to = null,
-            bool includeUser = false)
+        public async Task<IEnumerable<Store>> GetByStatusAsync(StoreStatus status)
         {
-            var query = _context.Stores.AsQueryable();
+            return await _context.Stores
+                .Where(s => s.Status == status)
+                .OrderBy(s => s.CreateAt)
+                .ToListAsync();
+        }
 
-            if (!string.IsNullOrWhiteSpace(userId))
-                query = query.Where(s => s.UserId == userId);
-
-            if (!string.IsNullOrWhiteSpace(storeName))
-                query = query.Where(s => s.StoreName.Contains(storeName));
-
-            if (status.HasValue)
-                query = query.Where(s => s.Status == status.Value);
-
-            if (from.HasValue)
-                query = query.Where(s => s.CreateAt >= from.Value);
-
-            if (to.HasValue)
-                query = query.Where(s => s.CreateAt <= to.Value);
-
-            if (includeUser)
-                query = query.Include(s => s.User);
-
-            return await query
+        public async Task<IEnumerable<Store>> GetAllAsync()
+        {
+            return await _context.Stores
+                .Include(s => s.User)
                 .OrderByDescending(s => s.CreateAt)
                 .ToListAsync();
         }
 
         public async Task<bool> ExistsAsync(string storeId)
         {
-            if (string.IsNullOrWhiteSpace(storeId)) return false;
             return await _context.Stores.AnyAsync(s => s.StoreId == storeId);
         }
+
+        #endregion
+
+        #region Create / Update / Delete
 
         public async Task AddAsync(Store store)
         {
@@ -98,5 +75,7 @@ namespace DPTS.Infrastructures.Repository.Implements
                 await _context.SaveChangesAsync();
             }
         }
+
+        #endregion
     }
 }

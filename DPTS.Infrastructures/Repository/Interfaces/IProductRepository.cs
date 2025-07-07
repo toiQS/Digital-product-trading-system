@@ -5,26 +5,11 @@ namespace DPTS.Infrastructures.Repository.Interfaces
     public interface IProductRepository
     {
         Task AddAsync(Product product);
-        Task DeleteAsync(string id);
-        Task<Product?> GetByIdAsync(
-            string id,
-            bool includeCategory = false,
-            bool includeImages = false,
-            bool includeReviews = false,
-            bool includeStore = false,
-            bool includeOrderItem = false);
-        Task<IEnumerable<Product>> GetsAsync(string? storeId = null,
-                                             string? text = null,
-                                             string? categoryId = null,
-                                             ProductStatus? status = null,
-                                             decimal? minPrice = null,
-                                             decimal? maxPrice = null,
-                                             string? keyword = null,
-                                             bool includeCategory = false,
-                                             bool includeImages = false,
-                                             bool includeReviews = false,
-                                             bool includeStore = false,
-                                             bool includeOrderItem = false);
+        Task<int> CountByStoreAsync(string storeId, ProductStatus? status = null);
+        Task DeleteAsync(string productId);
+        Task<Product?> GetByIdAsync(string productId, bool includeCategory = false, bool includeStore = false, bool includeAdjustments = false);
+        Task<IEnumerable<Product>> GetByStoreAsync(string storeId, ProductStatus? status = null, int skip = 0, int take = 50);
+        Task<IEnumerable<Product>> SearchAsync(string? keyword = null, string? categoryId = null, ProductStatus? status = ProductStatus.Available, int skip = 0, int take = 50);
         Task UpdateAsync(Product product);
     }
 }

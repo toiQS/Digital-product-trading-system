@@ -34,11 +34,9 @@ else
     app.UseHsts();
 }
 
-    app.MapControllers();
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    await DataSeeder.SeedAllAsync(services);
-//}
+app.MapControllers();
+app.UseAuthentication();
+app.UseAuthorization();
+
 
 app.Run();

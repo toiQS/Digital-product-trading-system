@@ -8,15 +8,22 @@ namespace DPTS.Domains
         [Key]
         [Column("order_item_id")]
         public string OrderItemId { get; set; } = string.Empty;
+
+        [Required]
         [Column("product_id")]
         public string ProductId { get; set; } = string.Empty;
 
+        [Required]
         [Column("quantity")]
         public int Quantity { get; set; } = 1;
 
-        [Column("total_amount")]
-        public decimal TotalAmount { get; set; }
+        [Column("price_for_each_product")]
+        public decimal PriceForeachProduct { get; set; }
 
+        [Column("total_price")]
+        public decimal TotalPrice { get; set; } 
+
+        [Required]
         [Column("order_id")]
         public string OrderId { get; set; } = string.Empty;
 

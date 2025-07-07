@@ -17,10 +17,96 @@ namespace DPTS.Infrastructures.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("DPTS.Domains.AdjustmentRule", b =>
+                {
+                    b.Property<string>("RuleId")
+                        .HasColumnType("text")
+                        .HasColumnName("rule_id");
+
+                    b.Property<string>("CategoryId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConditionsJson")
+                        .HasColumnType("text")
+                        .HasColumnName("conditions_json");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime?>("From")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_from");
+
+                    b.Property<bool>("IsPercentage")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_percentage");
+
+                    b.Property<decimal?>("MaxCap")
+                        .HasColumnType("numeric")
+                        .HasColumnName("max_cap");
+
+                    b.Property<decimal?>("MinOrderAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("min_order_amount");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<int?>("PerUserLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("per_user_limit");
+
+                    b.Property<int>("Scope")
+                        .HasColumnType("integer")
+                        .HasColumnName("scope");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer")
+                        .HasColumnName("source");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<int>("TargetLogic")
+                        .HasColumnType("integer")
+                        .HasColumnName("target_logic");
+
+                    b.Property<DateTime?>("To")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("effective_to");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
+                    b.Property<int?>("UsageLimit")
+                        .HasColumnType("integer")
+                        .HasColumnName("usage_limit");
+
+                    b.Property<decimal>("Value")
+                        .HasColumnType("numeric")
+                        .HasColumnName("value");
+
+                    b.Property<string>("VoucherCode")
+                        .HasColumnType("text")
+                        .HasColumnName("voucher_code");
+
+                    b.HasKey("RuleId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("AdjustmentRules");
+                });
 
             modelBuilder.Entity("DPTS.Domains.Category", b =>
                 {
@@ -41,6 +127,18 @@ namespace DPTS.Infrastructures.Migrations
                     b.Property<DateTime>("CreateAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("create_at");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("display_order");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_featured");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("CategoryId");
 
@@ -134,6 +232,10 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("escrow_id");
 
+                    b.Property<decimal>("ActualAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("actual_amount");
+
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric")
                         .HasColumnName("amount");
@@ -142,10 +244,30 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTime>("Expired")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expired");
+
                     b.Property<string>("OrderId")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("order_id");
+
+                    b.Property<decimal>("PlatformFeeAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("platform_fee_amount");
+
+                    b.Property<decimal>("PlatformFeeRate")
+                        .HasColumnType("numeric")
+                        .HasColumnName("platform_fee_rate");
+
+                    b.Property<DateTime?>("ReleasedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("released_at");
+
+                    b.Property<string>("ReleasedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("released_by");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer")
@@ -156,44 +278,69 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("store_id");
 
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("tax_amount");
+
+                    b.Property<decimal>("TaxRate")
+                        .HasColumnType("numeric")
+                        .HasColumnName("tax_rate");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
                     b.HasKey("EscrowId");
 
-                    b.HasIndex("OrderId")
-                        .IsUnique();
+                    b.HasIndex("OrderId");
 
                     b.HasIndex("StoreId");
 
                     b.ToTable("Escrows");
                 });
 
-            modelBuilder.Entity("DPTS.Domains.Log", b =>
+            modelBuilder.Entity("DPTS.Domains.Message", b =>
                 {
-                    b.Property<string>("LogId")
-                        .HasColumnType("text")
-                        .HasColumnName("log_id");
+                    b.Property<string>("MessageId")
+                        .HasColumnType("text");
 
-                    b.Property<string>("Action")
+                    b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("action");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("text")
-                        .HasColumnName("user_id");
+                    b.Property<bool>("IsSystem")
+                        .HasColumnType("boolean");
 
-                    b.HasKey("LogId");
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.HasIndex("UserId");
+                    b.Property<int>("ReceiverType")
+                        .HasColumnType("integer");
 
-                    b.ToTable("Logs");
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SenderType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("StoreId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StoreId1")
+                        .HasColumnType("text");
+
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("StoreId");
+
+                    b.HasIndex("StoreId1");
+
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Order", b =>
@@ -241,6 +388,10 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("order_id");
 
+                    b.Property<decimal>("PriceForeachProduct")
+                        .HasColumnType("numeric")
+                        .HasColumnName("price_for_each_product");
+
                     b.Property<string>("ProductId")
                         .IsRequired()
                         .HasColumnType("text")
@@ -250,9 +401,9 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("quantity");
 
-                    b.Property<decimal>("TotalAmount")
+                    b.Property<decimal>("TotalPrice")
                         .HasColumnType("numeric")
-                        .HasColumnName("total_amount");
+                        .HasColumnName("total_price");
 
                     b.HasKey("OrderItemId");
 
@@ -261,6 +412,76 @@ namespace DPTS.Infrastructures.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.OrderPayment", b =>
+                {
+                    b.Property<string>("OrderPaymentId")
+                        .HasColumnType("text")
+                        .HasColumnName("order_payment_id");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("order_id");
+
+                    b.Property<DateTime>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
+
+                    b.Property<string>("PaymentMethodId")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_method_id");
+
+                    b.Property<int>("SourceType")
+                        .HasColumnType("integer")
+                        .HasColumnName("source_type");
+
+                    b.Property<string>("WalletId")
+                        .HasColumnType("text")
+                        .HasColumnName("wallet_id");
+
+                    b.HasKey("OrderPaymentId");
+
+                    b.ToTable("OrderPayments");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.PaymentMethod", b =>
+                {
+                    b.Property<string>("PaymentMethodId")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_method_id");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_default");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_verified");
+
+                    b.Property<string>("MaskedAccountNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("masked_account_number");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("integer")
+                        .HasColumnName("provider");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("PaymentMethodId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Product", b =>
@@ -272,7 +493,7 @@ namespace DPTS.Infrastructures.Migrations
                     b.Property<string>("CategoryId")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("category");
+                        .HasColumnName("category_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -282,17 +503,9 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<int>("Discount")
-                        .HasColumnType("integer")
-                        .HasColumnName("discount");
-
                     b.Property<decimal>("OriginalPrice")
                         .HasColumnType("numeric")
                         .HasColumnName("original_price");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("numeric")
-                        .HasColumnName("price");
 
                     b.Property<string>("ProductName")
                         .IsRequired()
@@ -308,17 +521,14 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("store_id");
 
-                    b.Property<string>("Summary")
+                    b.Property<string>("SummaryFeature")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("summary");
+                        .HasColumnName("summary feature");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
 
                     b.HasKey("ProductId");
 
@@ -326,9 +536,32 @@ namespace DPTS.Infrastructures.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.ProductAdjustment", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text")
+                        .HasColumnName("product_adjustment_id");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("RuleId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("rule_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("RuleId");
+
+                    b.ToTable("ProductAdjustments");
                 });
 
             modelBuilder.Entity("DPTS.Domains.ProductImage", b =>
@@ -386,9 +619,30 @@ namespace DPTS.Infrastructures.Migrations
                         .HasColumnType("text")
                         .HasColumnName("product_id");
 
-                    b.Property<int>("RatingOverall")
+                    b.Property<double>("RatingOverall")
+                        .HasColumnType("double precision")
+                        .HasColumnName("rating_overall");
+
+                    b.Property<int>("RatingQuality")
                         .HasColumnType("integer")
-                        .HasColumnName("RatingOverall");
+                        .HasColumnName("rating_quality");
+
+                    b.Property<int>("RatingUsability")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating_usability");
+
+                    b.Property<int>("RatingValue")
+                        .HasColumnType("integer")
+                        .HasColumnName("rating_value");
+
+                    b.Property<bool>("RecommendToOthers")
+                        .HasColumnType("boolean")
+                        .HasColumnName("recommend_to_others");
+
+                    b.Property<string>("ReviewTitle")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("review_title");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -484,60 +738,6 @@ namespace DPTS.Infrastructures.Migrations
                     b.ToTable("Stores");
                 });
 
-            modelBuilder.Entity("DPTS.Domains.Trade", b =>
-                {
-                    b.Property<string>("TradeId")
-                        .HasColumnType("text")
-                        .HasColumnName("trade_id");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric")
-                        .HasColumnName("amount");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime>("TradeDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("trade_date");
-
-                    b.Property<string>("TradeFromId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("trade_from_id");
-
-                    b.Property<string>("TradeIcon")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("trade_icon");
-
-                    b.Property<string>("TradeName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("trade_name");
-
-                    b.Property<string>("TradeToId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("trade_to_id");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("TradeId");
-
-                    b.HasIndex("TradeFromId");
-
-                    b.HasIndex("TradeToId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Trades");
-                });
-
             modelBuilder.Entity("DPTS.Domains.User", b =>
                 {
                     b.Property<string>("UserId")
@@ -552,38 +752,16 @@ namespace DPTS.Infrastructures.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
-                        .HasColumnName("email");
+                        .HasColumnName(" email");
 
-                    b.Property<string>("FullName")
-                        .HasColumnType("text")
-                        .HasColumnName("full_name");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("image_url");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("password_hash");
-
-                    b.Property<string>("Phone")
-                        .HasColumnType("text")
-                        .HasColumnName("phone");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_active");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("role_id");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean")
-                        .HasColumnName("two_factor_enabled");
-
-                    b.Property<string>("TwoFactorSecret")
-                        .HasColumnType("text")
-                        .HasColumnName("two_factor_secret");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -602,20 +780,83 @@ namespace DPTS.Infrastructures.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("DPTS.Domains.UserProfile", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("bio");
+
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("text")
+                        .HasColumnName("full_name");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("image_url");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserProfiles");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.UserSecurity", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<bool>("EmailVerified")
+                        .HasColumnType("boolean")
+                        .HasColumnName("email_verified");
+
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("failed_login_attempts");
+
+                    b.Property<DateTime?>("LockoutUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("lockout_until");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("password_hash");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean")
+                        .HasColumnName("two_factor_enabled");
+
+                    b.Property<string>("TwoFactorSecret")
+                        .HasColumnType("text")
+                        .HasColumnName("two_factor_secret");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserSecurities");
+                });
+
             modelBuilder.Entity("DPTS.Domains.Wallet", b =>
                 {
                     b.Property<string>("WalletId")
                         .HasColumnType("text")
                         .HasColumnName("wallet_id");
 
-                    b.Property<decimal>("AvaibableBalance")
+                    b.Property<decimal>("Balance")
                         .HasColumnType("numeric")
-                        .HasColumnName("avaibable_balance");
-
-                    b.Property<int>("Currency")
-                        .HasMaxLength(10)
-                        .HasColumnType("integer")
-                        .HasColumnName("currency");
+                        .HasColumnName("balance");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -630,68 +871,88 @@ namespace DPTS.Infrastructures.Migrations
                     b.ToTable("Wallets");
                 });
 
-            modelBuilder.Entity("Message", b =>
+            modelBuilder.Entity("DPTS.Domains.WalletTransaction", b =>
                 {
-                    b.Property<string>("MessageId")
+                    b.Property<string>("TransactionId")
                         .HasColumnType("text")
-                        .HasColumnName("message_id");
+                        .HasColumnName("wallet_transaction_id");
 
-                    b.Property<string>("Content")
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("LinkedPaymentMethodPaymentMethodId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timestamp");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer")
+                        .HasColumnName("type");
+
+                    b.Property<string>("WalletId")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("content");
+                        .HasColumnName("wallet_id");
+
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("LinkedPaymentMethodPaymentMethodId");
+
+                    b.HasIndex("WalletId");
+
+                    b.ToTable("WalletTransactions");
+                });
+
+            modelBuilder.Entity("Log", b =>
+                {
+                    b.Property<string>("LogId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("varchar(512)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("create_at");
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsSystem")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_system");
-
-                    b.Property<string>("ReceiverStoreId")
-                        .HasColumnType("text")
-                        .HasColumnName("receiver_store_id");
-
-                    b.Property<string>("ReceiverUserId")
-                        .HasColumnType("text")
-                        .HasColumnName("receiver_user_id");
-
-                    b.Property<string>("SenderStoreId")
-                        .HasColumnType("text")
-                        .HasColumnName("sender_store_id");
-
-                    b.Property<string>("SenderUserId")
-                        .HasColumnType("text")
-                        .HasColumnName("sender_user_id");
-
-                    b.Property<string>("StoreId")
+                    b.Property<string>("TargetId")
                         .HasColumnType("text");
 
-                    b.Property<string>("StoreId1")
+                    b.Property<string>("TargetType")
                         .HasColumnType("text");
 
-                    b.HasKey("MessageId");
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
 
-                    b.HasIndex("ReceiverStoreId");
+                    b.HasKey("LogId");
 
-                    b.HasIndex("ReceiverUserId");
+                    b.HasIndex("UserId");
 
-                    b.HasIndex("SenderStoreId");
+                    b.ToTable("Logs");
+                });
 
-                    b.HasIndex("SenderUserId");
-
-                    b.HasIndex("StoreId");
-
-                    b.HasIndex("StoreId1");
-
-                    b.ToTable("Messages");
+            modelBuilder.Entity("DPTS.Domains.AdjustmentRule", b =>
+                {
+                    b.HasOne("DPTS.Domains.Category", null)
+                        .WithMany("AdjustmentRules")
+                        .HasForeignKey("CategoryId");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Complaint", b =>
                 {
                     b.HasOne("DPTS.Domains.Order", "Order")
-                        .WithMany("Complaints")
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -703,7 +964,7 @@ namespace DPTS.Infrastructures.Migrations
                         .IsRequired();
 
                     b.HasOne("DPTS.Domains.User", "User")
-                        .WithMany("Complaints")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -729,8 +990,8 @@ namespace DPTS.Infrastructures.Migrations
             modelBuilder.Entity("DPTS.Domains.Escrow", b =>
                 {
                     b.HasOne("DPTS.Domains.Order", "Order")
-                        .WithOne("Escrow")
-                        .HasForeignKey("DPTS.Domains.Escrow", "OrderId")
+                        .WithMany("Escrows")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -745,19 +1006,21 @@ namespace DPTS.Infrastructures.Migrations
                     b.Navigation("Store");
                 });
 
-            modelBuilder.Entity("DPTS.Domains.Log", b =>
+            modelBuilder.Entity("DPTS.Domains.Message", b =>
                 {
-                    b.HasOne("DPTS.Domains.User", "User")
-                        .WithMany("Logs")
-                        .HasForeignKey("UserId");
+                    b.HasOne("DPTS.Domains.Store", null)
+                        .WithMany("ReceivedMessages")
+                        .HasForeignKey("StoreId");
 
-                    b.Navigation("User");
+                    b.HasOne("DPTS.Domains.Store", null)
+                        .WithMany("SentMessages")
+                        .HasForeignKey("StoreId1");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Order", b =>
                 {
                     b.HasOne("DPTS.Domains.User", "Buyer")
-                        .WithMany("Orders")
+                        .WithMany()
                         .HasForeignKey("BuyerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -774,7 +1037,7 @@ namespace DPTS.Infrastructures.Migrations
                         .IsRequired();
 
                     b.HasOne("DPTS.Domains.Product", "Product")
-                        .WithMany("OrderItems")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -782,6 +1045,15 @@ namespace DPTS.Infrastructures.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.PaymentMethod", b =>
+                {
+                    b.HasOne("DPTS.Domains.User", null)
+                        .WithMany("PaymentMethods")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DPTS.Domains.Product", b =>
@@ -798,19 +1070,34 @@ namespace DPTS.Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DPTS.Domains.User", null)
-                        .WithMany("Products")
-                        .HasForeignKey("UserId");
-
                     b.Navigation("Category");
 
                     b.Navigation("Store");
                 });
 
+            modelBuilder.Entity("DPTS.Domains.ProductAdjustment", b =>
+                {
+                    b.HasOne("DPTS.Domains.Product", "Product")
+                        .WithMany("ProductAdjustments")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DPTS.Domains.AdjustmentRule", "Rule")
+                        .WithMany("ProductAdjustments")
+                        .HasForeignKey("RuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Rule");
+                });
+
             modelBuilder.Entity("DPTS.Domains.ProductImage", b =>
                 {
                     b.HasOne("DPTS.Domains.Product", "Product")
-                        .WithMany("Images")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -821,13 +1108,13 @@ namespace DPTS.Infrastructures.Migrations
             modelBuilder.Entity("DPTS.Domains.ProductReview", b =>
                 {
                     b.HasOne("DPTS.Domains.Product", "Product")
-                        .WithMany("Reviews")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DPTS.Domains.User", "User")
-                        .WithMany("Reviews")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -848,33 +1135,6 @@ namespace DPTS.Infrastructures.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DPTS.Domains.Trade", b =>
-                {
-                    b.HasOne("DPTS.Domains.Wallet", "TradeFrom")
-                        .WithMany("TradeFroms")
-                        .HasForeignKey("TradeFromId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.HasOne("DPTS.Domains.Wallet", "TradeTo")
-                        .WithMany("TradeTos")
-                        .HasForeignKey("TradeToId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .IsRequired();
-
-                    b.HasOne("DPTS.Domains.User", "User")
-                        .WithMany("Trades")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TradeFrom");
-
-                    b.Navigation("TradeTo");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DPTS.Domains.User", b =>
                 {
                     b.HasOne("DPTS.Domains.Role", "Role")
@@ -883,9 +1143,20 @@ namespace DPTS.Infrastructures.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.UserProfile", b =>
+                {
+                    b.HasOne("DPTS.Domains.User", "User")
+                        .WithOne("Profile")
+                        .HasForeignKey("DPTS.Domains.UserProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsOne("DPTS.Domains.Address", "Address", b1 =>
                         {
-                            b1.Property<string>("UserId")
+                            b1.Property<string>("UserProfileUserId")
                                 .HasColumnType("text");
 
                             b1.Property<string>("City")
@@ -913,72 +1184,73 @@ namespace DPTS.Infrastructures.Migrations
                                 .HasColumnType("text")
                                 .HasColumnName("street");
 
-                            b1.HasKey("UserId");
+                            b1.HasKey("UserProfileUserId");
 
                             b1.ToTable("Addresses");
 
                             b1.WithOwner()
-                                .HasForeignKey("UserId");
+                                .HasForeignKey("UserProfileUserId");
                         });
 
                     b.Navigation("Address")
                         .IsRequired();
 
-                    b.Navigation("Role");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DPTS.Domains.Wallet", b =>
+            modelBuilder.Entity("DPTS.Domains.UserSecurity", b =>
                 {
                     b.HasOne("DPTS.Domains.User", "User")
-                        .WithOne("Wallet")
-                        .HasForeignKey("DPTS.Domains.Wallet", "UserId")
+                        .WithOne("Security")
+                        .HasForeignKey("DPTS.Domains.UserSecurity", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Message", b =>
+            modelBuilder.Entity("DPTS.Domains.Wallet", b =>
                 {
-                    b.HasOne("DPTS.Domains.Store", "ReceiverStore")
+                    b.HasOne("DPTS.Domains.User", null)
+                        .WithOne("Wallet")
+                        .HasForeignKey("DPTS.Domains.Wallet", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("DPTS.Domains.WalletTransaction", b =>
+                {
+                    b.HasOne("DPTS.Domains.PaymentMethod", "LinkedPaymentMethod")
                         .WithMany()
-                        .HasForeignKey("ReceiverStoreId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("LinkedPaymentMethodPaymentMethodId");
 
-                    b.HasOne("DPTS.Domains.User", "ReceiverUser")
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("ReceiverUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.HasOne("DPTS.Domains.Wallet", null)
+                        .WithMany("Transactions")
+                        .HasForeignKey("WalletId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("DPTS.Domains.Store", "SenderStore")
+                    b.Navigation("LinkedPaymentMethod");
+                });
+
+            modelBuilder.Entity("Log", b =>
+                {
+                    b.HasOne("DPTS.Domains.User", "User")
                         .WithMany()
-                        .HasForeignKey("SenderStoreId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("UserId");
 
-                    b.HasOne("DPTS.Domains.User", "SenderUser")
-                        .WithMany("SentMessages")
-                        .HasForeignKey("SenderUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.Navigation("User");
+                });
 
-                    b.HasOne("DPTS.Domains.Store", null)
-                        .WithMany("ReceivedMessages")
-                        .HasForeignKey("StoreId");
-
-                    b.HasOne("DPTS.Domains.Store", null)
-                        .WithMany("SentMessages")
-                        .HasForeignKey("StoreId1");
-
-                    b.Navigation("ReceiverStore");
-
-                    b.Navigation("ReceiverUser");
-
-                    b.Navigation("SenderStore");
-
-                    b.Navigation("SenderUser");
+            modelBuilder.Entity("DPTS.Domains.AdjustmentRule", b =>
+                {
+                    b.Navigation("ProductAdjustments");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Category", b =>
                 {
+                    b.Navigation("AdjustmentRules");
+
                     b.Navigation("Products");
                 });
 
@@ -989,21 +1261,14 @@ namespace DPTS.Infrastructures.Migrations
 
             modelBuilder.Entity("DPTS.Domains.Order", b =>
                 {
-                    b.Navigation("Complaints");
-
-                    b.Navigation("Escrow")
-                        .IsRequired();
+                    b.Navigation("Escrows");
 
                     b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Product", b =>
                 {
-                    b.Navigation("Images");
-
-                    b.Navigation("OrderItems");
-
-                    b.Navigation("Reviews");
+                    b.Navigation("ProductAdjustments");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Role", b =>
@@ -1020,33 +1285,22 @@ namespace DPTS.Infrastructures.Migrations
 
             modelBuilder.Entity("DPTS.Domains.User", b =>
                 {
-                    b.Navigation("Complaints");
+                    b.Navigation("PaymentMethods");
 
-                    b.Navigation("Logs");
+                    b.Navigation("Profile")
+                        .IsRequired();
 
-                    b.Navigation("Orders");
-
-                    b.Navigation("Products");
-
-                    b.Navigation("ReceivedMessages");
-
-                    b.Navigation("Reviews");
-
-                    b.Navigation("SentMessages");
+                    b.Navigation("Security")
+                        .IsRequired();
 
                     b.Navigation("Store");
 
-                    b.Navigation("Trades");
-
-                    b.Navigation("Wallet")
-                        .IsRequired();
+                    b.Navigation("Wallet");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Wallet", b =>
                 {
-                    b.Navigation("TradeFroms");
-
-                    b.Navigation("TradeTos");
+                    b.Navigation("Transactions");
                 });
 #pragma warning restore 612, 618
         }

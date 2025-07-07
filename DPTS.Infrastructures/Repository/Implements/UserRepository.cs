@@ -14,122 +14,89 @@ namespace DPTS.Infrastructures.Repository.Implements
             _context = context;
         }
 
-        public async Task<User?> GetByIdAsync(
-            string userId,
-            bool includeWallet = false,
-            bool includeRole = false)
-        {
-            if (string.IsNullOrWhiteSpace(userId)) return null;
+        #region Read
 
+        public async Task<User?> GetByIdAsync(string userId, bool includeRelated = true)
+        {
             var query = _context.Users.AsQueryable();
 
-            if (includeWallet)
-                query = query.Include(u => u.Wallet);
+            if (includeRelated)
+            {
+                query = query
+                    .Include(u => u.Role)
+                    .Include(u => u.Profile)
+                    .Include(u => u.Security)
+                    .Include(u => u.Wallet)
+                    .Include(u => u.Store)
+                    .Include(u => u.PaymentMethods);
+            }
 
-            if (includeRole)
-                query = query.Include(u => u.Role);
-
-            return await query
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.UserId == userId);
+            return await query.FirstOrDefaultAsync(u => u.UserId == userId);
         }
 
-        public async Task<User?> GetByEmailAsync(string email, bool includeRole = false)
+        public async Task<User?> GetByUsernameAsync(string username)
         {
-            if (string.IsNullOrWhiteSpace(email)) return null;
-
-            var query = _context.Users.AsQueryable();
-
-            if (includeRole)
-                query = query.Include(u => u.Role);
-
-            return await query
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.Email == email);
-        }
-
-        public async Task<User?> GetByUsernameAsync(string username, bool includeRole = false)
-        {
-            if (string.IsNullOrWhiteSpace(username)) return null;
-
-            var query = _context.Users.AsQueryable();
-
-            if (includeRole)
-                query = query.Include(u => u.Role);
-
-            return await query
-                .AsNoTracking()
+            return await _context.Users
+                .Include(u => u.Security)
                 .FirstOrDefaultAsync(u => u.Username == username);
         }
 
-        public async Task<IEnumerable<User>> GetsAsync(
-            string? search = null,
-            string? roleId = null,
-            bool? twoFactor = null,
-            DateTime? from = null,
-            DateTime? to = null,
-            bool includeRole = false,
-            int? pageIndex = null,
-            int? pageSize = null)
+        public async Task<User?> GetByEmailAsync(string email)
         {
-            var query = _context.Users.AsQueryable();
+            return await _context.Users
+                .Include(u => u.Security)
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
 
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var lowered = search.ToLower();
-                query = query.Where(u =>
-                    u.Username.ToLower().Contains(lowered) ||
-                    u.Email.ToLower().Contains(lowered) ||
-                    (u.FullName != null && u.FullName.ToLower().Contains(lowered)) ||
-                    (u.Phone != null && u.Phone.Contains(lowered)));
-            }
-
-            if (!string.IsNullOrWhiteSpace(roleId))
-                query = query.Where(u => u.RoleId == roleId);
-
-            if (twoFactor.HasValue)
-                query = query.Where(u => u.TwoFactorEnabled == twoFactor.Value);
-
-            if (from.HasValue)
-                query = query.Where(u => u.CreatedAt >= from.Value);
-
-            if (to.HasValue)
-                query = query.Where(u => u.CreatedAt <= to.Value);
-
-            if (includeRole)
-                query = query.Include(u => u.Role);
-
-            if (pageIndex.HasValue && pageSize.HasValue)
-                query = query.Skip(pageIndex.Value * pageSize.Value).Take(pageSize.Value);
-
-            return await query.AsNoTracking().ToListAsync();
+        public async Task<IEnumerable<User>> GetAllAsync()
+        {
+            return await _context.Users
+                .Include(u => u.Role)
+                .OrderByDescending(u => u.CreatedAt)
+                .ToListAsync();
         }
 
         public async Task<bool> ExistsAsync(string userId)
         {
-            if (string.IsNullOrWhiteSpace(userId)) return false;
             return await _context.Users.AnyAsync(u => u.UserId == userId);
         }
 
+        public async Task<bool> UsernameExistsAsync(string username)
+        {
+            return await _context.Users.AnyAsync(u => u.Username == username);
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            return await _context.Users.AnyAsync(u => u.Email == email);
+        }
+
+        #endregion
+
+        #region Create / Update / Delete
+
         public async Task AddAsync(User user)
         {
-            if (user == null) throw new ArgumentNullException(nameof(user));
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(User user)
         {
-            if (user == null) throw new ArgumentNullException(nameof(user));
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(User user)
+        public async Task DeleteAsync(string userId)
         {
-            if (user == null) return;
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+            }
         }
+
+        #endregion
     }
 }

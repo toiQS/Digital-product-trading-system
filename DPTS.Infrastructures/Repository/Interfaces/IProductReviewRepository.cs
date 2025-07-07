@@ -5,9 +5,12 @@ namespace DPTS.Infrastructures.Repository.Interfaces
     public interface IProductReviewRepository
     {
         Task AddAsync(ProductReview review);
+        Task<int> CountByProductIdAsync(string productId);
         Task DeleteAsync(string reviewId);
-        Task<ProductReview?> GetByIdAsync(string reviewId, bool includeUser = false, bool includeProduct = false);
-        Task<IEnumerable<ProductReview>> GetsAsync(string? search = null, string? productId = null, string? userId = null, int? minRatingOverall = null, int? maxRatingOverall = null, DateTime? from = null, DateTime? to = null, bool includeUser = false, bool includeProduct = false);
+        Task<double> GetAverageOverallRatingAsync(string productId);
+        Task<IEnumerable<ProductReview>> GetByProductIdAsync(string productId, int skip = 0, int take = 10);
+        Task<ProductReview?> GetByUserAndProductAsync(string userId, string productId);
+        Task<IEnumerable<ProductReview>> GetTopLikedReviewsAsync(string productId, int take = 3);
         Task UpdateAsync(ProductReview review);
     }
 }

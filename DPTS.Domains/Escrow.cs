@@ -20,6 +20,26 @@ namespace DPTS.Domains
         [Column("amount")]
         public decimal Amount { get; set; }
 
+        [Column("platform_fee_rate")]
+        public decimal PlatformFeeRate { get; set; }
+
+        [Column("platform_fee_amount")]
+        public decimal PlatformFeeAmount { get; set; }
+
+        [Column("tax_rate")]
+        public decimal TaxRate { get; set; }
+
+        [Column("tax_amount")]
+        public decimal TaxAmount { get; set; }
+        [Column("actual_amount")]
+        public decimal ActualAmount { get; set; }
+        [Column("released_at")]
+        public DateTime? ReleasedAt { get; set; }
+
+        [Column("released_by")]
+        public string? ReleasedBy { get; set; }  // e.g. "System", "Admin:duyanh", etc.
+
+
         [Column("status")]
         public EscrowStatus Status { get; set; } = EscrowStatus.Unknown;
 
@@ -28,8 +48,9 @@ namespace DPTS.Domains
 
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
         [Column("expired")]
-        public DateTime Expired {  get; set; } = DateTime.UtcNow;
+        public DateTime Expired { get; set; } = DateTime.UtcNow;
 
         public virtual Order Order { get; set; } = null!;
         public virtual Store Store { get; set; } = null!;
@@ -38,8 +59,8 @@ namespace DPTS.Domains
     public enum EscrowStatus
     {
         Unknown = 0,
-        WaitingComfirm = 1,
-        Comfirmed = 2,
+        WaitingConfirm = 1,
+        BuyerConfirmed = 2,
         Done = 3,
         Canceled = 4
     }

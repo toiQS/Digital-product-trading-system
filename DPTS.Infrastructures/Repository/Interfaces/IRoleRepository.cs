@@ -6,9 +6,10 @@ namespace DPTS.Infrastructures.Repository.Interfaces
     {
         Task AddAsync(Role role);
         Task DeleteAsync(string roleId);
-        Task<Role?> GetByIdAsync(string roleId, bool includeUsers = false);
-        Task<Role?> GetByNameAsync(string roleName, bool includeUsers = false);
-        Task<IEnumerable<Role>> GetsAsync(string? search = null, string? roleName = null, bool includeUsers = false);
+        Task<bool> ExistsAsync(string roleId);
+        Task<IEnumerable<Role>> GetAllAsync();
+        Task<Role?> GetByIdAsync(string roleId);
+        Task<Role?> GetByNameAsync(string roleName);
         Task UpdateAsync(Role role);
     }
 }

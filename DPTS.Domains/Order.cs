@@ -9,8 +9,9 @@ namespace DPTS.Domains
         [Column("order_id")]
         public string OrderId { get; set; } = string.Empty;
 
+        [Required]
         [Column("buyer_id")]
-        public string BuyerId { get; set; } = string.Empty ;
+        public string BuyerId { get; set; } = string.Empty;
 
         [Column("total_amount")]
         public decimal TotalAmount { get; set; }
@@ -25,9 +26,7 @@ namespace DPTS.Domains
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public virtual User Buyer { get; set; } = null!;
-        public virtual Escrow Escrow { get; set; } = null!;
-        public virtual ICollection<Complaint> Complaints { get; set; } = new List<Complaint>();
-        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>(); 
+        public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public virtual ICollection<Escrow> Escrows { get; set; } = new List<Escrow>();
     }
-
 }
