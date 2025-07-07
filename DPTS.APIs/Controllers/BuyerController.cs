@@ -1,4 +1,9 @@
-﻿using DPTS.Applications.Buyer.Queries;
+﻿using DPTS.Applications.Buyer.Queries.chat;
+using DPTS.Applications.Buyer.Queries.order;
+using DPTS.Applications.Buyer.Queries.product;
+using DPTS.Applications.Buyer.Queries.profile;
+using DPTS.Applications.Buyer.Queries.review;
+using DPTS.Applications.Buyer.Queries.security;
 using DPTS.Applications.Shareds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

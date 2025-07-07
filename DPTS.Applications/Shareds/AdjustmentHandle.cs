@@ -1,4 +1,4 @@
-﻿using DPTS.Applications.Buyer.Dtos;
+﻿using DPTS.Applications.Buyer.Dtos.shared;
 using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -34,7 +34,7 @@ namespace DPTS.Applications.Shareds
 
             foreach (var rule in adjustmentRules)
             {
-                if (rule == null || rule.Status != RuleStatus.Active || rule.From > now || rule.To < now || rule.UsageLimit == 0)
+                if (rule == null || rule.Status != RuleStatus.Active || rule.From > now || rule.To < now )
                     continue;
 
                 switch (rule.Type)
@@ -91,35 +91,10 @@ namespace DPTS.Applications.Shareds
             return ServiceResult<MathResultDto>.Success(result);
         }
 
-        public async Task<ServiceResult<MathResultDto>> HandleDiscountForOrderAndPayment(string keyCode, Order order)
+        public async Task<ServiceResult<MathResultDto>> HandleDiscountForOrderAndPayment(string keyCode = null!, Order order = default!)
         {
             _logger.LogInformation("Handling discount for order and voucher...");
-            var adjustmentVoucher = await _adjustmentRuleRepository.GetByIdAsync(keyCode);
-
-            if (adjustmentVoucher == null)
-            {
-                _logger.LogError("Voucher not found.");
-                return ServiceResult<MathResultDto>.Error("Không tìm thấy mã giảm giá.");
-            }
-
-            if (adjustmentVoucher.TargetLogic != TargetLogic.Voucher)
-            {
-                _logger.LogError("Invalid voucher logic.");
-                return ServiceResult<MathResultDto>.Error("Mã giảm giá không hợp lệ.");
-            }
-
-            var voucherAmount = adjustmentVoucher.IsPercentage ? order.TotalAmount * adjustmentVoucher.Value : adjustmentVoucher.Value;
-            if (adjustmentVoucher.MaxCap.HasValue && voucherAmount > adjustmentVoucher.MaxCap.Value)
-                voucherAmount = adjustmentVoucher.MaxCap.Value;
-
-            var voucherResult = new MathResultDto
-            {
-                AdjustmentRuleId = adjustmentVoucher.RuleId,
-                DiscountValue = adjustmentVoucher.Value,
-                IsPercentage = adjustmentVoucher.IsPercentage,
-                DiscountAmount = voucherAmount,
-                FinalAmount = order.TotalAmount > voucherAmount ? order.TotalAmount - voucherAmount : 0m
-            };
+           
 
             var adjustmentRules = await _adjustmentRuleRepository.GetAllAsync();
             var classifyAdjustment = ClassifyAdjustment(adjustmentRules);
@@ -154,9 +129,90 @@ namespace DPTS.Applications.Shareds
                 };
             }
 
-            return voucherResult.FinalAmount < bestDiscount.FinalAmount
+            if (keyCode != null)
+            {
+                var adjustmentVoucher = await _adjustmentRuleRepository.GetByIdAsync(keyCode);
+
+                if (adjustmentVoucher == null)
+                {
+                    _logger.LogError("Voucher not found.");
+                    return ServiceResult<MathResultDto>.Error("Không tìm thấy mã giảm giá.");
+                }
+
+                if (adjustmentVoucher.TargetLogic != TargetLogic.Voucher)
+                {
+                    _logger.LogError("Invalid voucher logic.");
+                    return ServiceResult<MathResultDto>.Error("Mã giảm giá không hợp lệ.");
+                }
+
+                var voucherAmount = adjustmentVoucher.IsPercentage ? order.TotalAmount * adjustmentVoucher.Value : adjustmentVoucher.Value;
+                if (adjustmentVoucher.MaxCap.HasValue && voucherAmount > adjustmentVoucher.MaxCap.Value)
+                    voucherAmount = adjustmentVoucher.MaxCap.Value;
+
+                var voucherResult = new MathResultDto
+                {
+                    AdjustmentRuleId = adjustmentVoucher.RuleId,
+                    DiscountValue = adjustmentVoucher.Value,
+                    IsPercentage = adjustmentVoucher.IsPercentage,
+                    DiscountAmount = voucherAmount,
+                    FinalAmount = order.TotalAmount > voucherAmount ? order.TotalAmount - voucherAmount : 0m
+                };
+                return voucherResult.FinalAmount < bestDiscount.FinalAmount
                 ? ServiceResult<MathResultDto>.Success(voucherResult)
                 : ServiceResult<MathResultDto>.Success(bestDiscount);
+            }
+            return ServiceResult<MathResultDto>.Success(bestDiscount);
+        }
+
+        public async Task<ServiceResult<MathResultDto>> HandleTaxForSeller()
+        {
+            _logger.LogInformation("");
+           var now = DateTime.Now;
+            var adjustments = await _adjustmentRuleRepository.GetAllAsync();
+            var classifly = ClassifyAdjustment(adjustments);
+            if (classifly.Status == StatusResult.Errored)
+            {
+                _logger.LogError("");
+                return ServiceResult<MathResultDto>.Error("");
+            }
+            var taxes = classifly.Data.Taxes.ToList();
+            
+            throw new NotImplementedException();
+        }
+
+        public async Task<ServiceResult<MathResultDto>> HandlePlatformFeeForSeller(double finalPrice)
+        {
+            _logger.LogInformation("");
+            var now = DateTime.Now;
+            var adjustments = (await _adjustmentRuleRepository.GetAllAsync()).Where(x => x.TargetLogic == TargetLogic.Auto );
+            var classifly = ClassifyAdjustment(adjustments);
+            if (classifly.Status == StatusResult.Errored)
+            {
+                _logger.LogError("");
+                return ServiceResult<MathResultDto>.Error("");
+            }
+            var platform = classifly.Data.PlatformFees.ToList();
+            if(platform.Count == 0)
+            {
+                _logger.LogError("");
+                return ServiceResult<MathResultDto>.Error("");
+            }
+            if(platform.Count >1)
+            {
+                _logger.LogError("");
+                return ServiceResult<MathResultDto>.Error("");
+            }
+            var adjustment = adjustments.FirstOrDefault();
+            if (adjustment == null)
+            {
+                _logger.LogError("");
+                return ServiceResult<MathResultDto>.Error("");
+            }
+            return ServiceResult<MathResultDto>.Success(new MathResultDto()
+            {
+                AdjustmentRuleId = adjustment.RuleId,
+
+            });
         }
     }
 }
