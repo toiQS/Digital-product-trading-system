@@ -147,7 +147,7 @@ public class GetCheckoutHandler : IRequestHandler<GetCheckoutQuery, ServiceResul
         result.Summary = new CheckoutSummaryDto
         {
             DiscountId = discountResult.Data.AdjustmentRuleId,
-            DiscountValue = discountResult.Data.DiscountValue,
+            Value = discountResult.Data.Value,
             FinalAmount = discountResult.Data.FinalAmount
         };
 

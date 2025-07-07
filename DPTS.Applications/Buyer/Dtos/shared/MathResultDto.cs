@@ -6,8 +6,8 @@ namespace DPTS.Applications.Buyer.Dtos.shared
     {
         public string AdjustmentRuleId { get; set; } = string.Empty;
         public bool IsPercentage {  get; set; }
-        public decimal DiscountValue { get; set; }
-        public decimal DiscountAmount { get; set; }
+        public decimal Value { get; set; }
+        public decimal Amount { get; set; }
         public decimal FinalAmount { get; set; }
     }
 }

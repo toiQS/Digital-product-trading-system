@@ -34,7 +34,7 @@ namespace DPTS.Applications.Shareds
 
             foreach (var rule in adjustmentRules)
             {
-                if (rule == null || rule.Status != RuleStatus.Active || rule.From > now || rule.To < now )
+                if (rule == null || rule.Status != RuleStatus.Active || rule.From > now || rule.To < now)
                     continue;
 
                 switch (rule.Type)
@@ -82,9 +82,9 @@ namespace DPTS.Applications.Shareds
             var result = new MathResultDto
             {
                 AdjustmentRuleId = selected?.RuleId ?? string.Empty,
-                DiscountValue = selected?.Value ?? 0,
+                Value = selected?.Value ?? 0,
                 IsPercentage = selected?.IsPercentage ?? false,
-                DiscountAmount = selected == null ? 0 : selected.IsPercentage ? product.OriginalPrice * selected.Value : selected.Value,
+                Amount = selected == null ? 0 : selected.IsPercentage ? product.OriginalPrice * selected.Value : selected.Value,
                 FinalAmount = selected == null ? product.OriginalPrice : product.OriginalPrice - (selected.IsPercentage ? product.OriginalPrice * selected.Value : selected.Value)
             };
 
@@ -94,8 +94,6 @@ namespace DPTS.Applications.Shareds
         public async Task<ServiceResult<MathResultDto>> HandleDiscountForOrderAndPayment(string keyCode = null!, Order order = default!)
         {
             _logger.LogInformation("Handling discount for order and voucher...");
-           
-
             var adjustmentRules = await _adjustmentRuleRepository.GetAllAsync();
             var classifyAdjustment = ClassifyAdjustment(adjustmentRules);
 
@@ -122,9 +120,9 @@ namespace DPTS.Applications.Shareds
                 bestDiscount = new MathResultDto
                 {
                     AdjustmentRuleId = d.RuleId,
-                    DiscountValue = d.Value,
+                    Value = d.Value,
                     IsPercentage = d.IsPercentage,
-                    DiscountAmount = amount,
+                    Amount = amount,
                     FinalAmount = order.TotalAmount > amount ? order.TotalAmount - amount : 0m
                 };
             }
@@ -152,66 +150,77 @@ namespace DPTS.Applications.Shareds
                 var voucherResult = new MathResultDto
                 {
                     AdjustmentRuleId = adjustmentVoucher.RuleId,
-                    DiscountValue = adjustmentVoucher.Value,
+                    Value = adjustmentVoucher.Value,
                     IsPercentage = adjustmentVoucher.IsPercentage,
-                    DiscountAmount = voucherAmount,
+                    Amount = voucherAmount,
                     FinalAmount = order.TotalAmount > voucherAmount ? order.TotalAmount - voucherAmount : 0m
                 };
                 return voucherResult.FinalAmount < bestDiscount.FinalAmount
-                ? ServiceResult<MathResultDto>.Success(voucherResult)
-                : ServiceResult<MathResultDto>.Success(bestDiscount);
+                    ? ServiceResult<MathResultDto>.Success(voucherResult)
+                    : ServiceResult<MathResultDto>.Success(bestDiscount);
             }
             return ServiceResult<MathResultDto>.Success(bestDiscount);
         }
 
-        public async Task<ServiceResult<MathResultDto>> HandleTaxForSeller()
+        public async Task<ServiceResult<MathResultDto>> HandleTaxForSeller(decimal finalPrice)
         {
-            _logger.LogInformation("");
-           var now = DateTime.Now;
+            _logger.LogInformation("Handling tax calculation for seller...");
             var adjustments = await _adjustmentRuleRepository.GetAllAsync();
-            var classifly = ClassifyAdjustment(adjustments);
-            if (classifly.Status == StatusResult.Errored)
+            var classify = ClassifyAdjustment(adjustments);
+            if (classify.Status == StatusResult.Errored)
             {
-                _logger.LogError("");
-                return ServiceResult<MathResultDto>.Error("");
+                _logger.LogError("Failed to classify tax rules.");
+                return ServiceResult<MathResultDto>.Error("Không thể phân loại thuế.");
             }
-            var taxes = classifly.Data.Taxes.ToList();
-            
-            throw new NotImplementedException();
+
+            var taxes = classify.Data.Taxes.ToList();
+            if (!taxes.Any() || taxes.Any(x => !x.IsPercentage))
+            {
+                _logger.LogError("Invalid or missing tax configuration.");
+                return ServiceResult<MathResultDto>.Error("Không tìm thấy hoặc thuế không hợp lệ.");
+            }
+
+            return ServiceResult<MathResultDto>.Success(new MathResultDto
+            {
+                Value = taxes.Sum(x => x.Value),
+                Amount = taxes.Sum(x => x.Value) * finalPrice,
+                FinalAmount = finalPrice - (taxes.Sum(x => x.Value) * finalPrice),
+            });
         }
 
-        public async Task<ServiceResult<MathResultDto>> HandlePlatformFeeForSeller(double finalPrice)
+        public async Task<ServiceResult<MathResultDto>> HandlePlatformFeeForSeller(decimal finalPrice)
         {
-            _logger.LogInformation("");
-            var now = DateTime.Now;
-            var adjustments = (await _adjustmentRuleRepository.GetAllAsync()).Where(x => x.TargetLogic == TargetLogic.Auto );
-            var classifly = ClassifyAdjustment(adjustments);
-            if (classifly.Status == StatusResult.Errored)
+            _logger.LogInformation("Handling platform fee for seller...");
+            var adjustments = (await _adjustmentRuleRepository.GetAllAsync()).Where(x => x.TargetLogic == TargetLogic.Auto);
+            var classify = ClassifyAdjustment(adjustments);
+
+            if (classify.Status == StatusResult.Errored)
             {
-                _logger.LogError("");
-                return ServiceResult<MathResultDto>.Error("");
+                _logger.LogError("Failed to classify platform fees.");
+                return ServiceResult<MathResultDto>.Error("Không thể phân loại phí nền tảng.");
             }
-            var platform = classifly.Data.PlatformFees.ToList();
-            if(platform.Count == 0)
+
+            var platformFees = classify.Data.PlatformFees.ToList();
+            if (platformFees.Count != 1)
             {
-                _logger.LogError("");
-                return ServiceResult<MathResultDto>.Error("");
+                _logger.LogError("Invalid number of platform fee rules: {Count}", platformFees.Count);
+                return ServiceResult<MathResultDto>.Error("Cấu hình phí nền tảng không hợp lệ.");
             }
-            if(platform.Count >1)
+
+            var adjustment = platformFees.First();
+            if (!adjustment.IsPercentage)
             {
-                _logger.LogError("");
-                return ServiceResult<MathResultDto>.Error("");
+                _logger.LogError("Platform fee is not percentage-based.");
+                return ServiceResult<MathResultDto>.Error("Phí nền tảng phải là phần trăm.");
             }
-            var adjustment = adjustments.FirstOrDefault();
-            if (adjustment == null)
-            {
-                _logger.LogError("");
-                return ServiceResult<MathResultDto>.Error("");
-            }
-            return ServiceResult<MathResultDto>.Success(new MathResultDto()
+
+            return ServiceResult<MathResultDto>.Success(new MathResultDto
             {
                 AdjustmentRuleId = adjustment.RuleId,
-
+                IsPercentage = adjustment.IsPercentage,
+                Value = adjustment.Value,
+                Amount = adjustment.Value * finalPrice,
+                FinalAmount = finalPrice - (adjustment.Value * finalPrice),
             });
         }
     }

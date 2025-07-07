@@ -91,7 +91,7 @@ namespace DPTS.Applications.Buyer.Handles.product
                 ProductName = product.ProductName,
                 Description = product.Description ?? "Error",
                 StoreName = store.StoreName,
-                Discount = discountAndFinalPriceProduct.Data.DiscountValue,
+                Discount = discountAndFinalPriceProduct.Data.Value,
                 Price = discountAndFinalPriceProduct.Data.FinalAmount,
                 OriginalPrice = product.OriginalPrice,
                 ProductImage = images.Select(x => x.ImagePath).ToList(),

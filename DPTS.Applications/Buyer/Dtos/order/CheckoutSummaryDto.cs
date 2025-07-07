@@ -3,7 +3,7 @@
     public class CheckoutSummaryDto
     {
         public string DiscountId { get; set; } = string.Empty;
-        public decimal DiscountValue {  get; set; }
+        public decimal Value {  get; set; }
         public decimal FinalAmount { get; set; }
     }
 }

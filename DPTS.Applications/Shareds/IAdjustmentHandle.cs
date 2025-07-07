@@ -7,5 +7,7 @@ namespace DPTS.Applications.Shareds
     {
         Task<ServiceResult<MathResultDto>> HandleDiscountAndPriceForProduct(Product product);
         Task<ServiceResult<MathResultDto>> HandleDiscountForOrderAndPayment(string keyCode = null!, Order order= default!);
+        Task<ServiceResult<MathResultDto>> HandleTaxForSeller(decimal finalPrice);
+        Task<ServiceResult<MathResultDto>> HandlePlatformFeeForSeller(decimal finalPrice);
     }
 }
