@@ -32,7 +32,7 @@ namespace DPTS.Domains
         [Column("tax_amount")]
         public decimal TaxAmount { get; set; }
         [Column("actual_amount")]
-        public decimal ActualAmount { get; set; }
+        public decimal ActualAmount { get; set; } // giá trị thực thế mà cửa hàng nhận được
         [Column("released_at")]
         public DateTime? ReleasedAt { get; set; }
 

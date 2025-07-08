@@ -16,24 +16,23 @@ namespace DPTS.Applications.Buyer.Handles.payment
         private readonly IOrderRepository _orderRepository;
         private readonly IEscrowRepository _escrowRepository;
         private readonly IPaymentMethodRepository _paymentMethodRepository;
-        private readonly IOrderItemRepository _orderItemRepository;
         private readonly ILogRepository _logRepository;
         private readonly IProductRepository _productRepository;
         private readonly IMediator _mediator;
+        private readonly IWalletTransactionRepository _walletTransactionRepository;
         private readonly ILogger<GetPaymentResultHandler> _logger;
 
-        public GetPaymentResultHandler(
-            IAdjustmentHandle adjustmentHandle,
-            IWalletRepository walletRepository,
-            IUserProfileRepository userProfileRepository,
-            IOrderRepository orderRepository,
-            IEscrowRepository escrowRepository,
-            IPaymentMethodRepository paymentMethodRepository,
-            IOrderItemRepository orderItemRepository,
-            ILogRepository logRepository,
-            IProductRepository productRepository,
-            IMediator mediator,
-            ILogger<GetPaymentResultHandler> logger)
+        public GetPaymentResultHandler(IAdjustmentHandle adjustmentHandle,
+                                       IWalletRepository walletRepository,
+                                       IUserProfileRepository userProfileRepository,
+                                       IOrderRepository orderRepository,
+                                       IEscrowRepository escrowRepository,
+                                       IPaymentMethodRepository paymentMethodRepository,
+                                       ILogRepository logRepository,
+                                       IProductRepository productRepository,
+                                       IMediator mediator,
+                                       IWalletTransactionRepository walletTransactionRepository,
+                                       ILogger<GetPaymentResultHandler> logger)
         {
             _adjustmentHandle = adjustmentHandle;
             _walletRepository = walletRepository;
@@ -41,10 +40,10 @@ namespace DPTS.Applications.Buyer.Handles.payment
             _orderRepository = orderRepository;
             _escrowRepository = escrowRepository;
             _paymentMethodRepository = paymentMethodRepository;
-            _orderItemRepository = orderItemRepository;
             _logRepository = logRepository;
             _productRepository = productRepository;
             _mediator = mediator;
+            _walletTransactionRepository = walletTransactionRepository;
             _logger = logger;
         }
 
@@ -179,7 +178,19 @@ namespace DPTS.Applications.Buyer.Handles.payment
                 // 10. Trừ tiền ví nếu có
                 if (wallet != null && wallet.Balance >= order.TotalAmount)
                 {
+                    WalletTransaction walletTransaction = new WalletTransaction()
+                    {
+                        TransactionId = Guid.NewGuid().ToString(),
+                        Description= "Thanh toán",
+                        Amount = order.TotalAmount,
+                        WalletId = wallet.WalletId,
+                        Status = System.Transactions.TransactionStatus.Committed,
+                        Type = TransactionType.Purchase,
+                        Timestamp = DateTime.UtcNow,
+                    };
+
                     wallet.Balance -= order.TotalAmount;
+                    await _walletTransactionRepository.UpdateAsync(walletTransaction);
                     await _walletRepository.UpdateAsync(wallet);
                 }
                 else if (paymentMethod != null)
