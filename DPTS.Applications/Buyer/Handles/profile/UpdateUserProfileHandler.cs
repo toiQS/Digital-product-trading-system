@@ -10,7 +10,7 @@ namespace DPTS.Applications.Buyer.Handles.profile;
 /// <summary>
 /// Xử lý cập nhật thông tin hồ sơ người dùng (User & Profile).
 /// </summary>
-public class UpdateUserProfileHandler : IRequestHandler<UpdateUserProfileQuery, ServiceResult<string>>
+public class UpdateUserProfileHandler : IRequestHandler<UpdateUserProfileCommand, ServiceResult<string>>
 {
     private readonly ILogger<UpdateUserProfileHandler> _logger;
     private readonly IUserRepository _userRepository;
@@ -32,7 +32,7 @@ public class UpdateUserProfileHandler : IRequestHandler<UpdateUserProfileQuery, 
         _userSecurityRepository = userSecurityRepository;
     }
 
-    public async Task<ServiceResult<string>> Handle(UpdateUserProfileQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResult<string>> Handle(UpdateUserProfileCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Handling profile update for user: {UserId}", request.UserId);
 

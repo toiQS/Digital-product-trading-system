@@ -181,10 +181,10 @@ namespace DPTS.Applications.Buyer.Handles.payment
                     WalletTransaction walletTransaction = new WalletTransaction()
                     {
                         TransactionId = Guid.NewGuid().ToString(),
-                        Description= "Thanh toán",
+                        Description= $"Thanh toán giỏ hàng {order.OrderId}",
                         Amount = order.TotalAmount,
                         WalletId = wallet.WalletId,
-                        Status = System.Transactions.TransactionStatus.Committed,
+                        Status = WalletTransactionStatus.Pending,
                         Type = TransactionType.Purchase,
                         Timestamp = DateTime.UtcNow,
                     };

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Buyer.Handles.review;
 
-public class CreateProductReviewHandler : IRequestHandler<CreateProductReviewQuery, ServiceResult<string>>
+public class CreateProductReviewHandler : IRequestHandler<CreateProductReviewCommand, ServiceResult<string>>
 {
     private readonly IProductRepository _productRepository;
     private readonly IUserProfileRepository _userProfileRepository;
@@ -32,7 +32,7 @@ public class CreateProductReviewHandler : IRequestHandler<CreateProductReviewQue
         _logger = logger;
     }
 
-    public async Task<ServiceResult<string>> Handle(CreateProductReviewQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResult<string>> Handle(CreateProductReviewCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("User {UserId} is submitting a review for product {ProductId}", request.BuyerId, request.ProductId);
 
@@ -110,7 +110,7 @@ public class CreateProductReviewHandler : IRequestHandler<CreateProductReviewQue
     /// <summary>
     /// Tính điểm trung bình của đánh giá.
     /// </summary>
-    private double CalculateAverageRating(CreateProductReviewQuery request)
+    private double CalculateAverageRating(CreateProductReviewCommand request)
     {
         return (double)(request.ValueRating + request.QualityRating + request.UsabilityRating) / 3;
     }

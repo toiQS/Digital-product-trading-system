@@ -58,10 +58,14 @@ namespace DPTS.Domains
 
     public enum EscrowStatus
     {
-        Unknown = 0,
-        WaitingConfirm = 1,
-        BuyerConfirmed = 2,
-        Done = 3,
-        Canceled = 4
+        Unknown,           // Không rõ
+        Pending,           // Đang xử lý
+        WaitingConfirm,    // Chờ xác nhận
+        BuyerConfirmed,    // Đã xác nhận
+        Done,              // Hoàn tất
+        Complaint,         // Khiếu nại
+        Canceled,          // Đã huỷ
+        Failed             // Lỗi
     }
+
 }

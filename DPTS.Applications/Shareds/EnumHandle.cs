@@ -15,12 +15,17 @@ namespace DPTS.Applications.Shareds
         public static string HandleEscrowStatus(EscrowStatus status) => status switch
         {
             EscrowStatus.Unknown => "Không rõ",
+            EscrowStatus.Pending => "Đang xử lý",
             EscrowStatus.WaitingConfirm => "Chờ người mua xác nhận",
             EscrowStatus.BuyerConfirmed => "Người mua đã xác nhận",
             EscrowStatus.Done => "Hoàn tất",
+            EscrowStatus.Complaint => "Đang khiếu nại",
             EscrowStatus.Canceled => "Đã huỷ",
+            EscrowStatus.Failed => "Lỗi giao dịch",
             _ => "Không xác định"
         };
+
+
 
         public static string HandleAdjustmentType(AdjustmentType type) => type switch
         {
@@ -78,5 +83,13 @@ namespace DPTS.Applications.Shareds
             TransactionType.Refund => "Hoàn tiền",
             _ => "Không xác định"
         };
+        public static string HandleWalletTransactionStatus(WalletTransactionStatus status) => status switch
+        {
+            WalletTransactionStatus.Pending => "Đang xử lý",
+            WalletTransactionStatus.Completed => "Hoàn thành",
+            WalletTransactionStatus.Failed => "Thất bại",
+            _ => "Không xác định"
+        };
+
     }
 }

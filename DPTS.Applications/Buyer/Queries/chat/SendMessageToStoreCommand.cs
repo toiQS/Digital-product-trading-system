@@ -4,7 +4,7 @@ using MediatR;
 
 namespace DPTS.Applications.Buyer.Queries.chat
 {
-    public class SendMessageToStoreQuery: IRequest<ServiceResult<ChatIndexListDto>>
+    public class SendMessageToStoreCommand: IRequest<ServiceResult<ChatIndexListDto>>
     {
         public string StoreId { get; set; } = string.Empty;
         public string UserId { get; set; } = string.Empty;

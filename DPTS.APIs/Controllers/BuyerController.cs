@@ -24,7 +24,7 @@ namespace DPTS.APIs.Controllers
 
         // --------------------- Cart ---------------------
         [HttpPost("add-to-cart")]
-        public async Task<IActionResult> AddToCart([FromBody] AddToCartQuery query)
+        public async Task<IActionResult> AddToCart([FromBody] AddToCartCommand query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
@@ -46,7 +46,7 @@ namespace DPTS.APIs.Controllers
         }
 
         [HttpPost("review-product")]
-        public async Task<IActionResult> CreateProductReview([FromBody] CreateProductReviewQuery query)
+        public async Task<IActionResult> CreateProductReview([FromBody] CreateProductReviewCommand query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
@@ -68,14 +68,14 @@ namespace DPTS.APIs.Controllers
         }
 
         [HttpPut("profile-update")]
-        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileQuery query)
+        public async Task<IActionResult> UpdateUserProfile([FromBody] UpdateUserProfileCommand query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
 
         [HttpPut("profile-mini-update")]
-        public async Task<IActionResult> UpdateUserProfileMini([FromBody] UpdateUserProfileMiniQuery query)
+        public async Task<IActionResult> UpdateUserProfileMini([FromBody] UpdateUserProfileMiniCommand query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
@@ -98,7 +98,7 @@ namespace DPTS.APIs.Controllers
         }
 
         [HttpPost("send-message")]
-        public async Task<IActionResult> SendMessageToStore([FromBody] SendMessageToStoreQuery query)
+        public async Task<IActionResult> SendMessageToStore([FromBody] SendMessageToStoreCommand query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);

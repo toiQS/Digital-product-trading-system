@@ -61,13 +61,14 @@ namespace DPTS.Infrastructures.Repository.Implements
                 .FirstOrDefaultAsync(e => e.EscrowId == escrowId);
         }
 
-        public async Task<Escrow?> GetByOrderIdAsync(string orderId)
+        public async Task<IEnumerable<Escrow>> GetByOrderIdAsync(string orderId = null!)
         {
-            if (string.IsNullOrWhiteSpace(orderId))
-                return null;
-
-            return await _context.Escrows
-                .FirstOrDefaultAsync(e => e.OrderId == orderId);
+            var query = _context.Escrows.AsQueryable();
+            if (string.IsNullOrEmpty(orderId))
+            {
+                query = query.Where(x => x.OrderId == orderId);
+            }
+            return await query.ToListAsync();
         }
 
         public async Task<IEnumerable<Escrow>> GetExpiredAsync(DateTime? before = null)
