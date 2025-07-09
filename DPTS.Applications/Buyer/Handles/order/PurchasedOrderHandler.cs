@@ -56,7 +56,7 @@ namespace DPTS.Applications.Buyer.Handles.order
                 {
                     allOrderItems.Add(new OrderIndexDto
                     {
-                        OrderId = order.OrderId,
+                        EscrowId = escrow.EscrowId,
                         Amount = escrow.Amount,
                         BuyAt = escrow.CreatedAt.ToString("dd/MM/yyyy"),
                         Status = EnumHandle.HandleEscrowStatus(escrow.Status)
@@ -72,10 +72,10 @@ namespace DPTS.Applications.Buyer.Handles.order
             // 5. Gán thống kê tổng quan
             result.OrverViewIndexDtos.AddRange(new[]
             {
-                new OrverViewIndexDto { Count = totalOrder, Name = "Tổng" },
-                new OrverViewIndexDto { Count = totalOrderDone, Name = "Hoàn tất" },
-                new OrverViewIndexDto { Count = totalOrderPending, Name = "Đang xử lý" },
-                new OrverViewIndexDto { Count = totalOrderError, Name = "Lỗi" }
+                new OverViewIndexDto { Count = totalOrder, Name = "Tổng" },
+                new OverViewIndexDto { Count = totalOrderDone, Name = "Hoàn tất" },
+                new OverViewIndexDto { Count = totalOrderPending, Name = "Đang xử lý" },
+                new OverViewIndexDto { Count = totalOrderError, Name = "Lỗi" }
             });
 
             // 6. Gán danh sách đơn hàng có phân trang
