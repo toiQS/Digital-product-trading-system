@@ -17,7 +17,7 @@
     public class PurchasingProcess
     {
         public string NameProcess { get; set; } = string.Empty;
-        public string ProessAt {  get; set; } = string.Empty;
+        public string ProcessAt {  get; set; } = string.Empty;
         public string Information {  get; set; } = string.Empty;
     }
     public class DetailInformation
