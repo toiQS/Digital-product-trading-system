@@ -40,7 +40,7 @@ namespace DPTS.Applications.Buyer.Handles.order
 
             // 2. Lấy danh sách đơn hàng
             var orders = await _orderRepository.GetByBuyerAsync(request.UserId);
-            var totalOrder = orders.Count();
+            
             int totalOrderDone = 0;
             int totalOrderPending = 0;
             int totalOrderError = 0;
@@ -68,7 +68,7 @@ namespace DPTS.Applications.Buyer.Handles.order
                 totalOrderPending += escrows.Count(x => x.Status == Domains.EscrowStatus.Pending);
                 totalOrderError += escrows.Count(x => x.Status == Domains.EscrowStatus.Failed);
             }
-
+            var totalOrder = totalOrderDone + totalOrderPending + totalOrderError;
             // 5. Gán thống kê tổng quan
             result.OrverViewIndexDtos.AddRange(new[]
             {

@@ -20,32 +20,11 @@ namespace DPTS.Applications.Buyer.Handles.payment
         private readonly IProductRepository _productRepository;
         private readonly IMediator _mediator;
         private readonly IWalletTransactionRepository _walletTransactionRepository;
+        private readonly IEscrowProcessRepository _escrowProcessRepository;
+        private readonly IOrderPaymentRepository _orderPaymentRepository;
         private readonly ILogger<GetPaymentResultHandler> _logger;
 
-        public GetPaymentResultHandler(IAdjustmentHandle adjustmentHandle,
-                                       IWalletRepository walletRepository,
-                                       IUserProfileRepository userProfileRepository,
-                                       IOrderRepository orderRepository,
-                                       IEscrowRepository escrowRepository,
-                                       IPaymentMethodRepository paymentMethodRepository,
-                                       ILogRepository logRepository,
-                                       IProductRepository productRepository,
-                                       IMediator mediator,
-                                       IWalletTransactionRepository walletTransactionRepository,
-                                       ILogger<GetPaymentResultHandler> logger)
-        {
-            _adjustmentHandle = adjustmentHandle;
-            _walletRepository = walletRepository;
-            _userProfileRepository = userProfileRepository;
-            _orderRepository = orderRepository;
-            _escrowRepository = escrowRepository;
-            _paymentMethodRepository = paymentMethodRepository;
-            _logRepository = logRepository;
-            _productRepository = productRepository;
-            _mediator = mediator;
-            _walletTransactionRepository = walletTransactionRepository;
-            _logger = logger;
-        }
+       
 
         public async Task<ServiceResult<string>> Handle(GetPaymentResultQuery request, CancellationToken cancellationToken)
         {
@@ -167,7 +146,15 @@ namespace DPTS.Applications.Buyer.Handles.payment
                 // 8. Ghi escrow
                 foreach (var item in escrows)
                 {
+                    var addProcess = new EscrowProcess()
+                    {
+                        EscrowId = item.EscrowId,
+                        ProcessName = "Đã thanh toán",
+                        ProcessId = Guid.NewGuid().ToString(),
+                        ProcessAt = DateTime.Now
+                    };
                     await _escrowRepository.AddAsync(item);
+                    await _escrowProcessRepository.AddAsync(addProcess);
                 }
 
                 // 9. Đánh dấu thanh toán
@@ -188,10 +175,20 @@ namespace DPTS.Applications.Buyer.Handles.payment
                         Type = TransactionType.Purchase,
                         Timestamp = DateTime.UtcNow,
                     };
-
+                    var orderPayment = new OrderPayment()
+                    {
+                        OrderId = order.OrderId,
+                        Amount = order.TotalAmount,,
+                        OrderPaymentId = Guid.NewGuid().ToString(),
+                        PaidAt = DateTime.UtcNow,
+                        PaymentMethodId = request.PaymentMethodId,
+                        SourceType = PaymentSourceType.Wallet,
+                        WalletId= wallet.WalletId,
+                    };
                     wallet.Balance -= order.TotalAmount;
                     await _walletTransactionRepository.UpdateAsync(walletTransaction);
                     await _walletRepository.UpdateAsync(wallet);
+                    await _orderPaymentRepository.AddAsync(orderPayment);
                 }
                 else if (paymentMethod != null)
                 {
