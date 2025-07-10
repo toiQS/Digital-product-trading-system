@@ -178,7 +178,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
                     var orderPayment = new OrderPayment()
                     {
                         OrderId = order.OrderId,
-                        Amount = order.TotalAmount,,
+                        Amount = order.TotalAmount,
                         OrderPaymentId = Guid.NewGuid().ToString(),
                         PaidAt = DateTime.UtcNow,
                         PaymentMethodId = request.PaymentMethodId,

@@ -63,7 +63,9 @@ namespace DPTS.Applications
             services.AddScoped<IWalletRepository, WalletRepository>();
             services.AddScoped<IWalletTransactionRepository, WalletTransactionRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IEscrowProcessRepository, EscrowProcessRepository>();
             services.AddScoped<IAdjustmentHandle, AdjustmentHandle>();
+
 
 
         }

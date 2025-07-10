@@ -1,9 +1,11 @@
 ﻿using DPTS.Applications.Buyer.Queries.chat;
 using DPTS.Applications.Buyer.Queries.order;
+using DPTS.Applications.Buyer.Queries.payment;
 using DPTS.Applications.Buyer.Queries.product;
 using DPTS.Applications.Buyer.Queries.profile;
 using DPTS.Applications.Buyer.Queries.review;
 using DPTS.Applications.Buyer.Queries.security;
+using DPTS.Applications.Buyer.Queries.wallet;
 using DPTS.Applications.Shareds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -89,6 +91,21 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
 
+        // --------------------- Order ---------------------
+        [HttpGet("order-detail")]
+        public async Task<IActionResult> GetOrderDetail([FromQuery] GetDetailOrderQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpGet("purchased-orders")]
+        public async Task<IActionResult> GetPurchasedOrders([FromQuery] GetPurchasedOrderQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
         // --------------------- Chat ---------------------
         [HttpGet("chat")]
         public async Task<IActionResult> GetChat([FromQuery] GetChatQuery query)
@@ -109,6 +126,22 @@ namespace DPTS.APIs.Controllers
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
         {
             var result = await _mediator.Send(command);
+            return StatusCodeFromResult(result);
+        }
+
+        // --------------------- Payment ---------------------
+        [HttpGet("payment-result")]
+        public async Task<IActionResult> GetPaymentResult([FromQuery] GetPaymentResultQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        // --------------------- Wallet ---------------------
+        [HttpGet("wallet")]
+        public async Task<IActionResult> GetWallet([FromQuery] GetWalletQuery query)
+        {
+            var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
 
