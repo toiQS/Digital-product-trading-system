@@ -81,6 +81,11 @@ namespace DPTS.Infrastructures.Repository.Implements
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<ProductReview>> GetAllAsync()
+        {
+            return await _context.ProductReviews.ToListAsync();
+        }
+
         #endregion
     }
 }

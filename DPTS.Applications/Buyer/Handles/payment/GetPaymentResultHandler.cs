@@ -24,7 +24,34 @@ namespace DPTS.Applications.Buyer.Handles.payment
         private readonly IOrderPaymentRepository _orderPaymentRepository;
         private readonly ILogger<GetPaymentResultHandler> _logger;
 
-       
+        public GetPaymentResultHandler(IAdjustmentHandle adjustmentHandle,
+                                       IWalletRepository walletRepository,
+                                       IUserProfileRepository userProfileRepository,
+                                       IOrderRepository orderRepository,
+                                       IEscrowRepository escrowRepository,
+                                       IPaymentMethodRepository paymentMethodRepository,
+                                       ILogRepository logRepository,
+                                       IProductRepository productRepository,
+                                       IMediator mediator,
+                                       IWalletTransactionRepository walletTransactionRepository,
+                                       IEscrowProcessRepository escrowProcessRepository,
+                                       IOrderPaymentRepository orderPaymentRepository,
+                                       ILogger<GetPaymentResultHandler> logger)
+        {
+            _adjustmentHandle = adjustmentHandle;
+            _walletRepository = walletRepository;
+            _userProfileRepository = userProfileRepository;
+            _orderRepository = orderRepository;
+            _escrowRepository = escrowRepository;
+            _paymentMethodRepository = paymentMethodRepository;
+            _logRepository = logRepository;
+            _productRepository = productRepository;
+            _mediator = mediator;
+            _walletTransactionRepository = walletTransactionRepository;
+            _escrowProcessRepository = escrowProcessRepository;
+            _orderPaymentRepository = orderPaymentRepository;
+            _logger = logger;
+        }
 
         public async Task<ServiceResult<string>> Handle(GetPaymentResultQuery request, CancellationToken cancellationToken)
         {

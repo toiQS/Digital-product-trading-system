@@ -112,6 +112,11 @@ namespace DPTS.Infrastructures.Repository.Implements
             }
         }
 
+        public async Task<IEnumerable<Order>> GetsAsync(bool includeBuyer = false, bool includeEscrow = false)
+        {
+            return await BuildBaseQuery(includeBuyer, includeEscrow).ToListAsync();
+        }
+
         #endregion
     }
 }
