@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using DPTS.Infrastructures.Datas;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,18 +10,18 @@ namespace DPTS.Applications
     {
         public static void Initalize(this IServiceCollection services, IConfiguration configuration)
         {
-            //services.InitializeConnect(configuration);
+            services.InitializeConnect(configuration);
             //services.InitializeRepository();
             //services.InitializeService();
             //services.InitializeJwt(configuration);
         }
 
-        //private static void InitializeConnect(this IServiceCollection services, IConfiguration configuration)
-        //{
-        //    services.AddDbContext<ApplicationDbContext>(options =>
-        //        options.UseNpgsql(configuration.GetConnectionString("PostgreConnectString")));
+        private static void InitializeConnect(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("PostgreConnectString")));
 
-        //}
+        }
 
         //private static void InitializeService(this IServiceCollection services)
         //{

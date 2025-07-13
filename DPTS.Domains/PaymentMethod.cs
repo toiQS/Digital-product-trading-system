@@ -42,5 +42,6 @@ namespace DPTS.Domains
 
         [Column("is_verified")]
         public bool IsVerified { get; init; }
+        private PaymentMethod() { }
     }
 }

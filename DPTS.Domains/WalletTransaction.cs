@@ -62,5 +62,6 @@ namespace DPTS.Domains
         public WalletTransactionStatus Status { get; init; }
 
         public virtual PaymentMethod? LinkedPaymentMethod { get; init; }
+        private WalletTransaction() { }
     }
 }

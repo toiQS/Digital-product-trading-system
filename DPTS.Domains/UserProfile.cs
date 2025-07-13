@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.AccessControl;
 
 namespace DPTS.Domains
 {
@@ -49,6 +50,7 @@ namespace DPTS.Domains
         public Address Address { get; init; } = new Address();
 
         public virtual User User { get; init; } = null!;
+        private UserProfile() { }
     }
 
     [Owned]

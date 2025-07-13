@@ -49,5 +49,6 @@ namespace DPTS.Domains
         public DateTime? LockoutUntil { get; init; }
 
         public virtual User User { get; init; } = null!;
+        private UserSecurity() { }
     }
 }

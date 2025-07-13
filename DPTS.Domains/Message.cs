@@ -17,8 +17,7 @@ namespace DPTS.Domains
             string senderId,
             ParticipantType receiverType,
             string receiverId,
-            string content,
-            bool isSystem = false)
+            string content)
         {
             MessageId = Guid.NewGuid().ToString();
             SenderType = senderType;
@@ -26,7 +25,6 @@ namespace DPTS.Domains
             ReceiverType = receiverType;
             ReceiverId = receiverId;
             Content = content;
-            IsSystem = isSystem;
             CreatedAt = DateTime.UtcNow;
         }
 
@@ -51,8 +49,6 @@ namespace DPTS.Domains
 
         [Column("created_at")]
         public DateTime CreatedAt { get; init; }
-
-        [Column("is_system")]
-        public bool IsSystem { get; init; }
+        private Message() { }
     }
 }

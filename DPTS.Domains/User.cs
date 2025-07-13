@@ -43,6 +43,7 @@ namespace DPTS.Domains
         public virtual Wallet? Wallet { get; set; }
         public virtual Store? Store { get; set; }
         public virtual ICollection<PaymentMethod> PaymentMethods { get; set; } = new List<PaymentMethod>();
+        private User() { }
     }
 
 }

@@ -46,5 +46,7 @@ namespace DPTS.Domains
         public virtual User User { get; init; } = null!;
         public virtual ICollection<Message> SentMessages { get; init; } = new List<Message>();
         public virtual ICollection<Message> ReceivedMessages { get; init; } = new List<Message>();
+
+        private Store() { }
     }
 }

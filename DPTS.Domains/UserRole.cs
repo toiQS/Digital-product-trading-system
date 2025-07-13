@@ -21,7 +21,7 @@ namespace DPTS.Domains
 
         [Column("user_role_description")]
         public string UserRoleDescription { get; init; }
-
+        private UserRole() { }
         
     }
 }

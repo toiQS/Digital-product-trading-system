@@ -26,5 +26,6 @@ namespace DPTS.Domains
         public decimal Balance { get; init; }
 
         public virtual ICollection<WalletTransaction> Transactions { get; init; } = new List<WalletTransaction>();
+        private Wallet() { }
     }
 }
