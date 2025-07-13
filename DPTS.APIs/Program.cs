@@ -1,5 +1,4 @@
 ﻿using DPTS.Applications;
-using DPTS.Infrastructures.Data;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Initalize(builder.Configuration);

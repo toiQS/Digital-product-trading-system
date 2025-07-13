@@ -24,5 +24,8 @@
   <ItemGroup>
     <ProjectReference Include="..\DPTS.Applications\DPTS.Applications.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
 
 </Project>
