@@ -7,18 +7,38 @@ using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Sellers.products.Handles
 {
-    public class GetProductsHandler : IRequestHandler<GetSellerProductsItemQuery, ServiceResult<IEnumerable<ProductListItemDto>>>
+    public class GetSellerProdutsHandle : IRequestHandler<GetSellerProductsItemQuery, ServiceResult<IEnumerable<ProductListItemDto>>>
     {
         private readonly IProductRepository _productRepository;
         private readonly IEscrowRepository _escrowRepository;
         private readonly IOrderItemRepository _orderItemRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IProductReviewRepository _productReviewRepository;
-        private readonly ILogger<GetProductsHandler> _logger;
+        private readonly ILogger<GetSellerProdutsHandle> _logger;
         private readonly IStoreRepository _storeRepository;
         private readonly IProductImageRepository _productImageRepository;
         private readonly AdjustmentHandle _adjustmentHandle;
-        
+
+        public GetSellerProdutsHandle(IProductRepository productRepository,
+                                      IEscrowRepository escrowRepository,
+                                      IOrderItemRepository orderItemRepository,
+                                      IOrderRepository orderRepository,
+                                      IProductReviewRepository productReviewRepository,
+                                      ILogger<GetSellerProdutsHandle> logger,
+                                      IStoreRepository storeRepository,
+                                      IProductImageRepository productImageRepository,
+                                      AdjustmentHandle adjustmentHandle)
+        {
+            _productRepository = productRepository;
+            _escrowRepository = escrowRepository;
+            _orderItemRepository = orderItemRepository;
+            _orderRepository = orderRepository;
+            _productReviewRepository = productReviewRepository;
+            _logger = logger;
+            _storeRepository = storeRepository;
+            _productImageRepository = productImageRepository;
+            _adjustmentHandle = adjustmentHandle ?? throw new ArgumentNullException(nameof(adjustmentHandle));
+        }
 
         public async Task<ServiceResult<IEnumerable<ProductListItemDto>>> Handle(GetSellerProductsItemQuery query, CancellationToken token = default)
         {

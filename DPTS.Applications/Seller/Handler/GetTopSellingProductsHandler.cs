@@ -1,138 +1,118 @@
-﻿//using DPTS.Applications.Sellers.revenues.Dtos;
-//using DPTS.Applications.Sellers.revenues.Queries;
-//using DPTS.Applications.Shareds;
-//using DPTS.Infrastructures.Repository.Interfaces;
-//using MediatR;
-//using Microsoft.Extensions.Logging;
+﻿using DPTS.Applications.Sellers.revenues.Dtos;
+using DPTS.Applications.Sellers.revenues.Queries;
+using DPTS.Applications.Shareds;
+using DPTS.Domains;
+using DPTS.Infrastructures.Repository.Interfaces;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
-//namespace DPTS.Applications.Sellers.revenues.Handles
-//{
-//    public class GetTopSellingProductsHandler : IRequestHandler<GetTopSellingProductsQuery, ServiceResult<IEnumerable<TopSellingProductDto>>>
-//    {
-//        private readonly IOrderRepository _orderRepository;
-//        private readonly IOrderItemRepository _itemRepository;
-//        private readonly IProductRepository _productRepository;
-//        private readonly ILogger<GetTopSellingProductsHandler> _logger;
-//        private readonly IStoreRepository _storeRepository;
+public class GetTopSellingProductsHandler : IRequestHandler<GetTopSellingProductsQuery, ServiceResult<IEnumerable<TopSellingProductDto>>>
+{
+    private readonly IProductRepository _productRepository;
+    private readonly ILogger<GetTopSellingProductsHandler> _logger;
+    private readonly IStoreRepository _storeRepository;
+    private readonly IEscrowRepository _ecrowRepository;
+    private readonly IUserProfileRepository _userProfileRepository;
+    private readonly IOrderItemRepository _orderItemRepository;
+    private readonly IProductImageRepository _productImageRepository;
 
-//        public GetTopSellingProductsHandler(
-//            IOrderRepository orderRepository,
-//            IOrderItemRepository itemRepository,
-//            ILogger<GetTopSellingProductsHandler> logger,
-//            IProductRepository productRepository,
-//            IStoreRepository storeRepository)
-//        {
-//            _orderRepository = orderRepository;
-//            _itemRepository = itemRepository;
-//            _logger = logger;
-//            _productRepository = productRepository;
-//            _storeRepository = storeRepository;
-//        }
+    public GetTopSellingProductsHandler(
+        IProductRepository productRepository,
+        ILogger<GetTopSellingProductsHandler> logger,
+        IStoreRepository storeRepository,
+        IEscrowRepository ecrowRepository,
+        IUserProfileRepository userProfileRepository,
+        IOrderItemRepository orderItemRepository,
+        IProductImageRepository productImageRepository)
+    {
+        _productRepository = productRepository;
+        _logger = logger;
+        _storeRepository = storeRepository;
+        _ecrowRepository = ecrowRepository;
+        _userProfileRepository = userProfileRepository;
+        _orderItemRepository = orderItemRepository;
+        _productImageRepository = productImageRepository;
+    }
 
-//        public async Task<ServiceResult<IEnumerable<TopSellingProductDto>>> Handle(GetTopSellingProductsQuery query, CancellationToken cancellationToken = default)
-//        {
-//            _logger.LogInformation("Handling top selling products request for seller: {SellerId}", query.SellerId);
+    public async Task<ServiceResult<IEnumerable<TopSellingProductDto>>> Handle(GetTopSellingProductsQuery request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Generating top selling products for seller {SellerId}", request.SellerId);
 
-//            try
-//            {
-//                var store = await _storeRepository.GetByUserIdAsync(query.SellerId);
-//                if (store == null)
-//                {
-//                    _logger.LogWarning("Store not found for seller: {SellerId}", query.SellerId);
-//                    return ServiceResult<IEnumerable<TopSellingProductDto>>.Error("Không tìm thấy cửa hàng.");
-//                }
+        // Validate
+        var profile = await _userProfileRepository.GetByUserIdAsync(request.SellerId);
+        if (profile == null)
+        {
+            _logger.LogWarning("Seller profile not found: {SellerId}", request.SellerId);
+            return ServiceResult<IEnumerable<TopSellingProductDto>>.Error("Không tìm thấy người bán.");
+        }
 
-//                // Lọc đơn đã hoàn tất
-//                var orders = (await _orderRepository.GetsAsync(includeEscrow: true))
-//                    .Where(x => x.Escrow.StoreId == store.StoreId && x.Escrow.Status == Domains.EscrowStatus.Done)
-//                    .ToList();
+        var store = await _storeRepository.GetByUserIdAsync(profile.UserId);
+        if (store == null)
+        {
+            _logger.LogWarning("Store not found for SellerId = {SellerId}", request.SellerId);
+            return ServiceResult<IEnumerable<TopSellingProductDto>>.Error("Không tìm thấy cửa hàng.");
+        }
 
-//                // Lọc sản phẩm của seller
-//                //var orderItems = (await _itemRepository.GetsAsync(includeProduct: true))
-//                    .Where(x => x.Product.StoreId == store.StoreId)
-//                    .ToList();
+        // Get all escrows & orderIds
+        var escrows = await _ecrowRepository.GetAllAsync(storeId: store.StoreId);
+        var orderIds = escrows.Select(e => e.OrderId).Distinct().ToList();
 
-//                List<GroupResult> topSelling;
+        // Get all order items in 1 call
+        var allOrderItems = new List<OrderItem>();
+        foreach (var orderId in orderIds)
+        {
+            var items = await _orderItemRepository.GetByOrderIdAsync(orderId);
+            allOrderItems.AddRange(items);
+        }
 
-//                try
-//                {
-//                    var joined = from item in orderItems
-//                                 join order in orders on item.OrderId equals order.OrderId
-//                                 select new JoinedResult
-//                                 {
-//                                     ProductId = item.ProductId,
-//                                     OrderId = order.OrderId,
-//                                     OrderItemId = item.OrderItemId,
-//                                     Quantity = item.Quantity,
-//                                     TotalAmount = item.TotalAmount
-//                                 };
+        // Group by ProductId
+        var productSales = allOrderItems
+            .GroupBy(x => x.ProductId)
+            .Select(g => new
+            {
+                ProductId = g.Key,
+                TotalQuantity = g.Sum(x => x.Quantity),
+                TotalRevenue = g.Sum(x => x.Quantity * x.PriceForeachProduct)
+            })
+            .OrderByDescending(x => x.TotalQuantity)
+            .ToList();
 
-//                    topSelling = joined
-//                        .GroupBy(x => x.ProductId)
-//                        .Select(g => new GroupResult
-//                        {
-//                            ProductId = g.Key ?? "",
-//                            TotalQuantity = g.Sum(x => x.Quantity),
-//                            TotalAmount = g.Sum(x => x.TotalAmount)
-//                        })
-//                        .OrderByDescending(x => x.TotalQuantity)
-//                        .Take(3)
-//                        .ToList();
-//                }
-//                catch (Exception ex)
-//                {
-//                    _logger.LogError(ex, "Error during grouping and joining order data.");
-//                    return ServiceResult<IEnumerable<TopSellingProductDto>>.Error("Không thể xử lý dữ liệu sản phẩm bán chạy.");
-//                }
+        // Fetch all related products + images
+        var productIds = productSales.Select(x => x.ProductId).Distinct().ToList();
+        var products = await _productRepository.GetByListIdsAsync(productIds);
+        var imagesDict = new Dictionary<string, ProductImage>();
 
-//                var result = new List<TopSellingProductDto>();
+        foreach (var pid in productIds)
+        {
+            var img = await _productImageRepository.GetPrimaryAsync(pid);
+            if (img != null)
+                imagesDict[pid] = img;
+        }
 
-//                foreach (var item in topSelling)
-//                {
-//                    var product = await _productRepository.GetByIdAsync(item.ProductId, includeImages: true);
-//                    if (product == null)
-//                    {
-//                        _logger.LogWarning("Product not found: {ProductId}", item.ProductId);
-//                        continue;
-//                    }
+        // Build result
+        var result = new List<TopSellingProductDto>();
 
-//                    var imageUrl = product.Images
-//                        .FirstOrDefault(x => x.IsPrimary)?.ImagePath ?? "no-image.jpg";
+        foreach (var item in productSales)
+        {
+            var product = products.FirstOrDefault(p => p.ProductId == item.ProductId);
+            if (product == null)
+            {
+                _logger.LogWarning("Missing product for ProductId: {ProductId}", item.ProductId);
+                continue;
+            }
 
-//                    result.Add(new TopSellingProductDto
-//                    {
-//                        ProductId = product.ProductId,
-//                        ProductName = product.ProductName,
-//                        OrderCount = item.TotalQuantity,
-//                        Revenue = item.TotalAmount,
-//                        ImageUrl = imageUrl
-//                    });
-//                }
+            imagesDict.TryGetValue(item.ProductId, out var image);
 
-//                _logger.LogInformation("Top selling products fetched successfully for seller: {SellerId}", query.SellerId);
-//                return ServiceResult<IEnumerable<TopSellingProductDto>>.Success(result);
-//            }
-//            catch (Exception ex)
-//            {
-//                _logger.LogError(ex, "Unhandled exception in GetTopSellingProductsHandler.");
-//                return ServiceResult<IEnumerable<TopSellingProductDto>>.Error("Lỗi khi lấy sản phẩm bán chạy.");
-//            }
-//        }
+            result.Add(new TopSellingProductDto
+            {
+                ProductId = item.ProductId,
+                ProductName = product.ProductName,
+                OrderCount = item.TotalQuantity,
+                Revenue = item.TotalRevenue,
+                ImageUrl = image?.ImagePath ?? ""
+            });
+        }
 
-//        private class JoinedResult
-//        {
-//            public string? ProductId { get; set; }
-//            public string? OrderId { get; set; }
-//            public string? OrderItemId { get; set; }
-//            public int Quantity { get; set; }
-//            public decimal TotalAmount { get; set; }
-//        }
-
-//        private class GroupResult
-//        {
-//            public string ProductId { get; set; } = string.Empty;
-//            public int TotalQuantity { get; set; }
-//            public decimal TotalAmount { get; set; }
-//        }
-//    }
-//}
+        return ServiceResult<IEnumerable<TopSellingProductDto>>.Success(result);
+    }
+}
