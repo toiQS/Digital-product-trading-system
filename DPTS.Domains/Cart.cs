@@ -12,7 +12,7 @@ namespace DPTS.Domains
         {
             CartId = Guid.NewGuid().ToString();
             BuyerId = buyerId;
-            UpdateAt = DateTime.UtcNow;
+            UpdatedAt = DateTime.UtcNow;
             CartItems = new List<CartItem>();
         }
 
@@ -24,10 +24,28 @@ namespace DPTS.Domains
         [Column("buyer_id")]
         public string BuyerId { get; init; }
 
-        [Column("update_at")]
-        public DateTime UpdateAt { get; init; }
+        [Column("updated_at")]
+        public DateTime UpdatedAt { get; set; }
+
+        [Column("is_checked_out")]
+        public bool IsCheckedOut { get; set; } = false;
 
         public virtual User User { get; init; } = null!;
-        public virtual ICollection<CartItem> CartItems { get; init; } = new List<CartItem>();
+        public virtual ICollection<CartItem> CartItems { get; init; }
+
+        public void Touch()
+        {
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void MarkCheckedOut()
+        {
+            IsCheckedOut = true;
+        }
+        public decimal GetCartTotal()
+        {
+            return CartItems.Sum(item => item.GetTotalPrice());
+        }
+
     }
 }

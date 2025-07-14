@@ -13,6 +13,7 @@ namespace DPTS.Domains
             ProductReviewImageId = Guid.NewGuid().ToString();
             ProductReviewId = productReviewId;
             ProductReviewImagePath = imagePath;
+            CreatedAt = DateTime.UtcNow;
         }
 
         [Key]
@@ -26,6 +27,9 @@ namespace DPTS.Domains
         [Required]
         [Column("product_review_image_path")]
         public string ProductReviewImagePath { get; init; }
+
+        [Column("created_at")]
+        public DateTime CreatedAt { get; init; }
 
         public virtual ProductReview ProductReview { get; init; } = null!;
     }

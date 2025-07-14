@@ -14,15 +14,19 @@ namespace DPTS.Domains
             OrderId = orderId;
             StoreId = storeId;
             Amount = amount;
+
             PlatformFeeRate = platformFeeRate;
-            PlatformFeeAmount = amount * platformFeeRate;
+            PlatformFeeAmount = Math.Round(amount * platformFeeRate, 2);
+
             TaxRate = taxRate;
-            TaxAmount = amount * taxRate;
+            TaxAmount = Math.Round(amount * taxRate, 2);
+
             ActualAmount = amount - PlatformFeeAmount - TaxAmount;
+
             Status = EscrowStatus.Pending;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-            Expired = CreatedAt.AddDays(7); // ví dụ: escrow hết hạn sau 7 ngày
+            Expired = CreatedAt.AddDays(30); // hết hạn sau 7 ngày
         }
 
         [Key]
@@ -56,25 +60,52 @@ namespace DPTS.Domains
         public decimal ActualAmount { get; init; }
 
         [Column("released_at")]
-        public DateTime? ReleasedAt { get; init; }
+        public DateTime? ReleasedAt { get; private set; }
 
         [Column("released_by")]
-        public string? ReleasedBy { get; init; }
+        public string? ReleasedBy { get; private set; }
 
         [Column("status")]
-        public EscrowStatus Status { get; init; } = EscrowStatus.Unknown;
+        public EscrowStatus Status { get; private set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; init; }
 
         [Column("updated_at")]
-        public DateTime UpdatedAt { get; init; }
+        public DateTime UpdatedAt { get; private set; }
 
         [Column("expired")]
         public DateTime Expired { get; init; }
 
         public virtual Order Order { get; init; } = null!;
         public virtual Store Store { get; init; } = null!;
+
+        // Domain logic
+        public void MarkAvailable()
+        {
+            Status = EscrowStatus.Avalible;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void MarkComplaint()
+        {
+            Status = EscrowStatus.BeenComplainting;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void MarkReleased(string releasedBy)
+        {
+            Status = EscrowStatus.Avalible; // hoặc thêm trạng thái Released nếu có enum mới
+            ReleasedBy = releasedBy;
+            ReleasedAt = DateTime.UtcNow;
+            UpdatedAt = ReleasedAt.Value;
+        }
+
+        public void MarkError()
+        {
+            Status = EscrowStatus.Error;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 
     public enum EscrowStatus
@@ -82,7 +113,7 @@ namespace DPTS.Domains
         Unknown = 0,
         Pending,             // Đang giữ tiền
         Avalible,            // Có thể release
-        BeenComplainting,    // Có khiếu nại
-        Error                // Có lỗi khi xử lý
+        BeenComplainting,    // Đang khiếu nại
+        Error                // Lỗi hệ thống
     }
 }

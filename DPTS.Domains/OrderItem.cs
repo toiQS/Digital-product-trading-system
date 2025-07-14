@@ -39,6 +39,10 @@ namespace DPTS.Domains
         [Column("total_price")]
         public decimal TotalPrice { get; init; }
 
+        // Reserved field for applied discount or tax in future
+        [Column("adjusted_amount")]
+        public decimal? AdjustedAmount { get; init; }
+
         public virtual Order Order { get; init; } = null!;
         public virtual Product Product { get; init; } = null!;
     }

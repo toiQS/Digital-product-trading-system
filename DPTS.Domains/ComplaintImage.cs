@@ -13,7 +13,7 @@ namespace DPTS.Domains
             ImageId = Guid.NewGuid().ToString();
             ComplaintId = complaintId;
             ImagePath = imagePath;
-            CreateAt = DateTime.UtcNow;
+            CreatedAt = DateTime.UtcNow;
         }
 
         [Key]
@@ -28,8 +28,8 @@ namespace DPTS.Domains
         [Column("image_path")]
         public string ImagePath { get; init; }
 
-        [Column("create_at")]
-        public DateTime CreateAt { get; init; }
+        [Column("created_at")]
+        public DateTime CreatedAt { get; init; }
 
         [ForeignKey("ComplaintId")]
         public virtual Complaint Complaint { get; init; } = null!;

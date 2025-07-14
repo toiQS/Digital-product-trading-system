@@ -19,6 +19,7 @@ namespace DPTS.Domains
             Status = ComplaintStatus.Pending;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+            Images = new List<ComplaintImage>();
         }
 
         [Key]
@@ -39,11 +40,11 @@ namespace DPTS.Domains
 
         [Required]
         [Column("title")]
-        public string Title { get; init; }
+        public string Title { get; private set; }
 
         [Required]
         [Column("description")]
-        public string Description { get; init; }
+        public string Description { get; private set; }
 
         [Column("status")]
         public ComplaintStatus Status { get; set; }
@@ -54,11 +55,25 @@ namespace DPTS.Domains
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
 
+        // Navigation
         public virtual Order Order { get; init; } = null!;
         public virtual OrderItem OrderItem { get; init; } = null!;
         public virtual User User { get; init; } = null!;
+        public virtual List<ComplaintImage> Images { get; init; }
 
-        public virtual List<ComplaintImage> Images { get; init; } = new();
+        // Domain logic
+        public void Resolve()
+        {
+            Status = ComplaintStatus.Resolved;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void UpdateContent(string title, string description)
+        {
+            Title = title;
+            Description = description;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 
     public enum ComplaintStatus

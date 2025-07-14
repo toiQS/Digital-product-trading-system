@@ -6,6 +6,8 @@ namespace DPTS.Domains
     [Table("user_security")]
     public class UserSecurity
     {
+        private UserSecurity() { } // For EF
+
         public UserSecurity(
             string userId,
             string passwordHash,
@@ -22,6 +24,7 @@ namespace DPTS.Domains
             EmailVerified = emailVerified;
             FailedLoginAttempts = failedLoginAttempts;
             LockoutUntil = lockoutUntil;
+            UpdatedAt = DateTime.UtcNow;
         }
 
         [Key]
@@ -48,7 +51,9 @@ namespace DPTS.Domains
         [Column("lockout_until")]
         public DateTime? LockoutUntil { get; init; }
 
+        [Column("updated_at")]
+        public DateTime UpdatedAt { get; set; }
+
         public virtual User User { get; init; } = null!;
-        private UserSecurity() { }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualBasic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DPTS.Domains
@@ -15,6 +14,8 @@ namespace DPTS.Domains
     [Table("product")]
     public class Product
     {
+        private Product() { }
+
         public Product(
             string storeId,
             string productName,
@@ -76,6 +77,5 @@ namespace DPTS.Domains
         public virtual ICollection<ProductAdjustment> ProductAdjustments { get; init; } = new List<ProductAdjustment>();
         public virtual ICollection<ProductImage> ProductImages { get; init; } = new List<ProductImage>();
         public virtual ICollection<ProductReview> ProductReviews { get; init; } = new List<ProductReview>();
-        private Product() { }
     }
 }

@@ -6,6 +6,8 @@ namespace DPTS.Domains
     [Table("product_adjustment")]
     public class ProductAdjustment
     {
+        private ProductAdjustment() { } // For EF
+
         public ProductAdjustment(string productId, string ruleId)
         {
             Id = Guid.NewGuid().ToString();
@@ -27,6 +29,5 @@ namespace DPTS.Domains
 
         public virtual Product Product { get; init; } = null!;
         public virtual AdjustmentRule Rule { get; init; } = null!;
-        private ProductAdjustment(){}
     }
 }

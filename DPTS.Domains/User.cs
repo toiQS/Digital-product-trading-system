@@ -6,6 +6,8 @@ namespace DPTS.Domains
     [Table("user")]
     public class User
     {
+        private User() { } // For EF
+
         public User(string username, string email, string roleId)
         {
             UserId = Guid.NewGuid().ToString();
@@ -14,36 +16,43 @@ namespace DPTS.Domains
             RoleId = roleId;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+            IsActive = true;
+            PaymentMethods = new List<PaymentMethod>();
         }
 
-        [Key, Column("user_id")]
-        public string UserId { get; init; } = Guid.NewGuid().ToString();
+        [Key]
+        [Column("user_id")]
+        public string UserId { get; init; }
 
-        [Required, MaxLength(50), Column("username")]
-        public string Username { get; set; } = string.Empty;
+        [Required]
+        [MaxLength(50)]
+        [Column("username")]
+        public string Username { get; init; }
 
-        [Required, MaxLength(100), Column("email")]
-        public string Email { get; set; } = string.Empty;
+        [Required]
+        [MaxLength(100)]
+        [Column("email")]
+        public string Email { get; init; }
 
+        [Required]
         [Column("role_id")]
-        public string RoleId { get; set; } = string.Empty;
+        public string RoleId { get; init; }
 
         [Column("created_at")]
-        public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; init; }
 
         [Column("updated_at")]
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; }
 
         [Column("is_active")]
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
 
-        public virtual UserRole UserRole { get; set; } = null!;
-        public virtual UserProfile Profile { get; set; } = null!;
-        public virtual UserSecurity Security { get; set; } = null!;
-        public virtual Wallet? Wallet { get; set; }
-        public virtual Store? Store { get; set; }
-        public virtual ICollection<PaymentMethod> PaymentMethods { get; set; } = new List<PaymentMethod>();
-        private User() { }
+        // Navigation
+        public virtual UserRole UserRole { get; init; } = null!;
+        public virtual UserProfile Profile { get; init; } = null!;
+        public virtual UserSecurity Security { get; init; } = null!;
+        public virtual Wallet? Wallet { get; init; }
+        public virtual Store? Store { get; init; }
+        public virtual ICollection<PaymentMethod> PaymentMethods { get; init; } = new List<PaymentMethod>();
     }
-
 }

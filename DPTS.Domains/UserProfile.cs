@@ -1,13 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Security.AccessControl;
 
 namespace DPTS.Domains
 {
     [Table("user_profile")]
     public class UserProfile
     {
+        private UserProfile() { } // For EF
+
         public UserProfile(
             string userId,
             string? fullName,
@@ -37,6 +38,7 @@ namespace DPTS.Domains
         [Column("phone")]
         public string? Phone { get; init; }
 
+        [Required]
         [Column("bio")]
         public string Bio { get; init; }
 
@@ -46,11 +48,10 @@ namespace DPTS.Domains
         [Column("image_url")]
         public string? ImageUrl { get; init; }
 
-        // Embedded (owned) object
+        // Owned Type
         public Address Address { get; init; } = new Address();
 
         public virtual User User { get; init; } = null!;
-        private UserProfile() { }
     }
 
     [Owned]

@@ -3,6 +3,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DPTS.Domains
 {
+    public enum ReceiverType
+    {
+        User,
+        Store
+    }
+
     [Table("notification")]
     public class Notification
     {
@@ -33,13 +39,19 @@ namespace DPTS.Domains
         [Column("context")]
         public string Context { get; init; }
 
+        [Column("is_read")]
+        public bool IsRead { get; private set; } = false;
+
         [Column("created_at")]
         public DateTime CreatedAt { get; init; }
-    }
 
-    public enum ReceiverType
-    {
-        User,
-        Store
+        [Column("read_at")]
+        public DateTime? ReadAt { get; private set; }
+
+        public void MarkAsRead()
+        {
+            IsRead = true;
+            ReadAt = DateTime.UtcNow;
+        }
     }
 }

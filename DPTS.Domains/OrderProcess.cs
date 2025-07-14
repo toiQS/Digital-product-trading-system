@@ -6,7 +6,7 @@ namespace DPTS.Domains
     [Table("order_process")]
     public class OrderProcess
     {
-        private OrderProcess() { } // For EF
+        private OrderProcess() { }
 
         public OrderProcess(string orderId, string processName, string orderProcessInformation)
         {
@@ -29,11 +29,11 @@ namespace DPTS.Domains
         [Column("process_name")]
         public string ProcessName { get; init; }
 
-        [Column("process_at")]
-        public DateTime ProcessAt { get; init; }
-
         [Column("order_process_information")]
         public string OrderProcessInformation { get; init; }
+
+        [Column("process_at")]
+        public DateTime ProcessAt { get; init; }
 
         public virtual Order Order { get; init; } = null!;
     }

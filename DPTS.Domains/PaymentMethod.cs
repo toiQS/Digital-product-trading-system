@@ -8,13 +8,20 @@ namespace DPTS.Domains
         Vietcombank,
         MoMo,
         ZaloPay,
-        // ...
+        // Có thể thêm: VNPAY, PayPal, Stripe, ...
     }
 
     [Table("payment_method")]
     public class PaymentMethod
     {
-        public PaymentMethod(string userId, PaymentProvider provider, string? maskedAccountNumber, bool isDefault, bool isVerified)
+        private PaymentMethod() { }
+
+        public PaymentMethod(
+            string userId,
+            PaymentProvider provider,
+            string? maskedAccountNumber,
+            bool isDefault,
+            bool isVerified)
         {
             PaymentMethodId = Guid.NewGuid().ToString();
             UserId = userId;
@@ -28,9 +35,11 @@ namespace DPTS.Domains
         [Column("payment_method_id")]
         public string PaymentMethodId { get; init; }
 
+        [Required]
         [Column("user_id")]
         public string UserId { get; init; }
 
+        [Required]
         [Column("provider")]
         public PaymentProvider Provider { get; init; }
 
@@ -42,6 +51,7 @@ namespace DPTS.Domains
 
         [Column("is_verified")]
         public bool IsVerified { get; init; }
-        private PaymentMethod() { }
+
+        public virtual User User { get; init; } = null!;
     }
 }

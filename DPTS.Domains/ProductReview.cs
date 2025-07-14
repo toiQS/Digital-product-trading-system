@@ -21,10 +21,10 @@ namespace DPTS.Domains
             ReviewId = Guid.NewGuid().ToString();
             ProductId = productId;
             UserId = userId;
-            RatingOverall = (double)(ratingQuality + ratingUsability + ratingValue)/3;
             RatingQuality = ratingQuality;
             RatingValue = ratingValue;
             RatingUsability = ratingUsability;
+            RatingOverall = Math.Round((double)(ratingQuality + ratingValue + ratingUsability) / 3, 1);
             ReviewTitle = reviewTitle;
             Comment = comment;
             RecommendToOthers = recommendToOthers;
@@ -70,7 +70,7 @@ namespace DPTS.Domains
         public DateTime CreatedAt { get; init; }
 
         [Column("likes")]
-        public int Likes { get; init; }
+        public int Likes { get; set; }
 
         public virtual Product Product { get; init; } = null!;
         public virtual User User { get; init; } = null!;

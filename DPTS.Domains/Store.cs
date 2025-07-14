@@ -13,26 +13,31 @@ namespace DPTS.Domains
     [Table("store")]
     public class Store
     {
-        public Store(string storeName, DateTime createAt, string userId, StoreStatus status, string storeImage)
+        private Store() { } // For EF
+
+        public Store(string storeName, string userId, string storeImage, StoreStatus status = StoreStatus.Active)
         {
             StoreId = Guid.NewGuid().ToString();
             StoreName = storeName;
-            CreateAt = createAt;
             UserId = userId;
-            Status = status;
             StoreImage = storeImage;
+            Status = status;
+            CreateAt = DateTime.UtcNow;
         }
 
         [Key]
         [Column("store_id")]
         public string StoreId { get; init; }
 
+        [Required]
         [Column("store_name")]
         public string StoreName { get; init; }
 
+        [Required]
         [Column("create_at")]
         public DateTime CreateAt { get; init; }
 
+        [Required]
         [Column("user_id")]
         public string UserId { get; init; }
 
@@ -46,7 +51,7 @@ namespace DPTS.Domains
         public virtual User User { get; init; } = null!;
         public virtual ICollection<Message> SentMessages { get; init; } = new List<Message>();
         public virtual ICollection<Message> ReceivedMessages { get; init; } = new List<Message>();
-
-        private Store() { }
+        public virtual ICollection<Product> Products { get; init; } = new List<Product>();
+        public virtual ICollection<Escrow> Escrows { get; init; } = new List<Escrow>();
     }
 }

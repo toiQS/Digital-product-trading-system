@@ -23,6 +23,8 @@ namespace DPTS.Domains
     [Table("wallet_transaction")]
     public class WalletTransaction
     {
+        private WalletTransaction() { } // For EF
+
         public WalletTransaction(
             string walletId,
             TransactionType type,
@@ -43,6 +45,7 @@ namespace DPTS.Domains
         [Column("wallet_transaction_id")]
         public string TransactionId { get; init; }
 
+        [Required]
         [Column("wallet_id")]
         public string WalletId { get; init; }
 
@@ -61,7 +64,8 @@ namespace DPTS.Domains
         [Column("status")]
         public WalletTransactionStatus Status { get; init; }
 
+        // Navigation properties (optional, nullable nếu không bắt buộc)
+        public virtual Wallet Wallet { get; init; } = null!;
         public virtual PaymentMethod? LinkedPaymentMethod { get; init; }
-        private WalletTransaction() { }
     }
 }

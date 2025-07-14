@@ -6,6 +6,8 @@ namespace DPTS.Domains
     [Table("log_action")]
     public class LogAction
     {
+        private LogAction() { } // For EF
+
         public LogAction(
             string? userId,
             string actionName,
@@ -46,6 +48,5 @@ namespace DPTS.Domains
         public DateTime CreatedAt { get; init; }
 
         public virtual User? User { get; init; }
-        private LogAction() { }
     }
 }

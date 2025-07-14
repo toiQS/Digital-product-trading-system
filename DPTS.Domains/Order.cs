@@ -3,10 +3,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DPTS.Domains
 {
+    public enum OrderStatus
+    {
+        Unknown,
+        Pending,           // Đang xử lý (mới tạo)
+        WaitingConfirm,    // Người bán cần xác nhận
+        BuyerConfirmed,    // Người mua đã xác nhận nhận hàng
+        Done,              // Giao dịch hoàn tất
+        Complaint,         // Khiếu nại
+        Canceled,          // Đã huỷ
+        Failed             // Thanh toán thất bại, hoặc xử lý lỗi
+    }
+
     [Table("order")]
     public class Order
     {
-        private Order() { } // For EF
+        private Order() { }
 
         public Order(string buyerId, decimal totalAmount, bool isPaid, OrderStatus status)
         {
@@ -17,8 +29,8 @@ namespace DPTS.Domains
             Status = status;
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
-            Processs = new List<OrderProcess>();
             OrderItems = new List<OrderItem>();
+            Processes = new List<OrderProcess>();
         }
 
         [Key]
@@ -33,32 +45,20 @@ namespace DPTS.Domains
         public decimal TotalAmount { get; init; }
 
         [Column("is_paid")]
-        public bool IsPaid { get; init; }
+        public bool IsPaid { get; set; }
 
         [Column("status")]
-        public OrderStatus Status { get; init; }
+        public OrderStatus Status { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; init; }
 
         [Column("updated_at")]
-        public DateTime UpdatedAt { get; init; }
+        public DateTime UpdatedAt { get; set; }
 
         public virtual User Buyer { get; init; } = null!;
-        public virtual ICollection<OrderItem> OrderItems { get; init; } = new List<OrderItem>();
+        public virtual ICollection<OrderItem> OrderItems { get; init; }
+        public virtual ICollection<OrderProcess> Processes { get; init; }
         public virtual Escrow Escrow { get; init; } = null!;
-        public virtual ICollection<OrderProcess> Processs { get; init; } = new List<OrderProcess>();
-    }
-
-    public enum OrderStatus
-    {
-        Unknown,           // Không rõ
-        Pending,           // Đang xử lý
-        WaitingConfirm,    // Chờ xác nhận
-        BuyerConfirmed,    // Đã xác nhận
-        Done,              // Hoàn tất
-        Complaint,         // Khiếu nại
-        Canceled,          // Đã huỷ
-        Failed             // Lỗi
     }
 }
