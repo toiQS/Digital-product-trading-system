@@ -86,6 +86,10 @@ namespace DPTS.Infrastructures.Repository.Implements
             return await _context.ProductReviews.ToListAsync();
         }
 
+        public async Task<ProductReview?> GetById(string reviewId)
+        {
+           return await _context.ProductReviews.FirstOrDefaultAsync(x => x.ReviewId == reviewId);
+        }
         #endregion
     }
 }

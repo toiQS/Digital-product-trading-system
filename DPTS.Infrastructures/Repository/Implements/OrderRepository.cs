@@ -46,7 +46,7 @@ namespace DPTS.Infrastructures.Repository.Implements
                 .FirstOrDefaultAsync(o => o.OrderId == orderId);
         }
 
-        public async Task<IEnumerable<Order>> GetByBuyerAsync(string buyerId, bool onlyPaid = false, int skip = 0, int take = 50)
+        public async Task<IEnumerable<Order>> GetByBuyerAsync(string buyerId, bool onlyPaid = false, bool includeItems = false)
         {
             if (string.IsNullOrWhiteSpace(buyerId))
                 return Enumerable.Empty<Order>();
@@ -56,11 +56,11 @@ namespace DPTS.Infrastructures.Repository.Implements
 
             if (onlyPaid)
                 query = query.Where(o => o.IsPaid);
+            if (includeItems)
+                query = query.Include(x => x.OrderItems);
 
             return await query
                 .OrderByDescending(o => o.CreatedAt)
-                .Skip(skip)
-                .Take(take)
                 .ToListAsync();
         }
 

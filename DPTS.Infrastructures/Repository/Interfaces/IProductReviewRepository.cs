@@ -13,5 +13,6 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task<IEnumerable<ProductReview>> GetTopLikedReviewsAsync(string productId, int take = 3);
         Task UpdateAsync(ProductReview review);
         Task<IEnumerable<ProductReview>> GetAllAsync();
+        Task<ProductReview?> GetById(string reviewId);
     }
 }
