@@ -9,8 +9,8 @@ namespace DPTS.Domains
         [Column("complaint_id")]
         public string ComplaintId { get; set; } = string.Empty;
 
-        [Column("order_id")]
-        public string OrderId { get; set; } = string.Empty ;
+        [Column("escrow_id")]
+        public string EscrowId { get; set; } = string.Empty ;
         [Column("product_id")]
         public string ProductId { get; set; } = string.Empty;
         [Column("user_id")]
@@ -34,7 +34,7 @@ namespace DPTS.Domains
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public List<ComplaintImage> Images { get; set; } = new List<ComplaintImage>();
 
-        public virtual Order Order { get; set; } = null!;
+        public virtual Escrow Escrow { get; set; } = null!;
         public virtual User User { get; set; } = null!;
         public virtual Product Product { get; set; } = null!;
     }

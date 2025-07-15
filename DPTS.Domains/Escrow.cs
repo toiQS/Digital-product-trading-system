@@ -32,7 +32,7 @@ namespace DPTS.Domains
         [Column("tax_amount")]
         public decimal TaxAmount { get; set; }
         [Column("actual_amount")]
-        public decimal ActualAmount { get; set; }
+        public decimal ActualAmount { get; set; } // giá trị thực thế mà cửa hàng nhận được
         [Column("released_at")]
         public DateTime? ReleasedAt { get; set; }
 
@@ -58,10 +58,14 @@ namespace DPTS.Domains
 
     public enum EscrowStatus
     {
-        Unknown = 0,
-        WaitingConfirm = 1,
-        BuyerConfirmed = 2,
-        Done = 3,
-        Canceled = 4
+        Unknown,           // Không rõ
+        Pending,           // Đang xử lý
+        WaitingConfirm,    // Chờ xác nhận
+        BuyerConfirmed,    // Đã xác nhận
+        Done,              // Hoàn tất
+        Complaint,         // Khiếu nại
+        Canceled,          // Đã huỷ
+        Failed             // Lỗi
     }
+
 }

@@ -40,6 +40,7 @@ namespace DPTS.Infrastructures.Data
         public DbSet<WalletTransaction> WalletTransactions { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
         public DbSet<Escrow> Escrows { get; set; }
+        public DbSet<EscrowProcess> EscrowProcesses { get; set; }
         #endregion
 
         #region Complaint

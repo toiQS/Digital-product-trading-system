@@ -3,7 +3,7 @@ using MediatR;
 
 namespace DPTS.Applications.Buyer.Queries.profile
 {
-    public class UpdateUserProfileQuery : IRequest<ServiceResult<string>>
+    public class UpdateUserProfileCommand : IRequest<ServiceResult<string>>
     {
         public string UserId { get; set; } = string.Empty;
 

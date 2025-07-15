@@ -3,7 +3,7 @@ using MediatR;
 
 namespace DPTS.Applications.Buyer.Queries.review
 {
-    public class CreateProductReviewQuery : IRequest<ServiceResult<string>>
+    public class CreateProductReviewCommand : IRequest<ServiceResult<string>>
     {
         public string ProductId { get; set; } = string.Empty;
         public string BuyerId { get; set; } = string.Empty;

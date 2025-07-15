@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Transactions;
 
 namespace DPTS.Domains
 {
@@ -11,7 +10,12 @@ namespace DPTS.Domains
         Purchase,
         Refund
     }
-
+    public enum WalletTransactionStatus
+    {
+        Pending,     // Đang xử lý
+        Completed,   // Hoàn thành
+        Failed       // Thất bại
+    }
     public class WalletTransaction
     {
         [Key]
@@ -28,7 +32,7 @@ namespace DPTS.Domains
         [Column("description")]
         public string? Description { get; set; }
         [Column("status")]
-        public TransactionStatus Status { get; set; }
+        public WalletTransactionStatus Status { get; set; }
 
         public PaymentMethod? LinkedPaymentMethod { get; set; } // nếu nạp/rút
     }

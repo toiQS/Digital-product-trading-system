@@ -10,5 +10,6 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task<OrderItem?> GetByIdAsync(string orderItemId);
         Task<IEnumerable<OrderItem>> GetByOrderIdAsync(string orderId);
         Task UpdateAsync(OrderItem item);
+        Task<IEnumerable<OrderItem>> GetAllAsync();
     }
 }

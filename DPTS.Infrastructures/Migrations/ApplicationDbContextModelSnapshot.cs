@@ -299,6 +299,38 @@ namespace DPTS.Infrastructures.Migrations
                     b.ToTable("Escrows");
                 });
 
+            modelBuilder.Entity("DPTS.Domains.EscrowProcess", b =>
+                {
+                    b.Property<string>("ProcessId")
+                        .HasColumnType("text")
+                        .HasColumnName("process_id");
+
+                    b.Property<string>("EscrowId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("escrow_id");
+
+                    b.Property<string>("EscrowProcessInformation")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("escrow_process_information");
+
+                    b.Property<DateTime>("ProcessAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("process_at");
+
+                    b.Property<string>("ProcessName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("process_name");
+
+                    b.HasKey("ProcessId");
+
+                    b.HasIndex("EscrowId");
+
+                    b.ToTable("EscrowProcesses");
+                });
+
             modelBuilder.Entity("DPTS.Domains.Message", b =>
                 {
                     b.Property<string>("MessageId")
@@ -1004,6 +1036,17 @@ namespace DPTS.Infrastructures.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("DPTS.Domains.EscrowProcess", b =>
+                {
+                    b.HasOne("DPTS.Domains.Escrow", "Escrow")
+                        .WithMany()
+                        .HasForeignKey("EscrowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Escrow");
                 });
 
             modelBuilder.Entity("DPTS.Domains.Message", b =>

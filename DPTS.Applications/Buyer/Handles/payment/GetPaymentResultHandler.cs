@@ -16,24 +16,27 @@ namespace DPTS.Applications.Buyer.Handles.payment
         private readonly IOrderRepository _orderRepository;
         private readonly IEscrowRepository _escrowRepository;
         private readonly IPaymentMethodRepository _paymentMethodRepository;
-        private readonly IOrderItemRepository _orderItemRepository;
         private readonly ILogRepository _logRepository;
         private readonly IProductRepository _productRepository;
         private readonly IMediator _mediator;
+        private readonly IWalletTransactionRepository _walletTransactionRepository;
+        private readonly IEscrowProcessRepository _escrowProcessRepository;
+        private readonly IOrderPaymentRepository _orderPaymentRepository;
         private readonly ILogger<GetPaymentResultHandler> _logger;
 
-        public GetPaymentResultHandler(
-            IAdjustmentHandle adjustmentHandle,
-            IWalletRepository walletRepository,
-            IUserProfileRepository userProfileRepository,
-            IOrderRepository orderRepository,
-            IEscrowRepository escrowRepository,
-            IPaymentMethodRepository paymentMethodRepository,
-            IOrderItemRepository orderItemRepository,
-            ILogRepository logRepository,
-            IProductRepository productRepository,
-            IMediator mediator,
-            ILogger<GetPaymentResultHandler> logger)
+        public GetPaymentResultHandler(IAdjustmentHandle adjustmentHandle,
+                                       IWalletRepository walletRepository,
+                                       IUserProfileRepository userProfileRepository,
+                                       IOrderRepository orderRepository,
+                                       IEscrowRepository escrowRepository,
+                                       IPaymentMethodRepository paymentMethodRepository,
+                                       ILogRepository logRepository,
+                                       IProductRepository productRepository,
+                                       IMediator mediator,
+                                       IWalletTransactionRepository walletTransactionRepository,
+                                       IEscrowProcessRepository escrowProcessRepository,
+                                       IOrderPaymentRepository orderPaymentRepository,
+                                       ILogger<GetPaymentResultHandler> logger)
         {
             _adjustmentHandle = adjustmentHandle;
             _walletRepository = walletRepository;
@@ -41,10 +44,12 @@ namespace DPTS.Applications.Buyer.Handles.payment
             _orderRepository = orderRepository;
             _escrowRepository = escrowRepository;
             _paymentMethodRepository = paymentMethodRepository;
-            _orderItemRepository = orderItemRepository;
             _logRepository = logRepository;
             _productRepository = productRepository;
             _mediator = mediator;
+            _walletTransactionRepository = walletTransactionRepository;
+            _escrowProcessRepository = escrowProcessRepository;
+            _orderPaymentRepository = orderPaymentRepository;
             _logger = logger;
         }
 
@@ -168,7 +173,15 @@ namespace DPTS.Applications.Buyer.Handles.payment
                 // 8. Ghi escrow
                 foreach (var item in escrows)
                 {
+                    var addProcess = new EscrowProcess()
+                    {
+                        EscrowId = item.EscrowId,
+                        ProcessName = "Đã thanh toán",
+                        ProcessId = Guid.NewGuid().ToString(),
+                        ProcessAt = DateTime.Now
+                    };
                     await _escrowRepository.AddAsync(item);
+                    await _escrowProcessRepository.AddAsync(addProcess);
                 }
 
                 // 9. Đánh dấu thanh toán
@@ -179,8 +192,30 @@ namespace DPTS.Applications.Buyer.Handles.payment
                 // 10. Trừ tiền ví nếu có
                 if (wallet != null && wallet.Balance >= order.TotalAmount)
                 {
+                    WalletTransaction walletTransaction = new WalletTransaction()
+                    {
+                        TransactionId = Guid.NewGuid().ToString(),
+                        Description= $"Thanh toán giỏ hàng {order.OrderId}",
+                        Amount = order.TotalAmount,
+                        WalletId = wallet.WalletId,
+                        Status = WalletTransactionStatus.Pending,
+                        Type = TransactionType.Purchase,
+                        Timestamp = DateTime.UtcNow,
+                    };
+                    var orderPayment = new OrderPayment()
+                    {
+                        OrderId = order.OrderId,
+                        Amount = order.TotalAmount,
+                        OrderPaymentId = Guid.NewGuid().ToString(),
+                        PaidAt = DateTime.UtcNow,
+                        PaymentMethodId = request.PaymentMethodId,
+                        SourceType = PaymentSourceType.Wallet,
+                        WalletId= wallet.WalletId,
+                    };
                     wallet.Balance -= order.TotalAmount;
+                    await _walletTransactionRepository.UpdateAsync(walletTransaction);
                     await _walletRepository.UpdateAsync(wallet);
+                    await _orderPaymentRepository.AddAsync(orderPayment);
                 }
                 else if (paymentMethod != null)
                 {

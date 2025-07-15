@@ -106,6 +106,17 @@ namespace DPTS.Infrastructures.Repository.Implements
             return await query.CountAsync();
         }
 
+        public async Task<IEnumerable<Product>> GetByListIdsAsync(List<string> productIds)
+        {
+            if (productIds == null || !productIds.Any())
+                return Enumerable.Empty<Product>();
+
+            return await _context.Products
+                                 .Where(p => productIds.Contains(p.ProductId))
+                                 .ToListAsync();
+        }
+
+
         #endregion
     }
 }

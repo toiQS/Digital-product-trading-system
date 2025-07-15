@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Buyer.Handles.chat;
 
-public class SendMessageToStoreHandler : IRequestHandler<SendMessageToStoreQuery, ServiceResult<ChatIndexListDto>>
+public class SendMessageToStoreHandler : IRequestHandler<SendMessageToStoreCommand, ServiceResult<ChatIndexListDto>>
 {
     private readonly IMessageRepository _messageRepository;
     private readonly IUserProfileRepository _userProfileRepository;
@@ -31,7 +31,7 @@ public class SendMessageToStoreHandler : IRequestHandler<SendMessageToStoreQuery
         _logger = logger;
     }
 
-    public async Task<ServiceResult<ChatIndexListDto>> Handle(SendMessageToStoreQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResult<ChatIndexListDto>> Handle(SendMessageToStoreCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Sending message from user {UserId} to store {StoreId}", request.UserId, request.StoreId);
 
@@ -93,7 +93,7 @@ public class SendMessageToStoreHandler : IRequestHandler<SendMessageToStoreQuery
     /// <summary>
     /// Lấy toàn bộ lịch sử chat giữa user và store sau khi gửi tin nhắn.
     /// </summary>
-    private async Task<ServiceResult<ChatIndexListDto>> GetChatHistory(SendMessageToStoreQuery request, string storeName)
+    private async Task<ServiceResult<ChatIndexListDto>> GetChatHistory(SendMessageToStoreCommand request, string storeName)
     {
         _logger.LogInformation("Retrieving conversation between user {UserId} and store {StoreId}", request.UserId, request.StoreId);
 

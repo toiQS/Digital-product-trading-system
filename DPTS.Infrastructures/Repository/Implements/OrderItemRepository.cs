@@ -64,6 +64,11 @@ namespace DPTS.Infrastructures.Repository.Implements
             }
         }
 
+        public async Task<IEnumerable<OrderItem>> GetAllAsync()
+        {
+            return await _context.OrderItems.ToListAsync();
+        }
+
         #endregion
     }
 }

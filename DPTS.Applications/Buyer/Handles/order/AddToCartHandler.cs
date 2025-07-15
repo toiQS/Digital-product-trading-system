@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Buyer.Handles.order;
 
-public class AddToCartHandler : IRequestHandler<AddToCartQuery, ServiceResult<string>>
+public class AddToCartHandler : IRequestHandler<AddToCartCommand, ServiceResult<string>>
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IProductRepository _productRepository;
@@ -35,7 +35,7 @@ public class AddToCartHandler : IRequestHandler<AddToCartQuery, ServiceResult<st
         _logger = logger;
     }
 
-    public async Task<ServiceResult<string>> Handle(AddToCartQuery request, CancellationToken cancellationToken)
+    public async Task<ServiceResult<string>> Handle(AddToCartCommand request, CancellationToken cancellationToken)
     {
         // 1. Xác minh người dùng
         var profile = await _userProfileRepository.GetByUserIdAsync(request.UserId);
