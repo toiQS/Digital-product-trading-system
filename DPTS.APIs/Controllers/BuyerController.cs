@@ -1,5 +1,4 @@
 ﻿using DPTS.Applications.Buyer.Queries.chat;
-using DPTS.Applications.Buyer.Queries.complaint;
 using DPTS.Applications.Buyer.Queries.order;
 using DPTS.Applications.Buyer.Queries.payment;
 using DPTS.Applications.Buyer.Queries.product;
@@ -10,7 +9,7 @@ using DPTS.Applications.Buyer.Queries.wallet;
 using DPTS.Applications.Shareds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace DPTS.APIs.Controllers
 {
@@ -33,14 +32,14 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
 
-        [HttpPost("check-buy-now")]
+        [HttpPut("check-buy-now")]
         public async Task<IActionResult> CheckBuyNow([FromBody] CheckBuyNowQuery query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
 
-        [HttpPost("remove-product")]
+        [HttpPut("remove-product")]
         public async Task<IActionResult> RemoveProductFromOrder([FromBody] RemoveProductFormOrderCommand query)
         {
             var result = await _mediator.Send(query);
@@ -62,14 +61,14 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
 
-        [HttpPost("review-product")]
+        [HttpPut("review-product")]
         public async Task<IActionResult> CreateProductReview([FromBody] CreateProductReviewCommand query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
 
-        [HttpPost("like-review")]
+        [HttpPut("like-review")]
         public async Task<IActionResult> LikeReview([FromBody] LikeReviewCommand query)
         {
             var result = await _mediator.Send(query);
@@ -113,7 +112,7 @@ namespace DPTS.APIs.Controllers
         }
 
         // --------------------- Checkout ---------------------
-        [HttpGet("checkout")]
+        [HttpPut("checkout")]
         public async Task<IActionResult> GetCheckout([FromQuery] GetCheckoutQuery query)
         {
             var result = await _mediator.Send(query);
