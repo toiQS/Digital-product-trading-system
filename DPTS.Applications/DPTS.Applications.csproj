@@ -23,6 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Seller\Handler\complaint\" />
+    <Folder Include="Seller\Handler\product\NewFolder\" />
     <Folder Include="Shareds\Dtos\" />
     <Folder Include="Shareds\Handles\" />
     <Folder Include="Shareds\Queries\" />
