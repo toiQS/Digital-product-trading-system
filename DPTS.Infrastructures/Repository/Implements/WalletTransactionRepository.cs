@@ -75,6 +75,13 @@ namespace DPTS.Infrastructures.Repository.Implements
             await _context.SaveChangesAsync();
         }
 
+        public async Task<PaymentMethod?> GetPaymentMethodAsync(string? paymentMethodId)
+        {
+            return await _context.PaymentMethods
+                .FirstOrDefaultAsync(pm => pm.PaymentMethodId == paymentMethodId) 
+                ?? null;
+        }
+
         #endregion
     }
 }

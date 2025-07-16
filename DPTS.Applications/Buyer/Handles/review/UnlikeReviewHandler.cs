@@ -7,22 +7,22 @@ using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Buyer.Handles.review
 {
-    public class UnlikeCommentHandler : IRequestHandler<UnlikeCommentCommand, ServiceResult<string>>
+    public class UnlikeReviewHandler : IRequestHandler<UnlikeReviewCommand, ServiceResult<string>>
     {
         private readonly IProductReviewRepository _productReviewRepository;
         private readonly IUserRepository _userRepository;
         private readonly ILogRepository _logRepository;
         private readonly IMessageRepository _messageRepository;
         private readonly IProductRepository _productRepository;
-        private readonly ILogger<UnlikeCommentHandler> _logger;
+        private readonly ILogger<UnlikeReviewHandler> _logger;
 
-        public UnlikeCommentHandler(
+        public UnlikeReviewHandler(
             IProductReviewRepository productReviewRepository,
             IUserRepository userRepository,
             ILogRepository logRepository,
             IMessageRepository messageRepository,
             IProductRepository productRepository,
-            ILogger<UnlikeCommentHandler> logger)
+            ILogger<UnlikeReviewHandler> logger)
         {
             _productReviewRepository = productReviewRepository;
             _userRepository = userRepository;
@@ -32,7 +32,7 @@ namespace DPTS.Applications.Buyer.Handles.review
             _logger = logger;
         }
 
-        public async Task<ServiceResult<string>> Handle(UnlikeCommentCommand request, CancellationToken cancellationToken)
+        public async Task<ServiceResult<string>> Handle(UnlikeReviewCommand request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Handling UnlikeComment: UserId = {UserId}, ReviewId = {ReviewId}", request.UserId, request.ProjectReviewId);
 
