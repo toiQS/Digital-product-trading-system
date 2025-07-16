@@ -32,12 +32,12 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         #region Read
 
-        public async Task<IEnumerable<OrderPayment>> GetByOrderIdAsync(string orderId)
+        public async Task<OrderPayment?> GetByOrderIdAsync(string orderId)
         {
             return await _context.OrderPayments
                 .Where(p => p.OrderId == orderId)
                 .OrderBy(p => p.PaidAt)
-                .ToListAsync();
+                .FirstOrDefaultAsync();
         }
 
         public async Task<decimal> GetTotalPaidByOrderIdAsync(string orderId)

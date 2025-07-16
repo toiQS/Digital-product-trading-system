@@ -118,8 +118,7 @@ namespace DPTS.Applications.Buyer.Handles.order
             result.StatusOrder = EnumHandle.HandleEscrowStatus(escrow.Status);
 
             // 7. Lấy phương thức thanh toán đã dùng
-            var orderPayment = (await _orderPaymentRepository.GetByOrderIdAsync(escrow.OrderId))
-                               .FirstOrDefault(x => x.OrderId == escrow.OrderId);
+            var orderPayment = await _orderPaymentRepository.GetByOrderIdAsync(escrow.OrderId);
 
             if (orderPayment == null)
             {

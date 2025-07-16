@@ -10,6 +10,7 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task<WalletTransaction?> GetByIdAsync(string transactionId);
         Task<IEnumerable<WalletTransaction>> GetByWalletIdAndTypeAsync(string walletId, TransactionType type);
         Task<IEnumerable<WalletTransaction>> GetByWalletIdAsync(string walletId, bool includePaymentMethod = false);
+        Task<PaymentMethod?> GetPaymentMethodAsync(string? paymentMethodId);
         Task UpdateAsync(WalletTransaction transaction);
     }
 }

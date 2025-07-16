@@ -9,6 +9,7 @@ using DPTS.Applications.Buyer.Queries.wallet;
 using DPTS.Applications.Shareds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 using System.ComponentModel.DataAnnotations;
 
 namespace DPTS.APIs.Controllers
@@ -131,6 +132,12 @@ namespace DPTS.APIs.Controllers
         public async Task<IActionResult> GetPurchasedOrders([FromQuery] GetPurchasedOrderQuery query)
         {
             var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+        [HttpGet("comfirm-order")]
+        public async Task<IActionResult> ComfirmOrder([FromBody] ComfirmItemOrderQuery command)
+        {
+            var result = await _mediator.Send(command);
             return StatusCodeFromResult(result);
         }
 
