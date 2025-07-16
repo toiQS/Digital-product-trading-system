@@ -32,7 +32,7 @@ namespace DPTS.Applications
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssemblies(
-                    //typeof(BuyerAssemblyMarker).Assembly,
+                    typeof(BuyerAssemblyMarker).Assembly,
                     //typeof(SellersAssemblyMarker).Assembly,
                     //typeof(NoDistinctionOfRoleAssemblyMarker).Assembly
                     typeof(AuthAssemblyMarker).Assembly
