@@ -32,7 +32,21 @@ namespace DPTS.APIs.Controllers
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
-        
+
+        [HttpPost("check-buy-now")]
+        public async Task<IActionResult> CheckBuyNow([FromBody] CheckBuyNowQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpPost("remove-product")]
+        public async Task<IActionResult> RemoveProductFromOrder([FromBody] RemoveProductFormOrderCommand query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
         // --------------------- Product ---------------------
         [HttpGet("product-detail")]
         public async Task<IActionResult> GetProductDetail([FromQuery] GetProductDetailQuery query)
@@ -50,6 +64,20 @@ namespace DPTS.APIs.Controllers
 
         [HttpPost("review-product")]
         public async Task<IActionResult> CreateProductReview([FromBody] CreateProductReviewCommand query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpPost("like-review")]
+        public async Task<IActionResult> LikeReview([FromBody] LikeReviewCommand query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        [HttpPost("unlike-review")]
+        public async Task<IActionResult> UnlikeReview([FromBody] UnlikeReviewCommand query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
