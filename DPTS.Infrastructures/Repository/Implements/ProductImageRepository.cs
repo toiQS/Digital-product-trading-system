@@ -79,6 +79,17 @@ namespace DPTS.Infrastructures.Repository.Implements
                 .FirstOrDefaultAsync(p => p.ProductId == productId && p.IsPrimary);
         }
 
+        public async Task<ProductImage?> GetByIdAsync(string imageId)
+        {
+            return await _context.ProductImages.FirstOrDefaultAsync(p => p.ImageId == imageId);
+        }
+
+        public async Task UpdateAsync(ProductImage primaryImage)
+        {
+            _context.ProductImages.Update(primaryImage);
+            await _context.SaveChangesAsync();
+        }
+
         #endregion
     }
 }

@@ -12,5 +12,6 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task<IEnumerable<Product>> GetByStoreAsync(string storeId, ProductStatus? status = null, int skip = 0, int take = 50);
         Task<IEnumerable<Product>> SearchAsync(string? keyword = null, string? categoryId = null, ProductStatus? status = ProductStatus.Available, int skip = 0, int take = 50);
         Task UpdateAsync(Product product);
+        Task<Product?> GetByNameAndStoreAsync(string productName, string storeId);
     }
 }
