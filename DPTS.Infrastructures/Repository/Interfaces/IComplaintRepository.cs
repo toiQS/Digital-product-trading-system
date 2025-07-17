@@ -13,5 +13,6 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task<IEnumerable<Complaint>> GetByProductIdAsync(string productId);
         
         Task UpdateAsync(Complaint complaint);
+        Task<int> CountByProductIdAsync(string productId);
     }
 }

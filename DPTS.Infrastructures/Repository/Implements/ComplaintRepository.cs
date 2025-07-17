@@ -117,6 +117,11 @@ namespace DPTS.Infrastructures.Repository.Implements
             return await _context.Complaints.Where(x => x.ProductId == productId).ToListAsync();
         }
 
+        public async Task<int> CountByProductIdAsync(string productId)
+        {
+           return await _context.Complaints.CountAsync(x => x.ProductId == productId);
+        }
+
 
         #endregion
     }

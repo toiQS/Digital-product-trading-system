@@ -1,4 +1,6 @@
 ﻿using DPTS.Applications.Auth;
+using DPTS.Applications.Buyer;
+using DPTS.Applications.Sellers;
 using DPTS.Applications.Shareds;
 using DPTS.Infrastructures.Data;
 using DPTS.Infrastructures.Repository.Implements;
@@ -33,7 +35,7 @@ namespace DPTS.Applications
             {
                 cfg.RegisterServicesFromAssemblies(
                     typeof(BuyerAssemblyMarker).Assembly,
-                    //typeof(SellersAssemblyMarker).Assembly,
+                    typeof(SellersAssemblyMarker).Assembly,
                     //typeof(NoDistinctionOfRoleAssemblyMarker).Assembly
                     typeof(AuthAssemblyMarker).Assembly
                 );
