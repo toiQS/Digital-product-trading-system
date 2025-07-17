@@ -50,6 +50,7 @@ namespace DPTS.Domains
         Unknown,
         Pending,
         Available,
-        Blocked
+        Blocked,
+        Deleted 
     }
 }

@@ -17,7 +17,7 @@ namespace DPTS.Applications.Seller.Handler.product
         private readonly ILogger<GetSellerProdutsHandle> _logger;
         private readonly IStoreRepository _storeRepository;
         private readonly IProductImageRepository _productImageRepository;
-        private readonly AdjustmentHandle _adjustmentHandle;
+        private readonly IAdjustmentHandle _adjustmentHandle;
 
         public GetSellerProdutsHandle(IProductRepository productRepository,
                                       IEscrowRepository escrowRepository,
@@ -27,7 +27,7 @@ namespace DPTS.Applications.Seller.Handler.product
                                       ILogger<GetSellerProdutsHandle> logger,
                                       IStoreRepository storeRepository,
                                       IProductImageRepository productImageRepository,
-                                      AdjustmentHandle adjustmentHandle)
+                                      IAdjustmentHandle adjustmentHandle)
         {
             _productRepository = productRepository;
             _escrowRepository = escrowRepository;

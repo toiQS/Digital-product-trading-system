@@ -116,6 +116,12 @@ namespace DPTS.Infrastructures.Repository.Implements
                                  .ToListAsync();
         }
 
+        public async Task<Product?> GetByNameAndStoreAsync(string productName, string storeId)
+        {
+            return await _context.Products
+                .FirstOrDefaultAsync(p => p.ProductName == productName && p.StoreId == storeId);
+        }
+
 
         #endregion
     }
