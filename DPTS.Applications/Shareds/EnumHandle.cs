@@ -45,7 +45,7 @@ namespace DPTS.Applications.Shareds
 
         public static string HandleParticipantType(ParticipantType type) => type switch
         {
-            ParticipantType.User => "Người dùng",
+            ParticipantType.Buyer => "Người mua",
             ParticipantType.Store => "Cửa hàng",
             _ => "Không xác định"
         };

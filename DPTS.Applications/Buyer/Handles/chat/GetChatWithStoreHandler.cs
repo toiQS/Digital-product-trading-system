@@ -51,7 +51,7 @@ public class GetChatWithStoreHandler : IRequestHandler<GetChatQuery, ServiceResu
 
         // Lấy toàn bộ tin nhắn trong cuộc trò chuyện
         var conversation = await _messageRepository.GetConversationAsync(
-            Domains.ParticipantType.User, request.UserId,
+            Domains.ParticipantType.Buyer, request.UserId,
             Domains.ParticipantType.Store, request.StoreId);
 
         // Gán kết quả trả về

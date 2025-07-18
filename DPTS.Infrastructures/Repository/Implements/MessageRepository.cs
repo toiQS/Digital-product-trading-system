@@ -36,9 +36,7 @@ namespace DPTS.Infrastructures.Repository.Implements
             ParticipantType participantAType,
             string participantAId,
             ParticipantType participantBType,
-            string participantBId,
-            int skip = 0,
-            int take = 50)
+            string participantBId)
         {
             var query = _context.Messages.Where(m =>
                 (m.SenderType == participantAType && m.SenderId == participantAId &&
@@ -50,8 +48,6 @@ namespace DPTS.Infrastructures.Repository.Implements
 
             return await query
                 .OrderByDescending(m => m.CreatedAt)
-                .Skip(skip)
-                .Take(take)
                 .ToListAsync();
         }
 

@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DPTS.Applications.Shareds;
+using MediatR;
 
 namespace DPTS.Applications.Seller.Query.order
 {
-    public class ConfirmAndSendProductCommand
+    public class ConfirmAndSendProductCommand : IRequest<ServiceResult<string>>
     {
+        public string SellerId { get; set; }
+        public string EscrowId { get; set; }
+        public string StoreId { get; set; }
     }
 }

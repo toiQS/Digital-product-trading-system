@@ -58,7 +58,7 @@ public class SendMessageToStoreHandler : IRequestHandler<SendMessageToStoreComma
             Content = request.Content,
             CreatedAt = DateTime.UtcNow,
             SenderId = request.UserId,
-            SenderType = ParticipantType.User,
+            SenderType = ParticipantType.Buyer,
             ReceiverId = request.StoreId,
             ReceiverType = ParticipantType.Store,
             IsSystem = false
@@ -103,7 +103,7 @@ public class SendMessageToStoreHandler : IRequestHandler<SendMessageToStoreComma
         };
 
         var conversation = await _messageRepository.GetConversationAsync(
-            ParticipantType.User, request.UserId,
+            ParticipantType.Buyer, request.UserId,
             ParticipantType.Store, request.StoreId);
 
         result.Messages = conversation
