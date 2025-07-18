@@ -1,4 +1,4 @@
-﻿namespace DPTS.Applications.Sellers
+﻿namespace DPTS.Applications.Seller
 {
     public sealed class SellersAssemblyMarker
     {

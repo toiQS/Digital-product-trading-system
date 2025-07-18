@@ -1,6 +1,6 @@
 ﻿using DPTS.Applications.Auth;
 using DPTS.Applications.Buyer;
-using DPTS.Applications.Sellers;
+using DPTS.Applications.Seller;
 using DPTS.Applications.Shareds;
 using DPTS.Infrastructures.Data;
 using DPTS.Infrastructures.Repository.Implements;

@@ -9,8 +9,6 @@ using DPTS.Applications.Buyer.Queries.wallet;
 using DPTS.Applications.Shareds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Npgsql;
-using System.ComponentModel.DataAnnotations;
 
 namespace DPTS.APIs.Controllers
 {
