@@ -1,4 +1,4 @@
-﻿namespace DPTS.Applications.Shareds
+﻿namespace DPTS.Applications
 {
     public static class EnumDisplayHelper
     {

@@ -5,6 +5,7 @@ namespace DPTS.Domains
 {
     public enum AdjustmentType
     {
+        Unknown,
         Tax,
         Discount,
         PlatformFee
@@ -12,12 +13,14 @@ namespace DPTS.Domains
 
     public enum AdjustmentScope
     {
+        Unknown,
         PerProduct,
         PerOrder
     }
 
     public enum TargetLogic
     {
+        Unknown,
         Auto,
         Voucher,
         Campaign
@@ -25,6 +28,7 @@ namespace DPTS.Domains
 
     public enum AdjustmentSource
     {
+        Unknown,    
         Platform,
         Seller,
         System
@@ -32,6 +36,7 @@ namespace DPTS.Domains
 
     public enum RuleStatus
     {
+        Unknown,
         Active,
         Inactive,
         Expired
