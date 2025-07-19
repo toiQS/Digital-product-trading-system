@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.InteropServices;
 
 namespace DPTS.Domains
 {
@@ -15,7 +16,8 @@ namespace DPTS.Domains
     {
         Unknown,
         PerProduct,
-        PerOrder
+        PerOrder,
+        PerBuyer
     }
 
     public enum TargetLogic
@@ -30,7 +32,7 @@ namespace DPTS.Domains
     {
         Unknown,    
         Platform,
-        Seller,
+        Store,
         System
     }
 
@@ -47,6 +49,7 @@ namespace DPTS.Domains
     {
       
         public AdjustmentRule(
+            string ownerId,
             string name,
             string description,
             AdjustmentType type,
@@ -66,6 +69,7 @@ namespace DPTS.Domains
             string? conditionsJson)
         {
             RuleId = Guid.NewGuid().ToString();
+            OwnerId = ownerId;
             Name = name;
             Description = description;
             Type = type;
@@ -88,6 +92,9 @@ namespace DPTS.Domains
         [Key]
         [Column("rule_id")]
         public string RuleId { get; init; }
+        [Column("owner_id")]
+        public string OwnerId   {  get; set; }
+
 
         [Column("name")]
         public string Name { get; init; }
@@ -123,7 +130,7 @@ namespace DPTS.Domains
         public string? VoucherCode { get; init; }
 
         [Column("usage_limit")]
-        public int? UsageLimit { get; init; }
+        public int? UsageLimit { get;set; }
 
         [Column("per_user_limit")]
         public int? PerUserLimit { get; init; }

@@ -1,4 +1,6 @@
-﻿namespace DPTS.Applications
+﻿using DPTS.Domains;
+
+namespace DPTS.Applications
 {
     public static class EnumDisplayHelper
     {
@@ -107,19 +109,5 @@
             _ => "Không xác định"
         };
     }
-
-    // Định nghĩa lại các enum gom từ toàn bộ đoạn chat
-    public enum ComplaintStatus { Unknown, Pending, Resolved }
-    public enum EscrowStatus { Unknown, Pending, Avalible, BeenComplainting, Error }
-    public enum AdjustmentType { Tax, Discount, PlatformFee }
-    public enum RuleStatus { Active, Inactive, Expired }
-    public enum ParticipantType { User, Store }
-    public enum PaymentProvider { Vietcombank, MoMo, ZaloPay }
-    public enum ProductStatus { Unknown, Pending, Available, Blocked }
-    public enum StoreStatus { Active, Inactive, Unknown }
-    public enum TransactionType { Unknown, Deposit, Withdraw, Purchase, Refund }
-    public enum WalletTransactionStatus { Unknown, Pending, Completed, Failed }
-    public enum OrderStatus { Unknown, Pending, WaitingConfirm, BuyerConfirmed, Done, Complaint, Canceled, Failed }
-    public enum ReceiverType { User, Store }
 }
 

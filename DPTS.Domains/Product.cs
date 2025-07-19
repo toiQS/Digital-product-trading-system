@@ -77,5 +77,7 @@ namespace DPTS.Domains
         public virtual ICollection<ProductAdjustment> ProductAdjustments { get; init; } = new List<ProductAdjustment>();
         public virtual ICollection<ProductImage> ProductImages { get; init; } = new List<ProductImage>();
         public virtual ICollection<ProductReview> ProductReviews { get; init; } = new List<ProductReview>();
+        public virtual ICollection<CartItem> CartItems { get; init; } = new List<CartItem>();
+        public virtual ICollection<OrderItem> OrderItems { get; init; } = new List<OrderItem>();
     }
 }
