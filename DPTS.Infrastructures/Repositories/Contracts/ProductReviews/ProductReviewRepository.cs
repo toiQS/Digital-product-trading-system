@@ -1,4 +1,5 @@
 ﻿
+using DPTS.Domains;
 using DPTS.Infrastructures.Datas;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Query.Internal;
@@ -24,6 +25,16 @@ namespace DPTS.Infrastructures.Repositories.Contracts.ProductReviews
             return await _context.ProductReviews
                 .Where(pr => pr.ProductId == productId)
                 .CountAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<ProductReview>> GetPositiveFeedbacksAsync(int take, CancellationToken cancellationToken)
+        {
+            var query = _context.ProductReviews.OrderByDescending(pr => pr.RatingOverall).AsQueryable();
+            if (take > 0)
+            {
+                query = query.Take(take);
+            }
+            return await query.ToListAsync(cancellationToken);
         }
     }
 }
