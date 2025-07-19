@@ -45,5 +45,12 @@ namespace DPTS.Infrastructures.Repositories.Contracts.Categories
             }
             return await query.ToListAsync(cancellationToken);
         }
+
+        public async Task<Category?> GetByIdAsync(string categoryId, CancellationToken cancellationToken)
+        {
+            return await _context.Categories
+                .Include(c => c.Products)
+                .FirstOrDefaultAsync(c => c.CategoryId == categoryId, cancellationToken);
+        }
     }
 }
