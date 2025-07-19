@@ -1,6 +1,6 @@
 ﻿using DPTS.Domains;
 
-namespace DPTS.Infrastructures.Repositories.Contracts.Carts
+namespace DPTS.Infrastructures.Repositories.Contracts.CartItems
 {
     public interface ICartItemCommand
     {

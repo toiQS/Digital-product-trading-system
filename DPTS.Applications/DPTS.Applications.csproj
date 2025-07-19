@@ -26,4 +26,13 @@
     <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="shareds\dtos\" />
+    <Folder Include="shareds\handlers\" />
+    <Folder Include="case-auths\login\dtos\" />
+    <Folder Include="case-auths\login\handlers\" />
+    <Folder Include="case-auths\login\models\" />
+    <Folder Include="shareds\models\" />
+  </ItemGroup>
+
 </Project>

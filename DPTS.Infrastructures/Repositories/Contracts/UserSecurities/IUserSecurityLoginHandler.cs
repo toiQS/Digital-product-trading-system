@@ -1,4 +1,4 @@
-﻿namespace DPTS.Infrastructures.Repositories.Contracts.Users
+﻿namespace DPTS.Infrastructures.Repositories.Contracts.UserSecurities
 {
     public interface IUserSecurityLoginHandler
     {
