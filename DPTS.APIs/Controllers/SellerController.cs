@@ -7,6 +7,7 @@ using DPTS.Applications.Seller.Query.product;
 using DPTS.Applications.Seller.Query.revenue;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using DPTS.Applications.Seller.Query.store;
 
 namespace DPTS.APIs.Controllers
 {
@@ -162,6 +163,20 @@ namespace DPTS.APIs.Controllers
 
         [HttpGet("revenue-chart")]
         public async Task<IActionResult> GetRevenueChart([FromQuery] GetRevenueChartQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+
+        // -------------------- Store --------------------
+        [HttpGet("store")]
+        public async Task<IActionResult> GetStore([FromBody] GetStoreQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+        [HttpPut("update-store")]
+        public async Task<IActionResult> UpdateStore([FromBody] UpdateStoreCommand query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
