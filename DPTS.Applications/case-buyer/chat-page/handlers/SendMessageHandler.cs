@@ -48,6 +48,9 @@ namespace DPTS.Applications.case_buyer.chat_page.handlers
                 _logger.LogError("Role of sender is invalible with this function");
                 return ServiceResult<ChatDto>.Error("Vai trò không hợp lệ");
             }
+            if (string.IsNullOrWhiteSpace(request.Content))
+                return ServiceResult<ChatDto>.Error("Nội dung tin nhắn không được để trống");
+
             if (request.PersonSecondType == Domains.ParticipantType.Buyer)
             {
                 _logger.LogError("Role of reciver is invalible with this function");
@@ -59,14 +62,14 @@ namespace DPTS.Applications.case_buyer.chat_page.handlers
                 _logger.LogError($"Not found buyer with Id:{request.PersonFirstId}.");
                 return ServiceResult<ChatDto>.Error($"Không tìm thấy người mua.");
             }
-            var store = await _storeQuery.GetByIdAsync(storeId:request.PersonSeconId,cancellationToken);
+            var store = await _storeQuery.GetByIdAsync(storeId:request.PersonSecondId,cancellationToken);
             if (store == null)
             {
-                _logger.LogError($"Not found store with Id:{request.PersonSeconId}.");
+                _logger.LogError($"Not found store with Id:{request.PersonSecondId}.");
                 return ServiceResult<ChatDto>.Error($"Không tìm thấy gian hàng.");
             }
-            Notification notification = new Notification(request.PersonSeconId,ReceiverType.Store, request.Content);
-            Message message = new Message(ParticipantType.Buyer, request.PersonFirstId, ParticipantType.Store, request.PersonSeconId, request.Content);
+            Notification notification = new Notification(request.PersonSecondId,ReceiverType.Store, request.Content);
+            Message message = new Message(ParticipantType.Buyer, request.PersonFirstId, ParticipantType.Store, request.PersonSecondId, request.Content);
             await using var tracsaction = await _context.Database.BeginTransactionAsync(cancellationToken);
             try
             {
