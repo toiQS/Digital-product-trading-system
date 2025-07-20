@@ -25,15 +25,16 @@ namespace DPTS.Applications.case_buyer.chat_page.handlers
         public async Task<ServiceResult<ChatDto>> Handle(GetChatQuery request, CancellationToken cancellationToken)
         {
             _logger.LogError("Handing GetChatQuery");
-            UserProfile? anotherProfile = await _userProfileQuery.GetByIdAsync(request.AnotherId, cancellationToken);
-            if (anotherProfile == null)
+            UserProfile? personSecondProfile = await _userProfileQuery.GetByIdAsync(request.PersonSecondId, cancellationToken);
+            if (personSecondProfile == null)
             {
                 _logger.LogError("Not found anorther persion profile");
                 return ServiceResult<ChatDto>.Error("Không tìm thấy người cần trò chuyện");
             }
+
             var result = new ChatDto();
-            result.ChatInfo.Name = anotherProfile.FullName ?? "Error";
-            IEnumerable<Message> messages = await _messageQuery.GetsWithIdsJoinChat(ownerId: request.OwnerId, OwnerType: request.OwnerType, anotherId: request.AnotherId, anotherType: request.AnotherType);
+            result.ChatInfo.Name = personSecondProfile.FullName ?? "Error";
+            IEnumerable<Message> messages = await _messageQuery.GetsWithIdsJoinChat(personFirstId: request.PersonFirstId, PersonFirstType: request.PersonFirstType, personSecondId: request.PersonSecondId, personSecondType: request.PersonSecondType);
             if (!messages.Any())result.MessageDtos = new List<MessageDto>();
             result.MessageDtos = messages.Select(x => new MessageDto()
             {

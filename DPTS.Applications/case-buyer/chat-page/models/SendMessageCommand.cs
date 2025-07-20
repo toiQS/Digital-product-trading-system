@@ -5,11 +5,12 @@ using MediatR;
 
 namespace DPTS.Applications.case_buyer.chat_page.models
 {
-    public record GetChatQuery : IRequest<ServiceResult<ChatDto>>
+    public class SendMessageCommand : IRequest<ServiceResult<ChatDto>>
     {
         public string PersonFirstId { get; set; }
         public ParticipantType PersonFirstType { get; set; }
-        public string PersonSecondId { get; set; }
-        public ParticipantType PersonSecondType {  get; set; }
+        public string PersonSeconId { get; set; }
+        public ParticipantType PersonSecondType { get; set; }
+        public string Content { get; set; }
     }
 }

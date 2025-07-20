@@ -5,7 +5,7 @@ namespace DPTS.Domains
 {
     public enum ParticipantType
     {
-        User,
+        Buyer,
         Store
     }
 

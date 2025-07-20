@@ -5,7 +5,7 @@ namespace DPTS.Domains
 {
     public enum ReceiverType
     {
-        User,
+        Buyer,
         Store
     }
 

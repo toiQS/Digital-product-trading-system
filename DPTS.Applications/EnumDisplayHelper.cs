@@ -40,7 +40,7 @@ namespace DPTS.Applications
 
         public static string ToDisplay(this ParticipantType type) => type switch
         {
-            ParticipantType.User => "Người dùng",
+            ParticipantType.Buyer => "Người mua",
             ParticipantType.Store => "Cửa hàng",
             _ => "Không xác định"
         };
@@ -104,7 +104,7 @@ namespace DPTS.Applications
 
         public static string ToDisplay(this ReceiverType type) => type switch
         {
-            ReceiverType.User => "Người dùng",
+            ReceiverType.Buyer => "Người mua",
             ReceiverType.Store => "Cửa hàng",
             _ => "Không xác định"
         };

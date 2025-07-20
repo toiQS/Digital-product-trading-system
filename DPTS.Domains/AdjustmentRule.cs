@@ -49,7 +49,7 @@ namespace DPTS.Domains
     {
       
         public AdjustmentRule(
-            string ownerId,
+            string personFirstId,
             string name,
             string description,
             AdjustmentType type,
@@ -69,7 +69,7 @@ namespace DPTS.Domains
             string? conditionsJson)
         {
             RuleId = Guid.NewGuid().ToString();
-            OwnerId = ownerId;
+            PersonFirstId = personFirstId;
             Name = name;
             Description = description;
             Type = type;
@@ -92,8 +92,8 @@ namespace DPTS.Domains
         [Key]
         [Column("rule_id")]
         public string RuleId { get; init; }
-        [Column("owner_id")]
-        public string OwnerId   {  get; set; }
+        [Column("personFirst_id")]
+        public string PersonFirstId   {  get; set; }
 
 
         [Column("name")]
