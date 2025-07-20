@@ -29,9 +29,6 @@
   <ItemGroup>
     <Folder Include="shareds\dtos\" />
     <Folder Include="shareds\handlers\" />
-    <Folder Include="case-auths\login\dtos\" />
-    <Folder Include="case-auths\login\handlers\" />
-    <Folder Include="case-auths\login\models\" />
     <Folder Include="shareds\models\" />
   </ItemGroup>
 

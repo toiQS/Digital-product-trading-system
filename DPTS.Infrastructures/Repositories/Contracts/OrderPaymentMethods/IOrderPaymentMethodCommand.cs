@@ -4,10 +4,7 @@ namespace DPTS.Infrastructures.Repositories.Contracts.OrderPaymentMethods
 {
     public interface IOrderPaymentMethodCommand
     {
-        Task AddAsync(OrderPaymentMethod payment);
-
-        Task AddRangeAsync(List<OrderPaymentMethod> payments);
-        Task<bool> IsFullyPaidAsync(string orderId, decimal orderTotal);
+       
 
     }
 }
