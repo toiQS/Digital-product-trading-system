@@ -1,4 +1,6 @@
-﻿namespace DPTS.Applications.shareds
+﻿using DPTS.Domains;
+
+namespace DPTS.Applications.shareds
 {
     public enum StatusResult
     {
@@ -59,7 +61,44 @@
                 Status = StatusResult.Errored
             };
         }
+        private static string ServiceResultHandler(Enum @enum)
+        {
+            switch (@enum)
+            {
+                case StatusResult.Success:
+                    return "Thành công.";
+                case StatusResult.Failed:
+                    return "Thất bại";
+                case StatusResult.Errored:
+                    return "Xảy ra lỗi";
+                case StatusResult.Warning:
+                    return "Cảnh báo";
+                default:
+                    return "Không xác định.";
+            }
+        }
 
+    }
+    public class ServiceResult
+    {
+        public StatusResult Status { get; set; }
+        public string MessageResult { get; set; } = string.Empty;
+        public static ServiceResult Success()
+        {
+            return new ServiceResult
+            {
+                MessageResult = $"{ServiceResult.Success}",
+                Status = StatusResult.Success
+            };
+        }
+        public static ServiceResult Error(string message)
+        {
+            return new ServiceResult()
+            {
+                MessageResult = $"{ServiceResultHandler(StatusResult.Errored)}: {message}",
+                Status = StatusResult.Errored
+            };
+        }
         private static string ServiceResultHandler(Enum @enum)
         {
             switch (@enum)
@@ -77,4 +116,5 @@
             }
         }
     }
+
 }

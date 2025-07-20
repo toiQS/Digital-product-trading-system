@@ -14,6 +14,7 @@ using DPTS.Infrastructures.Repositories.Contracts.UserProfiles;
 using MediatR;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.Logging;
+using System.Data.SqlTypes;
 
 namespace DPTS.Applications.case_buyer.product_detail_page.handlers
 {
@@ -72,13 +73,13 @@ namespace DPTS.Applications.case_buyer.product_detail_page.handlers
                 ImageId = pi.ImageId,
                 ImageUrl = pi.ImagePath
             }).ToList();
-           var category = await _categoryQuery.GetByIdAsync(product.CategoryId, cancellationToken);
+           Category? category = await _categoryQuery.GetByIdAsync(product.CategoryId, cancellationToken);
             if (category == null)
             {
                 _logger.LogWarning("Category not found for CategoryId: {CategoryId}", product.CategoryId);
                 return ServiceResult<ProductDetailDto>.Error($"Không tìm thấy danh mục với mã số {product.CategoryId}.");
             }
-            var productReviews = await _productReviewQuery.GetsByProductIdAsync(request.ProductId, cancellationToken);
+            IEnumerable<ProductReview> productReviews = await _productReviewQuery.GetsByProductIdAsync(request.ProductId, cancellationToken);
             if (productReviews == null || !productReviews.Any())
             {
                 result.CustomersFeelings = new CustomersFeelings
@@ -137,7 +138,7 @@ namespace DPTS.Applications.case_buyer.product_detail_page.handlers
                 SummaryFeature = product.SummaryFeature,
                 OriginalPrice = product.OriginalPrice,
             };
-            var productAdjusments = await _productAdjustmentQuery.GetByProductIdAsync(request.ProductId, cancellationToken);
+            IEnumerable<ProductAdjustment> productAdjusments = await _productAdjustmentQuery.GetsByProductIdAsync(request.ProductId, cancellationToken);
             if(productAdjusments.Count() > 1)
             {
                 _logger.LogWarning("Multiple product adjustments found for ProductId: {ProductId}", request.ProductId);

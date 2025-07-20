@@ -34,7 +34,7 @@ namespace DPTS.Applications.case_buyer.homepage.handlers
             var result = new List<PositiveFeedbackIndexDto>(); 
             foreach (var feedback in positiveFeedbacks)
             {
-                var userProfile = await _userProfileQuery.GetByIdAsync(feedback.UserId, cancellationToken);
+                UserProfile? userProfile = await _userProfileQuery.GetByIdAsync(feedback.UserId, cancellationToken);
                 if( userProfile == null)
                 {
                     _logger.LogWarning($"User profile not found for UserId: {feedback.UserId}");

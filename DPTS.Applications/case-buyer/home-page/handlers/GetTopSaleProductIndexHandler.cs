@@ -102,7 +102,7 @@ namespace DPTS.Applications.case_buyer.homepage.handlers
                     _logger.LogWarning($"Count rating for product ID {item.ProductId} is invalid.");
                     continue;
                 }
-                IEnumerable<ProductAdjustment> productAdjustments = await _productAdjustmentQuery.GetByProductIdAsync(item.ProductId, cancellationToken);
+                IEnumerable<ProductAdjustment> productAdjustments = await _productAdjustmentQuery.GetsByProductIdAsync(item.ProductId, cancellationToken);
                 if (productAdjustments.Count() > 1)
                 {
                     _logger.LogWarning($"Multiple product adjustments found for product ID {item.ProductId}. Using the first one.");
