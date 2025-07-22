@@ -66,7 +66,7 @@ namespace DPTS.Applications.Seller.Handler.product
                 ProductId = Guid.NewGuid().ToString(),
                 ProductName = request.ProductName,
                 CategoryId = request.CategoryId,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 Description = request.Description,
                 OriginalPrice = request.OriginalPrice,
                 Status = ProductStatus.Pending,
@@ -77,7 +77,7 @@ namespace DPTS.Applications.Seller.Handler.product
             {
                 LogId = Guid.NewGuid().ToString(),
                 Action = "AddProduct",
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 TargetId = product.ProductId,
                 TargetType = "Product",
             };
@@ -98,7 +98,7 @@ namespace DPTS.Applications.Seller.Handler.product
                         ImageId = Guid.NewGuid().ToString(),
                         ProductId = product.ProductId,
                         ImagePath = image,
-                        CreatedAt = DateTime.Now,
+                        CreatedAt = DateTime.UtcNow,
                         IsPrimary = true
                     };
                     if (request.Images.First() == image)

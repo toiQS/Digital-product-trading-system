@@ -9,13 +9,10 @@
   <ItemGroup>
     <Compile Remove="Shareds\Dtos\**" />
     <Compile Remove="Shareds\Handles\**" />
-    <Compile Remove="Shareds\Queries\**" />
     <EmbeddedResource Remove="Shareds\Dtos\**" />
     <EmbeddedResource Remove="Shareds\Handles\**" />
-    <EmbeddedResource Remove="Shareds\Queries\**" />
     <None Remove="Shareds\Dtos\**" />
     <None Remove="Shareds\Handles\**" />
-    <None Remove="Shareds\Queries\**" />
   </ItemGroup>
 
   
@@ -40,6 +37,12 @@
 
   <ItemGroup>
     <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="shareds\Dtos\" />
+    <Folder Include="shareds\Handlers\" />
+    <Folder Include="shareds\Queries\" />
   </ItemGroup>
 
 </Project>
