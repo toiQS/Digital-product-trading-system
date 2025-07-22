@@ -19,15 +19,16 @@ namespace DPTS.Applications.Seller.Handler.product
         private readonly IProductImageRepository _productImageRepository;
         private readonly IAdjustmentHandle _adjustmentHandle;
 
-        public GetSellerProdutsHandle(IProductRepository productRepository,
-                                      IEscrowRepository escrowRepository,
-                                      IOrderItemRepository orderItemRepository,
-                                      IOrderRepository orderRepository,
-                                      IProductReviewRepository productReviewRepository,
-                                      ILogger<GetSellerProdutsHandle> logger,
-                                      IStoreRepository storeRepository,
-                                      IProductImageRepository productImageRepository,
-                                      IAdjustmentHandle adjustmentHandle)
+        public GetSellerProdutsHandle(
+            IProductRepository productRepository,
+            IEscrowRepository escrowRepository,
+            IOrderItemRepository orderItemRepository,
+            IOrderRepository orderRepository,
+            IProductReviewRepository productReviewRepository,
+            ILogger<GetSellerProdutsHandle> logger,
+            IStoreRepository storeRepository,
+            IProductImageRepository productImageRepository,
+            IAdjustmentHandle adjustmentHandle)
         {
             _productRepository = productRepository;
             _escrowRepository = escrowRepository;
@@ -53,17 +54,17 @@ namespace DPTS.Applications.Seller.Handler.product
                     return ServiceResult<IEnumerable<ProductListItemDto>>.Error("Không tìm thấy cửa hàng.");
                 }
 
-                var products = await _productRepository.GetByStoreAsync(storeId: store.StoreId);
+                var products = await _productRepository.GetByStoreAsync(store.StoreId); // Ensure Includes Category
+
                 var escrows = await _escrowRepository.GetAllAsync(storeId: store.StoreId, status: Domains.EscrowStatus.Done);
                 var orderItems = await _orderItemRepository.GetAllAsync();
 
-                // Tính tổng số lượng bán theo từng sản phẩm
                 List<ProductIndexQuantity> soldQuantities;
                 try
                 {
                     soldQuantities = (
                         from escrow in escrows
-                        where escrow.Order.IsPaid
+                        where escrow.Order != null && escrow.Order.IsPaid
                         join item in orderItems on escrow.Order.OrderId equals item.OrderId
                         group item by item.ProductId into g
                         select new ProductIndexQuantity
@@ -82,30 +83,38 @@ namespace DPTS.Applications.Seller.Handler.product
 
                 foreach (var product in products)
                 {
-                    var productReviews = await _productReviewRepository.GetByProductIdAsync(productId: product.ProductId);
+                    if (product.Category == null)
+                    {
+                        _logger.LogWarning("ProductId {ProductId} has null Category", product.ProductId);
+                        continue; // hoặc return lỗi nếu bạn muốn cứng rắn hơn
+                    }
+
+                    var productReviews = await _productReviewRepository.GetByProductIdAsync(product.ProductId);
                     var reviewCount = productReviews.Count();
                     var totalRatingOverall = productReviews.Sum(x => x.RatingOverall);
-
-                    var quantitySold = soldQuantities.FirstOrDefault(x => x.ProductId == product.ProductId)?.TotalQuantity ?? 0;
                     var RatingOverallAvg = reviewCount > 0 ? (double)totalRatingOverall / reviewCount : 0;
 
-                    var productImage = await _productImageRepository.GetPrimaryAsync(productId: product.ProductId);
+                    var quantitySold = soldQuantities.FirstOrDefault(x => x.ProductId == product.ProductId)?.TotalQuantity ?? 0;
+
+                    var productImage = await _productImageRepository.GetPrimaryAsync(product.ProductId);
                     if (productImage == null)
                     {
-                        _logger.LogError($"Product image does not exist.");
+                        _logger.LogError("ProductId {ProductId} has no primary image", product.ProductId);
                         return ServiceResult<IEnumerable<ProductListItemDto>>.Error("Không lấy được ảnh của sản phẩm");
                     }
+
                     var finalPrice = await _adjustmentHandle.HandleDiscountAndPriceForProduct(product);
                     if (finalPrice.Status == StatusResult.Errored)
                     {
-                        _logger.LogError(finalPrice.MessageResult);
+                        _logger.LogError("Price adjustment failed for ProductId {ProductId}: {Message}", product.ProductId, finalPrice.MessageResult);
                         return ServiceResult<IEnumerable<ProductListItemDto>>.Error(finalPrice.MessageResult);
                     }
+
                     result.Add(new ProductListItemDto
                     {
                         ProductId = product.ProductId,
                         ProductName = product.ProductName,
-                        Category = product.Category.CategoryName,
+                        Category = product.Category?.CategoryName ?? "Không xác định",
                         Price = finalPrice.Data.FinalAmount,
                         Image = productImage.ImagePath,
                         QuantitySelled = quantitySold,
@@ -124,7 +133,7 @@ namespace DPTS.Applications.Seller.Handler.product
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error in GetProductsHandler.");
+                _logger.LogError(ex, "Unexpected error in GetSellerProductsHandler.");
                 return ServiceResult<IEnumerable<ProductListItemDto>>.Error("Đã xảy ra lỗi khi lấy sản phẩm.");
             }
         }
