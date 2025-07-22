@@ -40,6 +40,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Admin\manage-seller\dtos\" />
+    <Folder Include="Admin\manage-seller\handlers\" />
+    <Folder Include="Admin\manage-seller\Queries\" />
     <Folder Include="shareds\Dtos\" />
     <Folder Include="shareds\Handlers\" />
     <Folder Include="shareds\Queries\" />
