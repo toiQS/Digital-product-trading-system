@@ -169,8 +169,8 @@ namespace DPTS.APIs.Controllers
         }
 
         // -------------------- Store --------------------
-        [HttpGet("store")]
-        public async Task<IActionResult> GetStore([FromBody] GetStoreQuery query)
+        [HttpGet("store-detail")]
+        public async Task<IActionResult> GetStore([FromQuery] GetStoreQuery query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
