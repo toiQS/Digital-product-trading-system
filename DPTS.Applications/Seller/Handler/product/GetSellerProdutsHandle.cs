@@ -86,7 +86,7 @@ namespace DPTS.Applications.Seller.Handler.product
                     if (product.Category == null)
                     {
                         _logger.LogWarning("ProductId {ProductId} has null Category", product.ProductId);
-                        continue; // hoặc return lỗi nếu bạn muốn cứng rắn hơn
+                        continue;
                     }
 
                     var productReviews = await _productReviewRepository.GetByProductIdAsync(product.ProductId);
