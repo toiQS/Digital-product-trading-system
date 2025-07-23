@@ -83,11 +83,7 @@ namespace DPTS.Applications.Seller.Handler.product
 
                 foreach (var product in products)
                 {
-                    if (product.Category == null)
-                    {
-                        _logger.LogWarning("ProductId {ProductId} has null Category", product.ProductId);
-                        continue;
-                    }
+                    
 
                     var productReviews = await _productReviewRepository.GetByProductIdAsync(product.ProductId);
                     var reviewCount = productReviews.Count();
