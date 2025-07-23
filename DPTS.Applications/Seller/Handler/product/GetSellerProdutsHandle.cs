@@ -18,17 +18,18 @@ namespace DPTS.Applications.Seller.Handler.product
         private readonly IStoreRepository _storeRepository;
         private readonly IProductImageRepository _productImageRepository;
         private readonly IAdjustmentHandle _adjustmentHandle;
+        private readonly ICategoryRepository _categoryRepository;
 
-        public GetSellerProdutsHandle(
-            IProductRepository productRepository,
-            IEscrowRepository escrowRepository,
-            IOrderItemRepository orderItemRepository,
-            IOrderRepository orderRepository,
-            IProductReviewRepository productReviewRepository,
-            ILogger<GetSellerProdutsHandle> logger,
-            IStoreRepository storeRepository,
-            IProductImageRepository productImageRepository,
-            IAdjustmentHandle adjustmentHandle)
+        public GetSellerProdutsHandle(IProductRepository productRepository,
+                                      IEscrowRepository escrowRepository,
+                                      IOrderItemRepository orderItemRepository,
+                                      IOrderRepository orderRepository,
+                                      IProductReviewRepository productReviewRepository,
+                                      ILogger<GetSellerProdutsHandle> logger,
+                                      IStoreRepository storeRepository,
+                                      IProductImageRepository productImageRepository,
+                                      IAdjustmentHandle adjustmentHandle,
+                                      ICategoryRepository categoryRepository)
         {
             _productRepository = productRepository;
             _escrowRepository = escrowRepository;
@@ -38,7 +39,8 @@ namespace DPTS.Applications.Seller.Handler.product
             _logger = logger;
             _storeRepository = storeRepository;
             _productImageRepository = productImageRepository;
-            _adjustmentHandle = adjustmentHandle ?? throw new ArgumentNullException(nameof(adjustmentHandle));
+            _adjustmentHandle = adjustmentHandle;
+            _categoryRepository = categoryRepository;
         }
 
         public async Task<ServiceResult<IEnumerable<ProductListItemDto>>> Handle(GetSellerProductsItemQuery query, CancellationToken token = default)
@@ -83,7 +85,11 @@ namespace DPTS.Applications.Seller.Handler.product
 
                 foreach (var product in products)
                 {
-                    
+                    var category = await _categoryRepository.GetByIdAsync(product.CategoryId);
+                    if(category == null)
+                    {
+                        _logger.LogError("Error when try get information of category");
+                    }
 
                     var productReviews = await _productReviewRepository.GetByProductIdAsync(product.ProductId);
                     var reviewCount = productReviews.Count();
@@ -110,7 +116,7 @@ namespace DPTS.Applications.Seller.Handler.product
                     {
                         ProductId = product.ProductId,
                         ProductName = product.ProductName,
-                        Category = product.Category?.CategoryName ?? "Không xác định",
+                        Category = category.CategoryName ?? "Không xác định",
                         Price = finalPrice.Data.FinalAmount,
                         Image = productImage.ImagePath,
                         QuantitySelled = quantitySold,
