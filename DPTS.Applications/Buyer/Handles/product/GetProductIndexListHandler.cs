@@ -1,10 +1,12 @@
-﻿using DPTS.Applications.Buyer.Dtos;
+﻿using DPTS.Applications.Auth.Queries;
+using DPTS.Applications.Buyer.Dtos;
 using DPTS.Applications.Buyer.Dtos.product;
 using DPTS.Applications.Buyer.Queries.product;
 using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
 using MediatR;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Buyer.Handles.product
@@ -77,6 +79,10 @@ namespace DPTS.Applications.Buyer.Handles.product
             // Duyệt từng sản phẩm để xây dựng thông tin chi tiết
             foreach (var product in products)
             {
+                if(!string.IsNullOrEmpty(request.CategoryId) && product.CategoryId != request.CategoryId)
+                {
+                    continue;
+                }
                 var image = await _productImageRepository.GetPrimaryAsync(product.ProductId);
                 if (image == null)
                 {
@@ -113,6 +119,9 @@ namespace DPTS.Applications.Buyer.Handles.product
                 });
             }
 
+            if (request.RatingOverall > 0)
+               result.ProductIndexList =  result.ProductIndexList.Where(x => x.RatingOverallAverage >= request.RatingOverall).ToList();
+            
             // Sắp xếp sản phẩm theo số lượt đánh giá giảm dần và phân trang
             result.ProductIndexList = result.ProductIndexList
                 .OrderByDescending(x => x.RatingOverallCount)
