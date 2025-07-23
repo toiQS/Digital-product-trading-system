@@ -81,6 +81,7 @@ namespace DPTS.Applications.Buyer.Handles.product
             {
                 if(!string.IsNullOrEmpty(request.CategoryId) && product.CategoryId != request.CategoryId)
                 {
+                    _logger.LogWarning("skip");
                     continue;
                 }
                 var image = await _productImageRepository.GetPrimaryAsync(product.ProductId);

@@ -12,5 +12,6 @@
         public DateTime JoinAt { get; set; }
         public int CountOrder { get; set; }
         public string Status { get; set; }
+        public decimal Expenditure { get; set; }
     }
 }
