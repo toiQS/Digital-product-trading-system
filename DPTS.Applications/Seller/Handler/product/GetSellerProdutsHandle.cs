@@ -54,7 +54,7 @@ namespace DPTS.Applications.Seller.Handler.product
                     return ServiceResult<IEnumerable<ProductListItemDto>>.Error("Không tìm thấy cửa hàng.");
                 }
 
-                var products = await _productRepository.GetByStoreAsync(store.StoreId); // Ensure Includes Category
+                var products = await _productRepository.GetByStoreAsync(store.StoreId);
 
                 var escrows = await _escrowRepository.GetAllAsync(storeId: store.StoreId, status: Domains.EscrowStatus.Done);
                 var orderItems = await _orderItemRepository.GetAllAsync();
@@ -83,11 +83,7 @@ namespace DPTS.Applications.Seller.Handler.product
 
                 foreach (var product in products)
                 {
-                    if (product.Category == null)
-                    {
-                        _logger.LogWarning("ProductId {ProductId} has null Category", product.ProductId);
-                        continue;
-                    }
+                    
 
                     var productReviews = await _productReviewRepository.GetByProductIdAsync(product.ProductId);
                     var reviewCount = productReviews.Count();

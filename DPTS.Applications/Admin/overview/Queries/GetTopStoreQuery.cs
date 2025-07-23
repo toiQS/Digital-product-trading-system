@@ -4,7 +4,7 @@ using MediatR;
 
 namespace DPTS.Applications.Admin.overview.Queries
 {
-    internal class GetTopStoreQuery : IRequest<ServiceResult<TopStoreDto>>
+    public class GetTopStoreQuery : IRequest<ServiceResult<TopStoreDto>>
     {
         public string UserId { get; set; }
     }

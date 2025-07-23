@@ -25,8 +25,9 @@ namespace DPTS.Domains
     }
     public enum StoreStatus
     {
+        Unknown,
         Active,
         Inactive,
-        Unknown,
+        Removed
     }
 }

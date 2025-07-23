@@ -2,7 +2,7 @@
 {
     public class TopStoreDto
     {
-        public IEnumerable<TopStoreIndexDto> Indexs { get; set; }
+        public List<TopStoreIndexDto> Indexs { get; set; }
     }
     public class TopStoreIndexDto
     {
