@@ -48,7 +48,11 @@ namespace DPTS.Applications.Auth.Handles
                 _logger.LogWarning("User not found for email: {Email}", request.Email);
                 return ServiceResult<LoginDto>.Error("Tài khoản hoặc mật khẩu không chính xác.");
             }
-
+            if (user.IsActive == false)
+            {
+                _logger.LogWarning("User is not avalible");
+                return ServiceResult<LoginDto>.Error("Tài khoản đã bị vô hiệu");
+            }
             var userSecurity = await _userSecurityRepository.GetByUserIdAsync(user.UserId);
             if (userSecurity == null)
             {

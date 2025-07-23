@@ -81,6 +81,7 @@ namespace DPTS.Applications.Buyer.Handles.product
             {
                 if(!string.IsNullOrEmpty(request.CategoryId) && product.CategoryId != request.CategoryId)
                 {
+                    _logger.LogWarning("skip");
                     continue;
                 }
                 var image = await _productImageRepository.GetPrimaryAsync(product.ProductId);
@@ -106,8 +107,7 @@ namespace DPTS.Applications.Buyer.Handles.product
                     _logger.LogError("Adjustment calculation failed for productId: {ProductId}", product.ProductId);
                     return ServiceResult<ProductIndexListDto>.Error("Không tính được giá sản phẩm sau điều chỉnh.");
                 }
-
-                result.ProductIndexList.Add(new ProductIndexDto
+                var index = new ProductIndexDto
                 {
                     ProductId = product.ProductId,
                     ProductName = product.ProductName,
@@ -116,7 +116,8 @@ namespace DPTS.Applications.Buyer.Handles.product
                     RatingOverallAverage = averageRating,
                     RatingOverallCount = reviewCount,
                     Price = priceResult.Data.FinalAmount,
-                });
+                };
+                result.ProductIndexList.Add(index);
             }
 
             if (request.RatingOverall > 0)

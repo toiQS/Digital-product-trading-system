@@ -60,10 +60,14 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         public async Task<double> GetAverageOverallRatingAsync(string productId)
         {
-            return await _context.ProductReviews
-                .Where(r => r.ProductId == productId)
-                .AverageAsync(r => r.RatingOverall);
+            var query = _context.ProductReviews.Where(r => r.ProductId == productId);
+
+            if (!await query.AnyAsync())
+                return 0;
+
+            return await query.AverageAsync(r => r.RatingOverall);
         }
+
 
         public async Task<int> CountByProductIdAsync(string productId)
         {
