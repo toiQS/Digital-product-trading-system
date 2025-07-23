@@ -72,6 +72,7 @@ namespace DPTS.Applications.Shareds
             StoreStatus.Active => "Hoạt động",
             StoreStatus.Inactive => "Tạm ngưng",
             StoreStatus.Unknown => "Không rõ",
+            StoreStatus.Removed =>"Đã xóa",
             _ => "Không xác định"
         };
 
