@@ -22,6 +22,30 @@ namespace DPTS.Applications.Seller.Handler.order
         private readonly IOrderRepository _orderRepository;
         private readonly IUserProfileRepository _userProfileRepository;
         private readonly ILogger<ConfirmAndSendProductHandler> _logger;
+
+        public ConfirmAndSendProductHandler(IEscrowProcessRepository escrowProcessRepository,
+                                            IEscrowRepository escrowRepository,
+                                            IStoreRepository storeRepository,
+                                            IUserRepository userRepository,
+                                            ILogRepository logRepository,
+                                            IConfiguration configuration,
+                                            IOrderItemRepository orderItemRepository,
+                                            IOrderRepository orderRepository,
+                                            IUserProfileRepository userProfileRepository,
+                                            ILogger<ConfirmAndSendProductHandler> logger)
+        {
+            _escrowProcessRepository = escrowProcessRepository;
+            _escrowRepository = escrowRepository;
+            _storeRepository = storeRepository;
+            _userRepository = userRepository;
+            _logRepository = logRepository;
+            _configuration = configuration;
+            _orderItemRepository = orderItemRepository;
+            _orderRepository = orderRepository;
+            _userProfileRepository = userProfileRepository;
+            _logger = logger;
+        }
+
         public async Task<ServiceResult<string>> Handle(ConfirmAndSendProductCommand request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Handling ConfirmAndSendProductCommand for SellerId: {SellerId}, EscrowId: {EscrowId}, StoreId: {StoreId}", request.SellerId, request.EscrowId, request.StoreId);

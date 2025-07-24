@@ -13,6 +13,15 @@ namespace DPTS.Applications.Admin.manage_product.handlers
         private readonly IProductRepository _productRepository;
         private readonly IComplaintRepository _complaintRepository;
         private readonly ILogger<GetOverviewHandler> _logger;
+
+        public GetOverviewHandler(IUserRepository userRepository, IProductRepository productRepository, IComplaintRepository complaintRepository, ILogger<GetOverviewHandler> logger)
+        {
+            _userRepository = userRepository;
+            _productRepository = productRepository;
+            _complaintRepository = complaintRepository;
+            _logger = logger;
+        }
+
         public async Task<ServiceResult<OverviewDto>> Handle(GetOverviewQuery request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Handling get overview product managemnet");

@@ -47,7 +47,7 @@ namespace DPTS.Applications.Admin.manage_user.handlers
             var users = await _userRepository.GetAllAsync();
             if (request.Condition.Text != null)
             {
-                users = users.Where(x => x.Username.Contains(request.Condition.Text) || x.Email.Contains(request.Condition.Text)).ToList();
+                users = users.Where(x =>x.UserId.Contains(request.Condition.Text ) || x.Username.Contains(request.Condition.Text) || x.Email.Contains(request.Condition.Text)).ToList();
             }
             if (request.Condition.IsAvalible != null)
             {

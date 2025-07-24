@@ -45,7 +45,7 @@ namespace DPTS.Applications.Admin.manage_seller.handlers
             var stores = await _storeRepository.GetAllAsync();
             if (string.IsNullOrEmpty(request.Condition.Text))
             {
-                stores = stores.Where(x => x.StoreName.Contains(request.Condition.Text));
+                stores = stores.Where(x => x.StoreName.Contains(request.Condition.Text) || x.StoreId.Contains(request.Condition.Text));
             }
             if (request.Condition.StoreStatus != 0)
                 stores = stores.Where(x => x.Status == request.Condition.StoreStatus);
