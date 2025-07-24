@@ -44,7 +44,8 @@ namespace DPTS.Applications
 
         private static void InitializeRepository(this IServiceCollection services)
         {
-           services.AddScoped<IAdjustmentRuleRepository, AdjustmentRuleRepository>();
+
+            services.AddScoped<IAdjustmentRuleRepository, AdjustmentRuleRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IComplaintRepository, ComplaintRepository>();
             services.AddScoped<IEscrowRepository, EscrowRepository>();

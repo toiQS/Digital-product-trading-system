@@ -13,9 +13,9 @@ namespace DPTS.Applications.Admin.manage_product.handlers
         private readonly IUserRepository _userRepository;
         private readonly IProductRepository _productRepository;
         private readonly ILogRepository _logRepository;
-        private readonly Logger<UpdateProductHandler> _logger;
+        private readonly ILogger<UpdateProductHandler> _logger;
 
-        public UpdateProductHandler(IUserRepository userRepository, IProductRepository productRepository, ILogRepository logRepository, Logger<UpdateProductHandler> logger)
+        public UpdateProductHandler(IUserRepository userRepository, IProductRepository productRepository, ILogRepository logRepository, ILogger<UpdateProductHandler> logger)
         {
             _userRepository = userRepository;
             _productRepository = productRepository;
