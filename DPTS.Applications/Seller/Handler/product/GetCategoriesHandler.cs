@@ -10,9 +10,9 @@ namespace DPTS.Applications.Seller.Handler.product
     public class GetCategoriesHandler : IRequestHandler<GetCategoiesQuery, ServiceResult<CategoryDto>>
     {
         private readonly ICategoryRepository _categoryRepository;
-        private readonly Logger<GetCategoriesHandler> _logger;
+        private readonly ILogger<GetCategoriesHandler> _logger;
 
-        public GetCategoriesHandler(ICategoryRepository categoryRepository, Logger<GetCategoriesHandler> logger)
+        public GetCategoriesHandler(ICategoryRepository categoryRepository, ILogger<GetCategoriesHandler> logger)
         {
             _categoryRepository = categoryRepository;
             _logger = logger;
