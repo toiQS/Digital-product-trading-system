@@ -122,7 +122,7 @@ namespace DPTS.Applications.Buyer.Handles.product
 
             if (request.RatingOverall > 0)
                result.ProductIndexList =  result.ProductIndexList.Where(x => x.RatingOverallAverage >= request.RatingOverall).ToList();
-            
+            result.TotalCount = result.ProductIndexList.Count;
             // Sắp xếp sản phẩm theo số lượt đánh giá giảm dần và phân trang
             result.ProductIndexList = result.ProductIndexList
                 .OrderByDescending(x => x.RatingOverallCount)
