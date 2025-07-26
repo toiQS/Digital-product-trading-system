@@ -1,8 +1,8 @@
-﻿namespace DPTS.Applications.Admin.overview.dtos
+﻿namespace DPTS.Applications.Admin.manage_revenue.dtos
 {
     public class TopStoreDto
     {
-        public List<TopStoreIndexDto> Indexs { get; set; }
+        public List<TopStoreIndexDto> Indexs { get; set; } 
     }
     public class TopStoreIndexDto
     {

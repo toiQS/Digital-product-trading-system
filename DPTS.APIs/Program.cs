@@ -1,15 +1,16 @@
 ﻿using DPTS.Applications;
-using DPTS.Infrastructures.Data;
+using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Initalize(builder.Configuration);
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "DPTS.APIs", Version = "v1" });
-    c.EnableAnnotations();
-    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "DPTS APIs", Version = "v1" });
+
+    c.CustomSchemaIds(type => type.FullName);
 });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddControllers();
 
@@ -25,6 +26,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "PM.Identity.API v1");
         c.SwaggerEndpoint("/swagger/v2/swagger.json", "PM.Identity.API v2");
         c.RoutePrefix = string.Empty;
+
     });
     app.UseStaticFiles();
 }

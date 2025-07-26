@@ -15,6 +15,8 @@ namespace DPTS.Domains
 
         [Column("category_icon")]
         public string CategoryIcon { get; set; } = string.Empty;
+        [Column("description")]
+        public string Description { get; set; }
 
         [Column("create_at")]
         public DateTime CreateAt { get; set; } = DateTime.UtcNow;
