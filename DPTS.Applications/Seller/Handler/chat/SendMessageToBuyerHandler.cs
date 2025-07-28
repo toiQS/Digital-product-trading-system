@@ -60,7 +60,8 @@ namespace DPTS.Applications.Seller.Handler.chat
                 ReceiverType = Domains.ParticipantType.Buyer,
                 ReceiverId = request.BuyerId,
                 Content = request.Message,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                MessageId = Guid.NewGuid().ToString(),
             };
             var log = new Log()
             {
