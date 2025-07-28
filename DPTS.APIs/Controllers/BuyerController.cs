@@ -38,7 +38,7 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
 
-        [HttpPut("remove-product")]
+        [HttpPut("remove-product-in-cart")]
         public async Task<IActionResult> RemoveProductFromOrder([FromBody] RemoveProductFormOrderCommand query)
         {
             var result = await _mediator.Send(query);
@@ -46,6 +46,19 @@ namespace DPTS.APIs.Controllers
         }
 
         // --------------------- Product ---------------------
+        [HttpGet("get-rating-overview")]
+        public async Task<IActionResult> GetRating([FromQuery] GetRatingQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+        [HttpGet("get-categories")]
+        public async Task<IActionResult> GetCategories([FromQuery] GetCategoryQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+        
         [HttpGet("product-detail")]
         public async Task<IActionResult> GetProductDetail([FromQuery] GetProductDetailQuery query)
         {
