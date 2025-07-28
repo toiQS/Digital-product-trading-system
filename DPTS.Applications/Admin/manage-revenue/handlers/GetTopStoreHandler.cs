@@ -1,12 +1,12 @@
-﻿using DPTS.Applications.Admin.overview.dtos;
-using DPTS.Applications.Admin.overview.Queries;
+﻿using DPTS.Applications.Admin.manage_revenue.dtos;
+using DPTS.Applications.Admin.manage_revenue.Queries;
 using DPTS.Applications.Shareds;
 using DPTS.Infrastructures.Repository.Interfaces;
 using LinqKit;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace DPTS.Applications.Admin.overview.handlers
+namespace DPTS.Applications.Admin.manage_revenue.handlers
 {
     public class GetTopStoreHandler : IRequestHandler<GetTopStoreQuery, ServiceResult<TopStoreDto>>
     {

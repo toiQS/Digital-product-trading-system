@@ -1,12 +1,9 @@
-﻿using DPTS.Applications.Auth.Queries;
-using DPTS.Applications.Buyer.Dtos;
-using DPTS.Applications.Buyer.Dtos.product;
+﻿using DPTS.Applications.Buyer.Dtos.product;
 using DPTS.Applications.Buyer.Queries.product;
 using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
 using MediatR;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace DPTS.Applications.Buyer.Handles.product
@@ -38,76 +35,49 @@ namespace DPTS.Applications.Buyer.Handles.product
 
         public async Task<ServiceResult<ProductIndexListDto>> Handle(GetProductIndexListQuery request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Begin handling GetProductIndexListQuery");
-
-            var result = new ProductIndexListDto();
-
-            // Lấy danh sách sản phẩm khả dụng theo tên hoặc danh mục
-            var products = await _productRepository.SearchAsync(request.Text, request.CategoryId, ProductStatus.Available);
-
-            // Lấy danh mục kèm sản phẩm & rule điều chỉnh giá
-            var categories = await _categoryRepository.GetsAsync(includeProduct: true, includeAdjustmentRule: true);
-
-            // Gán thông tin danh mục vào kết quả trả về
-            result.Categories = categories.Select(c => new CategoryIndexDto
+            _logger.LogInformation("Handling get product list with condition for buyer");
+            ProductIndexListDto result = new();
+            IEnumerable<Product> products = (await _productRepository.SearchAsync()).Where(x => x.Status == ProductStatus.Available);
+            List<Product> productResult = new();
+            if (!request.Condition.CategoryIds.Any())
             {
-                CategoryId = c.CategoryId,
-                CategoryName = c.CategoryName,
-                CategoriesCount = c.Products.Count()
-            }).ToList();
-
-            // Tính trung bình đánh giá từng sản phẩm để phục vụ thống kê
-            var averages = new List<double>();
-
-            foreach (var product in products)
-            {
-                var avgRating = await _productReviewRepository.GetAverageOverallRatingAsync(product.ProductId);
-                averages.Add(avgRating);
-            }
-
-            // Thống kê số lượng sản phẩm theo mức đánh giá 1-5 sao
-            for (int i = 1; i <= 5; i++)
-            {
-                var count = averages.Count(x => x >= i && x < i + 1);
-                result.Rates.Add(new RateIndexDto
+                request.Condition.CategoryIds.ForEach(c =>
                 {
-                    RatingOverall = i,
-                    Count = count
+                    List<Product> p = products.Where(x => x.CategoryId == c).ToList();
+                    productResult.AddRange(p);
                 });
             }
-
-            // Duyệt từng sản phẩm để xây dựng thông tin chi tiết
-            foreach (var product in products)
+            else
             {
-                if(!string.IsNullOrEmpty(request.CategoryId) && product.CategoryId != request.CategoryId)
-                {
-                    _logger.LogWarning("skip");
-                    continue;
-                }
-                var image = await _productImageRepository.GetPrimaryAsync(product.ProductId);
+                productResult = products.ToList();
+            }
+            foreach (Product product in products)
+            {
+
+                ProductImage? image = await _productImageRepository.GetPrimaryAsync(product.ProductId);
                 if (image == null)
                 {
                     _logger.LogError("Missing primary image for productId: {ProductId}", product.ProductId);
                     return ServiceResult<ProductIndexListDto>.Error("Không tìm thấy ảnh đại diện sản phẩm.");
                 }
 
-                var averageRating = await _productReviewRepository.GetAverageOverallRatingAsync(product.ProductId);
-                var reviewCount = await _productReviewRepository.CountByProductIdAsync(product.ProductId);
+                double averageRating = await _productReviewRepository.GetAverageOverallRatingAsync(product.ProductId);
+                int reviewCount = await _productReviewRepository.CountByProductIdAsync(product.ProductId);
 
-                var category = categories.FirstOrDefault(x => x.CategoryId == product.CategoryId);
+                Category? category = await _categoryRepository.GetByIdAsync(product.CategoryId);
                 if (category == null)
                 {
                     _logger.LogError("Category not found for productId: {ProductId}", product.ProductId);
                     return ServiceResult<ProductIndexListDto>.Error("Không xác định được danh mục sản phẩm.");
                 }
 
-                var priceResult = await _adjustmentHandle.HandleDiscountAndPriceForProduct(product);
+                ServiceResult<Dtos.shared.MathResultDto> priceResult = await _adjustmentHandle.HandleDiscountAndPriceForProduct(product);
                 if (priceResult.Status != StatusResult.Success || priceResult.Data == null)
                 {
                     _logger.LogError("Adjustment calculation failed for productId: {ProductId}", product.ProductId);
                     return ServiceResult<ProductIndexListDto>.Error("Không tính được giá sản phẩm sau điều chỉnh.");
                 }
-                var index = new ProductIndexDto
+                ProductIndexDto index = new()
                 {
                     ProductId = product.ProductId,
                     ProductName = product.ProductName,
@@ -119,18 +89,19 @@ namespace DPTS.Applications.Buyer.Handles.product
                 };
                 result.ProductIndexList.Add(index);
             }
+            if (!string.IsNullOrEmpty(request.Condition.Text))
+            {
+                result.ProductIndexList = result.ProductIndexList.Where(x => x.ProductId.Contains(request.Condition.Text) || x.ProductName.Contains(request.Condition.Text)).ToList();
+            }
+            if (request.Condition.RatingOverall > 0)
+            {
+                result.ProductIndexList = result.ProductIndexList.Where(x => x.RatingOverallAverage >= request.Condition.RatingOverall).ToList();
+            }
 
-            if (request.RatingOverall > 0)
-               result.ProductIndexList =  result.ProductIndexList.Where(x => x.RatingOverallAverage >= request.RatingOverall).ToList();
-            result.TotalCount = result.ProductIndexList.Count;
-            // Sắp xếp sản phẩm theo số lượt đánh giá giảm dần và phân trang
-            result.ProductIndexList = result.ProductIndexList
-                .OrderByDescending(x => x.RatingOverallCount)
-                .Skip((request.PageNumber - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToList();
-
-            _logger.LogInformation("GetProductIndexListQuery handled successfully");
+            if (request.PageNumber > 0 && request.PageSize > 0)
+            {
+                result.ProductIndexList = result.ProductIndexList.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToList();
+            }
 
             return ServiceResult<ProductIndexListDto>.Success(result);
         }

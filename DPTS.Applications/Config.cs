@@ -1,4 +1,5 @@
-﻿using DPTS.Applications.Auth;
+﻿using DPTS.Applications.Admin;
+using DPTS.Applications.Auth;
 using DPTS.Applications.Buyer;
 using DPTS.Applications.Seller;
 using DPTS.Applications.Shareds;
@@ -26,7 +27,6 @@ namespace DPTS.Applications
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("PostgreConnectString")));
-
         }
 
         private static void InitializeService(this IServiceCollection services)
@@ -36,7 +36,7 @@ namespace DPTS.Applications
                 cfg.RegisterServicesFromAssemblies(
                     typeof(BuyerAssemblyMarker).Assembly,
                     typeof(SellersAssemblyMarker).Assembly,
-                    //typeof(NoDistinctionOfRoleAssemblyMarker).Assembly
+                    typeof(AdminsAssemblyMarker).Assembly,
                     typeof(AuthAssemblyMarker).Assembly
                 );
             });
@@ -44,7 +44,6 @@ namespace DPTS.Applications
 
         private static void InitializeRepository(this IServiceCollection services)
         {
-
             services.AddScoped<IAdjustmentRuleRepository, AdjustmentRuleRepository>();
             services.AddScoped<ICategoryRepository, CategoryRepository>();
             services.AddScoped<IComplaintRepository, ComplaintRepository>();
@@ -54,7 +53,7 @@ namespace DPTS.Applications
             services.AddScoped<IOrderItemRepository, OrderItemRepository>();
             services.AddScoped<IOrderPaymentRepository, OrderPaymentRepository>();
             services.AddScoped<IOrderRepository, OrderRepository>();
-            services.AddScoped<IPaymentMethodRepository,PaymentMethodRepository>();
+            services.AddScoped<IPaymentMethodRepository, PaymentMethodRepository>();
             services.AddScoped<IProductAdjustmentRepository, ProductAdjustmentRepository>();
             services.AddScoped<IProductImageRepository, ProductImageRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
@@ -68,19 +67,14 @@ namespace DPTS.Applications
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IEscrowProcessRepository, EscrowProcessRepository>();
             services.AddScoped<IAdjustmentHandle, AdjustmentHandle>();
-
-
-
         }
+
         private static void InitializeJwt(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddAuthentication(options =>
             {
-
-
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
             }).AddJwtBearer(options =>
             {
                 options.SaveToken = true;
@@ -90,11 +84,13 @@ namespace DPTS.Applications
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = configuration.GetSection("Jwt:Issuer").Value,
-                    ValidAudience = configuration.GetSection("Jwt:Audience").Value,
-                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration.GetSection("Jwt:SecretKey").Value!))
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"],
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                        System.Text.Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!))
                 };
             });
         }
     }
 }
+
