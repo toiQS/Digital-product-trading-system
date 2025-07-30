@@ -2,7 +2,7 @@
 {
     public class ProductDto
     {
-        public List<ProductIndexDto> ProductIndexDtos { get; set; }
+        public List<ProductIndexDto> ProductIndexDtos { get; set; } = new List<ProductIndexDto>();
         public int ProductCount { get; set; }
     }
     public class ProductIndexDto

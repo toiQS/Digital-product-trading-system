@@ -14,7 +14,7 @@ namespace DPTS.Applications.Admin.manage_category.Queries
     }
     public class Condition
     {
-        public string Text { get; set; }
+        public string? Text { get; set; }
         public bool? IsFeatured { get; set; }
     }
     public enum MethodSord

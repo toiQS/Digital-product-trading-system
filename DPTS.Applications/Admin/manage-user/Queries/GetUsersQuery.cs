@@ -13,7 +13,7 @@ namespace DPTS.Applications.Admin.manage_user.Queries
     }
     public class Condition
     {
-        public string Text { get; set; }
+        public string? Text { get; set; }
         public bool? IsAvalible { get; set; } = null;
     }
 }

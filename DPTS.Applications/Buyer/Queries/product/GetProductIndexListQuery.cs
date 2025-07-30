@@ -13,7 +13,7 @@ namespace DPTS.Applications.Buyer.Queries.product
     }
     public class Condition
     {
-        public string Text { get; set; } = string.Empty;
+        public string? Text { get; set; } = string.Empty;
         public int RatingOverall { get; set; }
         public List<string> CategoryIds { get; set; }
     }

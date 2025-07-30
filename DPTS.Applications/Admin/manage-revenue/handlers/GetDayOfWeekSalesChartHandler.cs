@@ -44,6 +44,7 @@ namespace DPTS.Applications.Admin.manage_revenue.handlers
                     Name = startThisWeek.DayOfWeek.ToString(),
                     Value = escrows.Sum(x => x.ActualAmount)
                 });
+                startThisWeek = startThisWeek.AddDays(1);
             }
             return ServiceResult<ChartDto>.Success(result);
         }

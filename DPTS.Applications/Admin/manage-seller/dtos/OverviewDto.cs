@@ -2,7 +2,7 @@
 {
     public class OverviewDto
     {
-        public List<OverviewIndexDto> Indexs { get; set; }
+        public List<OverviewIndexDto> Indexs { get; set; } = new List<OverviewIndexDto>();
     }
     public class OverviewIndexDto
     {

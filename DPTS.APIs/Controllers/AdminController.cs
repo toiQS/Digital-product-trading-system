@@ -1,5 +1,4 @@
-﻿
-using DPTS.Applications.Shareds;
+﻿using DPTS.Applications.Shareds;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,8 +59,8 @@ namespace DPTS.APIs.Controllers
         }
 
         // USER MANAGEMENT
-        [HttpPost("user/list")]
-        public async Task<IActionResult> GetUsers([FromBody] Applications.Admin.manage_user.Queries.GetUsersQuery query)
+        [HttpGet("user/list")]
+        public async Task<IActionResult> GetUsers([FromQuery] Applications.Admin.manage_user.Queries.GetUsersQuery query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
@@ -76,7 +75,7 @@ namespace DPTS.APIs.Controllers
 
         // SELLER MANAGEMENT
         [HttpGet("seller/list")]
-        public async Task<IActionResult> GetSellers([FromBody] Applications.Admin.manage_seller.Queries.GetStoreListQuery query)
+        public async Task<IActionResult> GetSellers([FromQuery] Applications.Admin.manage_seller.Queries.GetStoreListQuery query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
@@ -98,7 +97,7 @@ namespace DPTS.APIs.Controllers
 
         // PRODUCT MANAGEMENT
         [HttpGet("product/list")]
-        public async Task<IActionResult> GetProducts([FromBody] Applications.Admin.manage_product.Queries.GetProductsQuery query)
+        public async Task<IActionResult> GetProducts([FromQuery] Applications.Admin.manage_product.Queries.GetProductsQuery query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
@@ -127,7 +126,7 @@ namespace DPTS.APIs.Controllers
 
         // ORDER MANAGEMENT
         [HttpGet("order/list")]
-        public async Task<IActionResult> GetOrders([FromBody] Applications.Admin.manage_order.Queries.GetOrdersQuery query)
+        public async Task<IActionResult> GetOrders([FromQuery] Applications.Admin.manage_order.Queries.GetOrdersQuery query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
@@ -191,7 +190,7 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
 
-        [HttpPost("category/update")]
+        [HttpPut("category/update")]
         public async Task<IActionResult> UpdateCategory([FromBody] Applications.Admin.manage_category.Queries.UpdateCategoryCommand command)
         {
             var result = await _mediator.Send(command);
@@ -199,7 +198,7 @@ namespace DPTS.APIs.Controllers
         }
 
         [HttpGet("category/list")]
-        public async Task<IActionResult> GetCategories([FromBody] Applications.Admin.manage_category.Queries.GetCategoryQuery query)
+        public async Task<IActionResult> GetCategories([FromQuery] Applications.Admin.manage_category.Queries.GetCategoryQuery query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
@@ -211,7 +210,7 @@ namespace DPTS.APIs.Controllers
             var result = await _mediator.Send(new Applications.Admin.manage_category.Queries.GetOverviewCategoryQuery { UserId = userId });
             return StatusCodeFromResult(result);
         }
-    
+
         private IActionResult StatusCodeFromResult<T>(ServiceResult<T> result)
         {
             return result.Status switch

@@ -2,7 +2,7 @@
 {
     public class OverviewCategoryDto
     {
-        public List<OverviewCategoryIndexDto> IndexDtos { get; set; }
+        public List<OverviewCategoryIndexDto> IndexDtos { get; set; } = new List<OverviewCategoryIndexDto>();
     }
     public class OverviewCategoryIndexDto
     {

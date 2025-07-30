@@ -56,38 +56,44 @@ namespace DPTS.Applications.Admin.manage_product.handlers
                 products = products.Where(x => x.Status == request.Condition.ProductStatus);
             }
             var result = new ProductDto();
-            products.ForEach(async p =>
+            foreach (var p in products)
             {
                 var image = await _productImageRepository.GetPrimaryAsync(p.ProductId);
                 if (image == null)
                 {
                     _logger.LogError("Error when get information of image");
                 }
+
                 var store = await _storeRepository.GetByIdAsync(p.StoreId);
                 if (store == null)
                 {
                     _logger.LogError("Error when get information of store");
                 }
+
                 var category = await _categoryRepository.GetByIdAsync(p.CategoryId);
                 if (category == null)
                 {
                     _logger.LogError("Error when get information of category");
                 }
+
                 var finalPrice = await _adjustmentHandle.HandleDiscountAndPriceForProduct(p);
+
                 var index = new ProductIndexDto()
                 {
                     CategoryId = p.CategoryId,
-                    CategoryName = category.CategoryName ?? "Error",
+                    CategoryName = category?.CategoryName ?? "Error",
                     ProductName = p.ProductName,
-                    StoreName = store.StoreName ?? "Error",
+                    StoreName = store?.StoreName ?? "Error",
                     Price = finalPrice.Data.FinalAmount,
                     ProductId = p.ProductId,
-                    ProductImage = image.ImagePath ??"Error",
+                    ProductImage = image?.ImagePath ?? "Error",
                     Status = EnumHandle.HandleProductStatus(p.Status),
-                    StoreId = store.StoreId,
+                    StoreId = store?.StoreId ?? "Error"
                 };
+
                 result.ProductIndexDtos.Add(index);
-            });
+            }
+
             if (request.Condition.Text != null)
             {
                 result.ProductIndexDtos = result.ProductIndexDtos.Where(x =>

@@ -3,7 +3,7 @@
     public class CategoryDto
     {
         public int Count { get; set; }
-        public List<CategoryIndexDto> IndexDtos { get; set; }   
+        public List<CategoryIndexDto> IndexDtos { get; set; }   = new List<CategoryIndexDto>();
     }
     public class CategoryIndexDto
     {

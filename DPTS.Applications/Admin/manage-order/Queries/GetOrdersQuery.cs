@@ -10,13 +10,13 @@ namespace DPTS.Applications.Admin.manage_order.Queries
         public string UserId { get; set; }
         public int PageSize { get; set; }
         public int PageCount { get; set; }
-        public Condition Condition { get; set; }
+        public Condition Condition { get; set; } = new Condition(); 
     }
     public class Condition
     {
-        public string Text { get; set; }
-        public EscrowStatus EscrowStatus { get; set; }
-        public RangeTime RangeTime { get; set; }
+        public string? Text { get; set; }
+        public EscrowStatus? EscrowStatus { get; set; }
+        public RangeTime? RangeTime { get; set; }
     }
     public enum RangeTime
     {

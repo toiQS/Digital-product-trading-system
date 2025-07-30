@@ -14,8 +14,8 @@ namespace DPTS.Applications.Admin.manage_product.Queries
     }
     public class Condition
     {
-        public string Text { get; set; }
-        public string CategoryId{ get; set; }
+        public string? Text { get; set; }
+        public string? CategoryId{ get; set; }
         public ProductStatus ProductStatus { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using DPTS.Applications.Admin.manage_order.dtos;
+﻿using Azure.Core;
+using DPTS.Applications.Admin.manage_order.dtos;
 using DPTS.Applications.Admin.manage_order.Queries;
 using DPTS.Applications.Shareds;
 using DPTS.Domains;
@@ -112,7 +113,7 @@ namespace DPTS.Applications.Admin.manage_order.handlers
             {
                 result.Indexs = result.Indexs.Skip((request.PageCount - 1) * request.PageSize).Take(request.PageSize).ToList();
             }
-            throw new NotImplementedException();
+            return ServiceResult<OrderDto>.Success(result);
         }
         private async Task<ServiceResult<string>> SyncEscrow(IEnumerable<Escrow> escrows)
         {

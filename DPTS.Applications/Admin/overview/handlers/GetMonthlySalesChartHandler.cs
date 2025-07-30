@@ -36,14 +36,15 @@ namespace DPTS.Applications.Admin.overview.handlers
             }
             var result = new ChartDto();
             var (startThisYear, endThisYear) = SharedHandle.GetYearRange(0);
-            while (startThisYear < endThisYear)
+            while (startThisYear <= endThisYear)
             {
-                var escrows = (await _ecrowRepository.GetAllAsync()).Where(x => x.CreatedAt >= startThisYear && x.CreatedAt < startThisYear.AddDays(1) && x.Status == Domains.EscrowStatus.Done);
+                var escrows = (await _ecrowRepository.GetAllAsync()).Where(x => x.CreatedAt >= startThisYear && x.CreatedAt < startThisYear.AddMonths(1) && x.Status == Domains.EscrowStatus.Done);
                 result.Nodes.Add(new NodeDto()
                 {
                     Name = startThisYear.Month.ToString(),
                     Value = escrows.Sum(x => x.ActualAmount)
                 });
+                startThisYear = startThisYear.AddMonths(1);
             }
             return ServiceResult<ChartDto>.Success(result);
         }

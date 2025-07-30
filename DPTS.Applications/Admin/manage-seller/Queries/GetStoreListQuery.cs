@@ -14,7 +14,7 @@ namespace DPTS.Applications.Admin.manage_seller.Queries
     }
     public record Condition
     {
-        public string Text { get; set; }
+        public string? Text { get; set; }
         public StoreStatus StoreStatus { get; set; }
     }
 }

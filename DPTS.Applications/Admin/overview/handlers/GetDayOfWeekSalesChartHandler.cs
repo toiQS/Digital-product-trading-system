@@ -36,14 +36,16 @@ namespace DPTS.Applications.Admin.overview.handlers
             }
             var result = new ChartDto();
             var (startThisWeek, endThisWeek) = SharedHandle.GetWeekRange(0);
-            while (startThisWeek < endThisWeek)
+            var flag = startThisWeek;
+            while (flag <= endThisWeek)
             {
                 var escrows = (await _ecrowRepository.GetAllAsync()).Where(x => x.CreatedAt >= startThisWeek && x.CreatedAt < startThisWeek.AddDays(1) && x.Status == Domains.EscrowStatus.Done);
                 result.Nodes.Add(new NodeDto()
                 {
-                    Name = startThisWeek.DayOfWeek.ToString(),
+                    Name = flag.DayOfWeek.ToString(),
                     Value = escrows.Sum(x => x.ActualAmount)
                 });
+                flag = flag.AddDays(1);
             }
             return ServiceResult<ChartDto>.Success(result);
         }
