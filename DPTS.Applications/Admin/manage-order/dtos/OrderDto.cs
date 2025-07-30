@@ -3,7 +3,7 @@
     public class OrderDto
     {
         public int OrderCount { get; set; }
-        public List<OrderIndexDto> Indexs { get; set; }
+        public List<OrderIndexDto> Indexs { get; set; } = new List<OrderIndexDto>();
     }
     public class OrderIndexDto
     {

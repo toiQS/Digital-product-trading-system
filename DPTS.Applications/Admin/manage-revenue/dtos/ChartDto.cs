@@ -2,7 +2,7 @@
 {
     public class ChartDto
     {
-        public List<NodeDto> Nodes { get; set; }
+        public List<NodeDto> Nodes { get; set; } =new List<NodeDto>();
     }
     public class NodeDto
     {

@@ -2,7 +2,7 @@
 {
     public class UserActivityDto
     {
-        public List<UserActivityIndexDto> UserActivities { get; set; }
+        public List<UserActivityIndexDto> UserActivities { get; set; } = new List<UserActivityIndexDto>();
     }
     public class UserActivityIndexDto
     {

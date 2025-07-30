@@ -2,7 +2,7 @@
 {
     public class OverViewRevenueDto
     {
-        public List<OverviewRevenueIndexDto> OverviewRevenueIndexDtos { get; set; }
+        public List<OverviewRevenueIndexDto> OverviewRevenueIndexDtos { get; set; } = new List<OverviewRevenueIndexDto>();
     }
     public class OverviewRevenueIndexDto
     {

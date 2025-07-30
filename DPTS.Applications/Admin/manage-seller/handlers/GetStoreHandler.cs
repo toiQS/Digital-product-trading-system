@@ -30,57 +30,74 @@ namespace DPTS.Applications.Admin.manage_seller.handlers
         public async Task<ServiceResult<StoreDto>> Handle(GetStoreListQuery request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Handling get stores with role admin");
+
             var user = await _userRepository.GetByIdAsync(request.UserId);
             if (user == null)
-            {
-                _logger.LogError("Not found with Id: {d}", request.UserId);
                 return ServiceResult<StoreDto>.Error("Không tìm thấy người dùng");
-            }
+
             if (user.RoleId != "Admin")
-            {
-                _logger.LogError("User current don't have enough access books");
                 return ServiceResult<StoreDto>.Error("Người dùng hiện tại không đủ quyền truy cập");
-            }
-            var result = new StoreDto();
+
+            // 1. Filter store list
             var stores = await _storeRepository.GetAllAsync();
-            if (string.IsNullOrEmpty(request.Condition.Text))
+            
+
+            if (!string.IsNullOrWhiteSpace(request.Condition.Text))
             {
-                stores = stores.Where(x => x.StoreName.Contains(request.Condition.Text) || x.StoreId.Contains(request.Condition.Text));
+                stores = stores.Where(s =>
+                    s.StoreName.ToLower().Contains(request.Condition.Text.ToLower()) || s.StoreId.Contains(request.Condition.Text.ToLower()));
             }
+            var checkpoint = stores;
             if (request.Condition.StoreStatus != 0)
-                stores = stores.Where(x => x.Status == request.Condition.StoreStatus);
-            stores.ForEach(async s =>
             {
+                stores = stores.Where(s => s.Status == request.Condition.StoreStatus);
+            }
+            var checkpoint2 = stores;
 
-                var products = await _productRepository.GetByStoreAsync(s.StoreId);
+            // 2. Load all data needed
+            var allProducts = await _productRepository.SearchAsync(); // better to optimize this
+            var allReviews = await _productReviewRepository.GetAllAsync(); // need to add this method
+            var allEscrows = await _escrowRepository.GetAllAsync();
 
-                int countProudctAvalible = products.Count(x => x.Status == Domains.ProductStatus.Available);
-                double totalrating = 0;
-                products.ForEach(async p =>
-                {
-                    totalrating += await _productReviewRepository.GetAverageOverallRatingAsync(p.ProductId);
-                });
+            // 3. Build result
+            var result = new StoreDto();
+            foreach (var s in stores)
+            {
+                var products = allProducts.Where(p => p.StoreId == s.StoreId).ToList();
+                var productIds = products.Select(p => p.ProductId).ToList();
 
+                var countAvailable = products.Count(p => p.Status == Domains.ProductStatus.Available);
 
-                var escrows = (await _escrowRepository.GetAllAsync()).Where(x => x.StoreId == s.StoreId && x.Status == Domains.EscrowStatus.Done);
-                var revenue = escrows.Sum(x => x.ActualAmount);
-                var index = new StoreIndexDto()
+                double totalRating = allReviews
+                    .Where(r => productIds.Contains(r.ProductId))
+                    .Average(r => (double?)r.RatingOverall) ?? 0;
+
+                var revenue = allEscrows
+                    .Where(e => e.StoreId == s.StoreId && e.Status == Domains.EscrowStatus.Done)
+                    .Sum(e => e.ActualAmount);
+
+                result.StoreIndices.Add(new StoreIndexDto
                 {
                     StoreName = s.StoreName,
-                    CountProduct = products.Count(),
+                    CountProduct = products.Count,
                     StoreId = s.StoreId,
-                    Rating = totalrating / countProudctAvalible,
+                    Rating = countAvailable > 0 ? totalRating : 0,
                     Revenue = revenue,
                     Status = EnumHandle.HandleStoreStatus(s.Status),
-                    StoreImage = s.StoreImage,
-                };
-                result.StoreIndices.Add(index);
-            });
-            result.StoreIndices.OrderByDescending(x => x.Revenue)
-                .OrderByDescending(x => x.Rating)
-                .Skip((request.PageCount - 1)* request.PageSize)
-                .Take(request.PageSize);
+                    StoreImage = s.StoreImage
+                });
+            }
+            var checkPoint3 = result.StoreIndices;
+            // 4. Sorting + paging
+            var pagedStores = result.StoreIndices
+                .OrderByDescending(x => x.Revenue)
+                .ThenByDescending(x => x.Rating)
+                .Skip((request.PageCount - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToList();
+
             return ServiceResult<StoreDto>.Success(result);
         }
+
     }
 }

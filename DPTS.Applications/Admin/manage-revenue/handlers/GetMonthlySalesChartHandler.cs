@@ -44,6 +44,7 @@ namespace DPTS.Applications.Admin.manage_revenue.handlers
                     Name = startThisYear.Month.ToString(),
                     Value = escrows.Sum(x => x.ActualAmount)
                 });
+                startThisYear = startThisYear.AddMonths(1);
             }
             return ServiceResult<ChartDto>.Success(result);
         }

@@ -2,7 +2,7 @@
 {
     public class StoreDto
     {
-        public List<StoreIndexDto> StoreIndices { get; set; }
+        public List<StoreIndexDto> StoreIndices { get; set; } = new List<StoreIndexDto>();
     }
     public class StoreIndexDto
     {

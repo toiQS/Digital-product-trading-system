@@ -2,7 +2,7 @@
 {
     public class TopStoreDto
     {
-        public List<TopStoreIndexDto> Indexs { get; set; } 
+        public List<TopStoreIndexDto> Indexs { get; set; }  = new List<TopStoreIndexDto>();
     }
     public class TopStoreIndexDto
     {

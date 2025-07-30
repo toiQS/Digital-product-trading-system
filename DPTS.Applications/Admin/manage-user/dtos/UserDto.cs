@@ -2,7 +2,8 @@
 {
     public class UserDto
     {
-        public List<UserIndexDto> Users {get; set; }
+        public int Count { get; set; }
+        public List<UserIndexDto> Users { get; set; } = new List<UserIndexDto>();
     }
     public class UserIndexDto
     {

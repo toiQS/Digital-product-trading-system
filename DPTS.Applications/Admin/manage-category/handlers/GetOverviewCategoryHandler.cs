@@ -12,7 +12,14 @@ namespace DPTS.Applications.Admin.manage_category.handlers
         private readonly ILogger<GetOverviewCategoryHandler> _logger;   
         private readonly IUserRepository _userRepository;
         private readonly ICategoryRepository _categoryRepository;
-        
+
+        public GetOverviewCategoryHandler(ILogger<GetOverviewCategoryHandler> logger, IUserRepository userRepository, ICategoryRepository categoryRepository)
+        {
+            _logger = logger;
+            _userRepository = userRepository;
+            _categoryRepository = categoryRepository;
+        }
+
         public async Task<ServiceResult<OverviewCategoryDto>> Handle(GetOverviewCategoryQuery request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Handling get overview category");
