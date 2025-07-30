@@ -39,7 +39,7 @@ namespace DPTS.Applications.Buyer.Handles.product
             ProductIndexListDto result = new();
             IEnumerable<Product> products = (await _productRepository.SearchAsync()).Where(x => x.Status == ProductStatus.Available);
             List<Product> productResult = new();
-            if (!request.Condition.CategoryIds.Any())
+            if (request.Condition.CategoryIds.Any())
             {
                 request.Condition.CategoryIds.ForEach(c =>
                 {
@@ -89,6 +89,7 @@ namespace DPTS.Applications.Buyer.Handles.product
                 };
                 result.ProductIndexList.Add(index);
             }
+            
             if (!string.IsNullOrEmpty(request.Condition.Text))
             {
                 result.ProductIndexList = result.ProductIndexList.Where(x => x.ProductId.Contains(request.Condition.Text) || x.ProductName.Contains(request.Condition.Text)).ToList();
@@ -97,12 +98,12 @@ namespace DPTS.Applications.Buyer.Handles.product
             {
                 result.ProductIndexList = result.ProductIndexList.Where(x => x.RatingOverallAverage >= request.Condition.RatingOverall).ToList();
             }
-
+            result.TotalCount = result.ProductIndexList.Count;
             if (request.PageNumber > 0 && request.PageSize > 0)
             {
                 result.ProductIndexList = result.ProductIndexList.Skip((request.PageNumber - 1) * request.PageSize).Take(request.PageSize).ToList();
             }
-
+            
             return ServiceResult<ProductIndexListDto>.Success(result);
         }
     }
