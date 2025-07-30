@@ -47,15 +47,15 @@ namespace DPTS.APIs.Controllers
 
         // --------------------- Product ---------------------
         [HttpGet("get-rating-overview")]
-        public async Task<IActionResult> GetRating([FromQuery] GetRatingQuery query)
+        public async Task<IActionResult> GetRating()
         {
-            var result = await _mediator.Send(query);
+            var result = await _mediator.Send(new GetRatingQuery());
             return StatusCodeFromResult(result);
         }
         [HttpGet("get-categories")]
-        public async Task<IActionResult> GetCategories([FromQuery] GetCategoryQuery query)
+        public async Task<IActionResult> GetCategories()
         {
-            var result = await _mediator.Send(query);
+            var result = await _mediator.Send(new GetCategoryQuery());
             return StatusCodeFromResult(result);
         }
         
