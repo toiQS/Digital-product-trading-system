@@ -7,7 +7,7 @@ namespace DPTS.Applications.Buyer.Queries.product
     public class GetProductIndexListQuery : IRequest<ServiceResult<ProductIndexListDto>>
     {
         
-        public Condition Condition { get; set; }
+        public Condition Condition { get; set; } = new Condition();
         public int PageSize { get; set; }
         public int PageNumber { get; set; }
     }
@@ -15,6 +15,6 @@ namespace DPTS.Applications.Buyer.Queries.product
     {
         public string? Text { get; set; } = string.Empty;
         public int RatingOverall { get; set; }
-        public List<string> CategoryIds { get; set; }
+        public List<string> CategoryIds { get; set; } = new List<string>();
     }
 }
