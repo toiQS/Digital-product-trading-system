@@ -87,6 +87,7 @@ namespace DPTS.Applications.Admin.manage_user.handlers
 
                 result.Users.Add(index);
             }
+            result.Total = result.Users.Count();
             var checkpoint = result.Users;
             if (!string.IsNullOrWhiteSpace(request.Condition.Text))
             {
@@ -94,7 +95,7 @@ namespace DPTS.Applications.Admin.manage_user.handlers
                 result.Users = result.Users.Where(x =>
                     x.Id.ToLower().Contains(text) ||
                     x.Name.ToLower().Contains(text)).ToList();
-                
+
             }
             var checkpoint2 = result.Users;
             result.Users = result.Users
