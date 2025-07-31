@@ -94,7 +94,7 @@ namespace DPTS.Applications.Admin.manage_user.handlers
                 result.Users = result.Users.Where(x =>
                     x.Id.ToLower().Contains(text) ||
                     x.Name.ToLower().Contains(text)).ToList();
-                
+
             }
             var checkpoint2 = result.Users;
             result.Users = result.Users
@@ -103,6 +103,8 @@ namespace DPTS.Applications.Admin.manage_user.handlers
                 .ThenByDescending(x => x.JoinAt)
                 .ToList();
 
+            result.Count = result.Users.Count;
+
             if (request.PageCount > 0 && request.PageSize > 0)
             {
                 result.Users = result.Users
@@ -110,7 +112,7 @@ namespace DPTS.Applications.Admin.manage_user.handlers
                     .Take(request.PageSize)
                     .ToList();
             }
-            result.Count = result.Users.Count;
+
             return ServiceResult<UserDto>.Success(result);
         }
 
