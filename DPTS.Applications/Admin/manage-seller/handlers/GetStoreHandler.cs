@@ -40,7 +40,7 @@ namespace DPTS.Applications.Admin.manage_seller.handlers
 
             // 1. Filter store list
             var stores = await _storeRepository.GetAllAsync();
-            
+
 
             if (!string.IsNullOrWhiteSpace(request.Condition.Text))
             {
@@ -88,6 +88,7 @@ namespace DPTS.Applications.Admin.manage_seller.handlers
                 });
             }
             var checkPoint3 = result.StoreIndices;
+            result.Count = result.StoreIndices.Count();
             // 4. Sorting + paging
             var pagedStores = result.StoreIndices
                 .OrderByDescending(x => x.Revenue)
