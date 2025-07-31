@@ -1,4 +1,5 @@
-﻿using DPTS.Applications.Admin.manage_seller.dtos;
+﻿using Azure.Core;
+using DPTS.Applications.Admin.manage_seller.dtos;
 using DPTS.Applications.Admin.manage_seller.Queries;
 using DPTS.Applications.Shareds;
 using DPTS.Infrastructures.Repository.Interfaces;
@@ -88,7 +89,7 @@ namespace DPTS.Applications.Admin.manage_seller.handlers
                 });
             }
             var checkPoint3 = result.StoreIndices;
-            result.Count = result.StoreIndices.Count();
+            result.Total = result.StoreIndices.Count();
             // 4. Sorting + paging
             var pagedStores = result.StoreIndices
                 .OrderByDescending(x => x.Revenue)
@@ -96,7 +97,7 @@ namespace DPTS.Applications.Admin.manage_seller.handlers
                 .Skip((request.PageCount - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToList();
-
+            result.Count = result.StoreIndices.Count();
             return ServiceResult<StoreDto>.Success(result);
         }
 

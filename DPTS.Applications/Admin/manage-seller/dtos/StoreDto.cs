@@ -2,6 +2,7 @@
 {
     public class StoreDto
     {
+        public int Total { get; set; }
         public int Count { get; set; }
         public List<StoreIndexDto> StoreIndices { get; set; } = new List<StoreIndexDto>();
     }
