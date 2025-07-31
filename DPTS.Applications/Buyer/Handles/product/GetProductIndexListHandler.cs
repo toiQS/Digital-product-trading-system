@@ -38,7 +38,9 @@ namespace DPTS.Applications.Buyer.Handles.product
             _logger.LogInformation("Handling get product list with condition for buyer");
             ProductIndexListDto result = new();
             IEnumerable<Product> products = (await _productRepository.SearchAsync()).Where(x => x.Status == ProductStatus.Available);
-            List<Product> productResult = new();
+            var checkpointProducts = products.Count();
+            List<Product> productResult = new List<Product>();
+            
             if (request.Condition.CategoryIds.Any())
             {
                 request.Condition.CategoryIds.ForEach(c =>
@@ -46,11 +48,12 @@ namespace DPTS.Applications.Buyer.Handles.product
                     List<Product> p = products.Where(x => x.CategoryId == c).ToList();
                     productResult.AddRange(p);
                 });
+                products = productResult;
+                var checkpoint = products.Count();
             }
-            else
-            {
-                productResult = products.ToList();
-            }
+
+            
+
             foreach (Product product in products)
             {
 
@@ -92,7 +95,7 @@ namespace DPTS.Applications.Buyer.Handles.product
             
             if (!string.IsNullOrEmpty(request.Condition.Text))
             {
-                result.ProductIndexList = result.ProductIndexList.Where(x => x.ProductId.Contains(request.Condition.Text) || x.ProductName.Contains(request.Condition.Text)).ToList();
+                result.ProductIndexList = result.ProductIndexList.Where(x => x.ProductId.ToLower().Contains(request.Condition.Text.ToLower()) || x.ProductName.ToLower().Contains(request.Condition.Text.ToLower())).ToList();
             }
             if (request.Condition.RatingOverall > 0)
             {
