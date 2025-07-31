@@ -87,6 +87,7 @@ namespace DPTS.Applications.Admin.manage_user.handlers
 
                 result.Users.Add(index);
             }
+            result.Total = result.Users.Count();
             var checkpoint = result.Users;
             if (!string.IsNullOrWhiteSpace(request.Condition.Text))
             {
@@ -103,8 +104,6 @@ namespace DPTS.Applications.Admin.manage_user.handlers
                 .ThenByDescending(x => x.JoinAt)
                 .ToList();
 
-            result.Count = result.Users.Count;
-
             if (request.PageCount > 0 && request.PageSize > 0)
             {
                 result.Users = result.Users
@@ -112,7 +111,7 @@ namespace DPTS.Applications.Admin.manage_user.handlers
                     .Take(request.PageSize)
                     .ToList();
             }
-
+            result.Count = result.Users.Count;
             return ServiceResult<UserDto>.Success(result);
         }
 
