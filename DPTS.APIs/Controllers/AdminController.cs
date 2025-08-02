@@ -73,10 +73,10 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
         [HttpGet("user/overview")]
-        public async Task<IActionResult> GetOverView([FromQuery] Applications.Admin.manage_user.Queries.GetOverviewQuery query
+        public async Task<IActionResult> GetOverView([FromQuery] Applications.Admin.manage_user.Queries.GetOverviewQuery query)
 
         {   var result = await _mediator.Send(query);
-            return StatusCodeFromResult(result); }
+            return StatusCodeFromResult(result);
         }
 
         // SELLER MANAGEMENT
