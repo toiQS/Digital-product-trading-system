@@ -8,6 +8,7 @@ namespace DPTS.Domains
         Vietcombank,
         MoMo,
         ZaloPay,
+        VnPay,
         // ...
     }
 
