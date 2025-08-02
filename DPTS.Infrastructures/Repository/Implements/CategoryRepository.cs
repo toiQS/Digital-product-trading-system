@@ -22,8 +22,6 @@ namespace DPTS.Infrastructures.Repository.Implements
             if (includeProduct)
                 query = query.Include(c => c.Products);
 
-            if (includeAdjustmentRule)
-                query = query.Include(c => c.AdjustmentRules);
 
             return query;
         }

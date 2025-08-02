@@ -32,6 +32,5 @@ namespace DPTS.Domains
 
         // Navigation
         public virtual ICollection<Product> Products { get; set; } = new List<Product>();
-        public virtual ICollection<AdjustmentRule> AdjustmentRules { get; set; } = new List<AdjustmentRule>();
     }
 }

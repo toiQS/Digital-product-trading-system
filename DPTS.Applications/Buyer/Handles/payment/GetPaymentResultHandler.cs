@@ -178,7 +178,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
                         EscrowId = item.EscrowId,
                         ProcessName = "Đã thanh toán",
                         ProcessId = Guid.NewGuid().ToString(),
-                        ProcessAt = DateTime.Now
+                        ProcessAt = DateTime.UtcNow
                     };
                     await _escrowRepository.AddAsync(item);
                     await _escrowProcessRepository.AddAsync(addProcess);
