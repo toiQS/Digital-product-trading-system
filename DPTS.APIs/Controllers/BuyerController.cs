@@ -73,7 +73,7 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
 
-        [HttpPut("review-product")]
+        [HttpPost("review-product")]
         public async Task<IActionResult> CreateProductReview([FromBody] CreateProductReviewCommand query)
         {
             var result = await _mediator.Send(query);
@@ -87,7 +87,7 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
 
-        [HttpPost("unlike-review")]
+        [HttpPut("unlike-review")]
         public async Task<IActionResult> UnlikeReview([FromBody] UnlikeReviewCommand query)
         {
             var result = await _mediator.Send(query);
@@ -145,7 +145,7 @@ namespace DPTS.APIs.Controllers
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
-        [HttpGet("comfirm-order")]
+        [HttpPut("comfirm-order")]
         public async Task<IActionResult> ComfirmOrder([FromBody] ComfirmItemOrderQuery command)
         {
             var result = await _mediator.Send(command);
@@ -176,7 +176,7 @@ namespace DPTS.APIs.Controllers
         }
 
         // --------------------- Payment ---------------------
-        [HttpGet("payment-result")]
+        [HttpPost("payment-result")]
         public async Task<IActionResult> GetPaymentResult([FromQuery] GetPaymentResultQuery query)
         {
             var result = await _mediator.Send(query);

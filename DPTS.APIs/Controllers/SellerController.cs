@@ -92,9 +92,9 @@ namespace DPTS.APIs.Controllers
         // -------------------- Product --------------------
 
         [HttpGet("get-categories")]
-        public async Task<IActionResult> GetCategory([FromQuery] GetCategoiesQuery query)
+        public async Task<IActionResult> GetCategory()
         {
-            var r = await _mediator.Send(query);
+            var r = await _mediator.Send(new GetCategoiesQuery());
             return StatusCodeFromResult(r);
         }
         [HttpPost("product-add")]
