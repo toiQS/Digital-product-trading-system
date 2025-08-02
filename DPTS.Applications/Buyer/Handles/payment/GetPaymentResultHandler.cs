@@ -213,7 +213,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
                         WalletId= wallet.WalletId,
                     };
                     wallet.Balance -= order.TotalAmount;
-                    await _walletTransactionRepository.UpdateAsync(walletTransaction);
+                    await _walletTransactionRepository.AddAsync(walletTransaction);
                     await _walletRepository.UpdateAsync(wallet);
                     await _orderPaymentRepository.AddAsync(orderPayment);
                 }
