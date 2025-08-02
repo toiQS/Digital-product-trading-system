@@ -7,5 +7,6 @@ namespace DPTS.Applications.Buyer.Queries.payment
     {
         public string UserId { get; set; } = string.Empty;
         public string PaymentMethodId { get; set; } = string.Empty;
+        public string IpAddress { get; set; } = string.Empty;
     }
 }

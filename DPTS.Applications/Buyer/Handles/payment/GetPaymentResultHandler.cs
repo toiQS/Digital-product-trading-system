@@ -4,7 +4,11 @@ using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Text;
+using System.Web;
 
 namespace DPTS.Applications.Buyer.Handles.payment
 {
@@ -22,6 +26,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
         private readonly IWalletTransactionRepository _walletTransactionRepository;
         private readonly IEscrowProcessRepository _escrowProcessRepository;
         private readonly IOrderPaymentRepository _orderPaymentRepository;
+        private readonly IConfiguration _config;
         private readonly ILogger<GetPaymentResultHandler> _logger;
 
         public GetPaymentResultHandler(IAdjustmentHandle adjustmentHandle,
@@ -36,6 +41,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
                                        IWalletTransactionRepository walletTransactionRepository,
                                        IEscrowProcessRepository escrowProcessRepository,
                                        IOrderPaymentRepository orderPaymentRepository,
+                                       IConfiguration config,
                                        ILogger<GetPaymentResultHandler> logger)
         {
             _adjustmentHandle = adjustmentHandle;
@@ -50,6 +56,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
             _walletTransactionRepository = walletTransactionRepository;
             _escrowProcessRepository = escrowProcessRepository;
             _orderPaymentRepository = orderPaymentRepository;
+            _config = config;
             _logger = logger;
         }
 
@@ -219,8 +226,40 @@ namespace DPTS.Applications.Buyer.Handles.payment
                 }
                 else if (paymentMethod != null)
                 {
-                    // TODO: Tích hợp API thanh toán bên ngoài ở đây
+                    var paymentMethodInfo = await _paymentMethodRepository.GetByIdAsync(paymentMethod.PaymentMethodId);
+                    if (paymentMethodInfo.Provider == PaymentProvider.VnPay)
+                    {
+                        var vnpay = new VnPayLibrary();
+                        string vnp_Url = _config["Vnpay:BaseUrl"];
+                        string returnUrl = _config["Vnpay:ReturnUrl"];
+                        string tmnCode = _config["Vnpay:TmnCode"];
+                        string hashSecret = _config["Vnpay:HashSecret"];
+                        string orderId = order.OrderId;
+                        string amount = ((int)(order.TotalAmount * 100)).ToString(); // VNPAY yêu cầu đơn vị = VND * 100
+
+                        vnpay.AddRequestData("vnp_Version", "2.1.0");
+                        vnpay.AddRequestData("vnp_Command", "pay");
+                        vnpay.AddRequestData("vnp_TmnCode", tmnCode);
+                        vnpay.AddRequestData("vnp_Amount", amount);
+                        vnpay.AddRequestData("vnp_CreateDate", DateTime.UtcNow.ToString("yyyyMMddHHmmss"));
+                        vnpay.AddRequestData("vnp_CurrCode", "VND");
+                        vnpay.AddRequestData("vnp_IpAddr", request.IpAddress);
+                        vnpay.AddRequestData("vnp_Locale", "vn");
+                        vnpay.AddRequestData("vnp_OrderInfo", $"Thanh toan don hang {orderId}");
+                        vnpay.AddRequestData("vnp_OrderType", "other");
+                        vnpay.AddRequestData("vnp_ReturnUrl", returnUrl);
+                        vnpay.AddRequestData("vnp_TxnRef", orderId);
+
+                        string paymentUrl = vnpay.CreateRequestUrl(vnp_Url, hashSecret);
+
+                        return ServiceResult<string>.Success(paymentUrl);
+                    }
+                    else
+                    {
+                        return ServiceResult<string>.Error("Cổng thanh toán chưa được hỗ trợ.");
+                    }
                 }
+
 
                 // 11. Ghi log
                 var log = new Log
@@ -252,6 +291,53 @@ namespace DPTS.Applications.Buyer.Handles.payment
             public string StoreId { get; set; } = string.Empty;
             public decimal Price { get; set; }
             public decimal Amount { get; set; }
+        }
+    }
+    public class VnPayLibrary
+    {
+        private readonly SortedList<string, string> _requestData = new(new VnPayCompare());
+
+        public void AddRequestData(string key, string value)
+        {
+            if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(value))
+            {
+                _requestData[key] = value;
+            }
+        }
+
+        public string CreateRequestUrl(string baseUrl, string hashSecret)
+        {
+            var data = new StringBuilder();
+            var query = new StringBuilder();
+            foreach (var kv in _requestData)
+            {
+                data.Append(kv.Key).Append('=').Append(kv.Value).Append('&');
+                query.Append(HttpUtility.UrlEncode(kv.Key)).Append('=').Append(HttpUtility.UrlEncode(kv.Value)).Append('&');
+            }
+
+            // Remove last '&'
+            if (data.Length > 0) data.Length -= 1;
+            if (query.Length > 0) query.Length -= 1;
+
+            string signData = data.ToString();
+            string secureHash = ComputeSha256(hashSecret + signData);
+            return $"{baseUrl}?{query}&vnp_SecureHashType=SHA256&vnp_SecureHash={secureHash}";
+        }
+
+        public static string ComputeSha256(string input)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var hash = sha256.ComputeHash(bytes);
+            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+        }
+
+        private class VnPayCompare : IComparer<string>
+        {
+            public int Compare(string x, string y)
+            {
+                return string.CompareOrdinal(x, y);
+            }
         }
     }
 }
