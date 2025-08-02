@@ -41,7 +41,7 @@ namespace DPTS.Applications.Seller.Handler.store
             var log = new Log()
             {
                 LogId = Guid.NewGuid().ToString(),
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 TargetId = request.StoreId,
                 Action = "UPDATE-STORE",
                 TargetType = "Store",
