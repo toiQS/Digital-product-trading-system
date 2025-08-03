@@ -14,6 +14,17 @@ namespace DPTS.Applications.Seller.Handler.product
         private readonly IUserRepository _userRepository;
         private readonly ILogger<DeleteProductImageHandler> _logger;
         private readonly ILogRepository _logRepository;
+
+        public DeleteProductImageHandler(IProductImageRepository productImageRepository, IProductRepository productRepository, IStoreRepository storeRepository, IUserRepository userRepository, ILogger<DeleteProductImageHandler> logger, ILogRepository logRepository)
+        {
+            _productImageRepository = productImageRepository;
+            _productRepository = productRepository;
+            _storeRepository = storeRepository;
+            _userRepository = userRepository;
+            _logger = logger;
+            _logRepository = logRepository;
+        }
+
         public async Task<ServiceResult<string>> Handle(DeleteProductImageCommand request, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Handling DeleteProductImageCommand for SellerId: {SellerId}, StoreId: {StoreId}, ProductId: {ProductId}, ImageId: {ImageId}", 
