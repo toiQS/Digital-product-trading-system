@@ -62,6 +62,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
 
         public async Task<ServiceResult<string>> Handle(GetPaymentResultQuery request, CancellationToken cancellationToken)
         {
+
             // 1. Lấy thông tin người dùng
             var user = await _userProfileRepository.GetByUserIdAsync(request.UserId);
             if (user == null)
@@ -202,7 +203,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
                     WalletTransaction walletTransaction = new WalletTransaction()
                     {
                         TransactionId = Guid.NewGuid().ToString(),
-                        Description= $"Thanh toán giỏ hàng {order.OrderId}",
+                        Description = $"Thanh toán giỏ hàng {order.OrderId}",
                         Amount = order.TotalAmount,
                         WalletId = wallet.WalletId,
                         Status = WalletTransactionStatus.Pending,
@@ -217,7 +218,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
                         PaidAt = DateTime.UtcNow,
                         PaymentMethodId = request.PaymentMethodId,
                         SourceType = PaymentSourceType.Wallet,
-                        WalletId= wallet.WalletId,
+                        WalletId = wallet.WalletId,
                     };
                     wallet.Balance -= order.TotalAmount;
                     await _walletTransactionRepository.AddAsync(walletTransaction);
@@ -249,6 +250,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
                         vnpay.AddRequestData("vnp_OrderType", "other");
                         vnpay.AddRequestData("vnp_ReturnUrl", returnUrl);
                         vnpay.AddRequestData("vnp_TxnRef", orderId);
+                        vnpay.AddRequestData("vnp_BankCode", paymentMethodInfo.MaskedAccountNumber);
 
                         string paymentUrl = vnpay.CreateRequestUrl(vnp_Url, hashSecret);
 

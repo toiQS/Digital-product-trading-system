@@ -1,4 +1,7 @@
-﻿using DPTS.Applications.Buyer.Queries.chat;
+﻿using System.Diagnostics.Contracts;
+using System.Runtime.InteropServices;
+using System.Xml.Schema;
+using DPTS.Applications.Buyer.Queries.chat;
 using DPTS.Applications.Buyer.Queries.order;
 using DPTS.Applications.Buyer.Queries.payment;
 using DPTS.Applications.Buyer.Queries.product;
@@ -58,7 +61,7 @@ namespace DPTS.APIs.Controllers
             var result = await _mediator.Send(new GetCategoryQuery());
             return StatusCodeFromResult(result);
         }
-        
+
         [HttpGet("product-detail")]
         public async Task<IActionResult> GetProductDetail([FromQuery] GetProductDetailQuery query)
         {
@@ -123,6 +126,7 @@ namespace DPTS.APIs.Controllers
             return StatusCodeFromResult(result);
         }
 
+
         // --------------------- Checkout ---------------------
         [HttpPut("checkout")]
         public async Task<IActionResult> GetCheckout([FromQuery] GetCheckoutQuery query)
@@ -177,8 +181,10 @@ namespace DPTS.APIs.Controllers
 
         // --------------------- Payment ---------------------
         [HttpPost("payment-result")]
-        public async Task<IActionResult> GetPaymentResult([FromQuery] GetPaymentResultQuery query)
+        public async Task<IActionResult> GetPaymentResult([FromBody] GetPaymentResultQuery query)
         {
+            if (string.IsNullOrEmpty(query.IpAddress))
+                query.IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
@@ -188,6 +194,12 @@ namespace DPTS.APIs.Controllers
         public async Task<IActionResult> GetWallet([FromQuery] GetWalletQuery query)
         {
             var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+        [HttpPost("wallet/add-payment-method")]
+        public async Task<IActionResult> AddPaymentMethod(AddPaymentMethodCommand command)
+        {
+            var result = await _mediator.Send(command);
             return StatusCodeFromResult(result);
         }
 

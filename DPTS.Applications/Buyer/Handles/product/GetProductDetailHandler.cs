@@ -94,7 +94,11 @@ namespace DPTS.Applications.Buyer.Handles.product
                 Discount = discountAndFinalPriceProduct.Data.Value,
                 Price = discountAndFinalPriceProduct.Data.FinalAmount,
                 OriginalPrice = product.OriginalPrice,
-                ProductImage = images.Select(x => x.ImagePath).ToList(),
+                ProductImage = images.Select(x => new ImageDto
+                {
+                    Id = x.ImageId,
+                    ImagePath = x.ImagePath
+                }).ToList(),
                 CountReviews = productReviews.Count(),
                 StoreImage = store.StoreImage,
                 RatingOverall = await _productReviewRepository.GetAverageOverallRatingAsync(product.ProductId),
@@ -125,7 +129,7 @@ namespace DPTS.Applications.Buyer.Handles.product
 
                 result.ProductReviews.Add(new ProductReviewIndexDto()
                 {
-                    FullName = profile.FullName ??"Error",
+                    FullName = profile.FullName ?? "Error",
                     Comment = item.Comment,
                     UserName = user.Username,
                     CreatedAt = item.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
