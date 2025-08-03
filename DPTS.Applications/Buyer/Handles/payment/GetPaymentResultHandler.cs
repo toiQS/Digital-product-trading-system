@@ -178,28 +178,29 @@ namespace DPTS.Applications.Buyer.Handles.payment
             // 8. Thực hiện thanh toán
             try
             {
-                // 8. Ghi escrow
-                foreach (var item in escrows)
-                {
-                    var addProcess = new EscrowProcess()
-                    {
-                        EscrowId = item.EscrowId,
-                        ProcessName = "Đã thanh toán",
-                        ProcessId = Guid.NewGuid().ToString(),
-                        ProcessAt = DateTime.UtcNow
-                    };
-                    await _escrowRepository.AddAsync(item);
-                    await _escrowProcessRepository.AddAsync(addProcess);
-                }
-
-                // 9. Đánh dấu thanh toán
-                order.IsPaid = true;
-                order.UpdatedAt = DateTime.UtcNow;
-                await _orderRepository.UpdateAsync(order);
+                
 
                 // 10. Trừ tiền ví nếu có
                 if (wallet != null && wallet.Balance >= order.TotalAmount)
                 {
+                    // 8. Ghi escrow
+                    foreach (var item in escrows)
+                    {
+                        var addProcess = new EscrowProcess()
+                        {
+                            EscrowId = item.EscrowId,
+                            ProcessName = "Đã thanh toán",
+                            ProcessId = Guid.NewGuid().ToString(),
+                            ProcessAt = DateTime.UtcNow
+                        };
+                        await _escrowRepository.AddAsync(item);
+                        await _escrowProcessRepository.AddAsync(addProcess);
+                    }
+
+                    // 9. Đánh dấu thanh toán
+                    order.IsPaid = true;
+                    order.UpdatedAt = DateTime.UtcNow;
+                    await _orderRepository.UpdateAsync(order);
                     WalletTransaction walletTransaction = new WalletTransaction()
                     {
                         TransactionId = Guid.NewGuid().ToString(),
