@@ -13,7 +13,7 @@
         public decimal Discount { get; set; }
         public string SummaryFeature { get; set; } = string.Empty;
 
-        public List<ImageDto> ProductImage { get; set; } = new();
+        public List<string> ProductImage { get; set; } = new();
 
         // Body
         public string Description { get; set; } = string.Empty;
@@ -24,10 +24,5 @@
         public decimal Vote5 { get; set; }
         public List<ProductReviewIndexDto> ProductReviews { get; set; } = new List<ProductReviewIndexDto>();
         public List<ProductIndexDto> ProductSuggest { get; set; } = new List<ProductIndexDto>();
-    }
-    public class ImageDto
-    {
-        public string Id { get; set; }
-        public string ImagePath { get; set; }
     }
 }

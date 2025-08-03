@@ -4,6 +4,7 @@ using DPTS.Applications.Shareds;
 using DPTS.Infrastructures.Repository.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using Org.BouncyCastle.Math.EC.Rfc7748;
 
 namespace DPTS.Applications.Seller.Handler.product
 {
@@ -46,19 +47,19 @@ namespace DPTS.Applications.Seller.Handler.product
                 _logger.LogWarning("User profile not found for UserId: {UserId}", request.UserId);
                 return ServiceResult<ProductDetailDto>.Error("Không tìm thấy tài khoản.");
             }
-            var store = await _storeRepository.GetByUserIdAsync(request.UserId);   
-            if(store == null)
+            var store = await _storeRepository.GetByUserIdAsync(request.UserId);
+            if (store == null)
             {
                 _logger.LogWarning("Store not found for UserId: {UserId}", request.UserId);
                 return ServiceResult<ProductDetailDto>.Error("Không tìm thấy cửa hàng.");
             }
-            var product = await _productRepository.GetByIdAsync(request.ProductId); 
+            var product = await _productRepository.GetByIdAsync(request.ProductId);
             if (product == null)
             {
                 _logger.LogWarning("Product not found for ProductId: {ProductId}", request.ProductId);
                 return ServiceResult<ProductDetailDto>.Error("Không tìm thấy sản phẩm.");
             }
-            if(product.StoreId != store.StoreId)
+            if (product.StoreId != store.StoreId)
             {
                 _logger.LogWarning("Product with ProductId: {ProductId} does not belong to StoreId: {StoreId}", request.ProductId, store.StoreId);
                 return ServiceResult<ProductDetailDto>.Error("Sản phẩm không thuộc cửa hàng của bạn.");
@@ -91,12 +92,16 @@ namespace DPTS.Applications.Seller.Handler.product
                 Description = product.Description ?? "Error",
                 DiscountedPrice = discountAndFinalPriceProduct.Data.Amount,
                 DiscountedValue = discountAndFinalPriceProduct.Data.Value,
-                Images = productImages.Select(img => img.ImagePath).ToList(),
+                Images = productImages.Select(img => new ImageDto
+                {
+                    Id = img.ImageId,
+                    ImagePath = img.ImagePath
+                }).ToList(),
                 OriginalPrice = product.OriginalPrice,
                 Price = discountAndFinalPriceProduct.Data.FinalAmount,
                 TotalComplaints = totalComplaints,
                 UpdatedAt = product.UpdatedAt,
-               SummaryFeature = product.SummaryFeature ?? "Error"
+                SummaryFeature = product.SummaryFeature ?? "Error"
             };
             return ServiceResult<ProductDetailDto>.Success(dto);
         }

@@ -10,10 +10,15 @@
         public string CategoryName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        public List<string> Images { get; set; } = new List<string>();
+        public List<ImageDto> Images { get; set; } = new List<ImageDto>();
         public int TotalComplaints { get; set; }
         public decimal DiscountedPrice { get; set; }
         public decimal DiscountedValue { get; set; }
         public string SummaryFeature { get; set; } = string.Empty;
+    }
+    public class ImageDto
+    {
+        public string Id { get; set; }
+        public string ImagePath { get; set; }
     }
 }
