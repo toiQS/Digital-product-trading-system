@@ -69,7 +69,7 @@ namespace DPTS.Applications.Seller.Handler.product
                 {
                     LogId = Guid.NewGuid().ToString(),
                     Action = "DeleteProductImage",
-                    CreatedAt = DateTime.Now,
+                    CreatedAt = DateTime.UtcNow,
                     TargetId = productImage.ImageId,
                     TargetType = "ProductImage"
                 };

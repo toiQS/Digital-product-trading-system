@@ -71,7 +71,7 @@ namespace DPTS.Applications.Seller.Handler.product
             {
                 LogId = Guid.NewGuid().ToString(), 
                 Action = "UpdateProduct",
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 TargetId = product.ProductId,
                 TargetType = "Product",
                 UserId = request.SellerId,

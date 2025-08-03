@@ -48,7 +48,7 @@ namespace DPTS.Applications.Admin.manage_product.handlers
             {
                 LogId  = Guid.NewGuid().ToString(),
                 Action = "Cập nhật sản phẩm",
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 Description = $"{request.ConditionUpdateProduct.ProductId} được cập nhật trạng thái bởi {request.UserId}",
                 TargetId = request.ConditionUpdateProduct.ProductId,
                 TargetType = "Product",

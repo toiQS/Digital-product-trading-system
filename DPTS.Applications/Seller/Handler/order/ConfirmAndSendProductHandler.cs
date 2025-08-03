@@ -106,7 +106,7 @@ namespace DPTS.Applications.Seller.Handler.order
             {
                 EscrowId = escrow.EscrowId,
                 EscrowProcessInformation = "Người bán đã xác nhận và gửi sản phẩm",
-                ProcessAt = DateTime.Now,
+                ProcessAt = DateTime.UtcNow,
                 ProcessName = "ConfirmAndSendProduct",
                 ProcessId = Guid.NewGuid().ToString(),
             };
@@ -121,7 +121,7 @@ namespace DPTS.Applications.Seller.Handler.order
             };
             try
             {
-                escrow.Expired = DateTime.Now.AddDays(30);
+                escrow.Expired = DateTime.UtcNow.AddDays(30);
                 await _escrowRepository.UpdateAsync(escrow);
                 await _escrowProcessRepository.AddAsync(escrowProcess);
                 await _logRepository.AddAsync(log);

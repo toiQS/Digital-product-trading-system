@@ -133,7 +133,7 @@ namespace DPTS.Applications.Buyer.Handles.order
                 ProcessId = Guid.NewGuid().ToString(),
                 EscrowId = escrow.EscrowId,
                 EscrowProcessInformation = $"Giao dịch {escrow.EscrowId} đã được xác nhận hoàn thành bởi người mua.",
-                ProcessAt = DateTime.Now,
+                ProcessAt = DateTime.UtcNow,
             };
             try
             {

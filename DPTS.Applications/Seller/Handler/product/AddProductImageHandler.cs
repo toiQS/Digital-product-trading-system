@@ -60,15 +60,16 @@ namespace DPTS.Applications.Seller.Handler.product
                 return ServiceResult<string>.Error("Không tìm thấy sản phẩm");
             }
             var checkProductImage = (await _productImageRepository.GetByProductIdAsync(request.ProductId)).Where(x => x.ImagePath == request.ImagePath);
-            if (checkProductImage != null)
+            if (checkProductImage.Any())
             {
-                _logger.LogError("Product image is existed");
-                return ServiceResult<string>.Error("Product image is existed");
+                _logger.LogWarning("Image {ImagePath} already exists for ProductId {ProductId}", request.ImagePath, request.ProductId);
+                return ServiceResult<string>.Error("Ảnh đã tồn tại trong sản phẩm");
             }
+
 
             var productImage = new ProductImage()
             {
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 ImageId = Guid.NewGuid().ToString(),
                 ImagePath = request.ImagePath,
                 IsPrimary = false,
@@ -78,7 +79,7 @@ namespace DPTS.Applications.Seller.Handler.product
             {
                 LogId = Guid.NewGuid().ToString(),
                 Action ="AddProductImage",
-                CreatedAt= DateTime.Now,
+                CreatedAt= DateTime.UtcNow,
                 TargetId = store.StoreId,
                 TargetType = "Store"
             };

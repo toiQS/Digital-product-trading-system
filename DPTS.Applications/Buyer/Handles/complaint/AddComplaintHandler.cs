@@ -76,7 +76,7 @@ namespace DPTS.Applications.Buyer.Handles.complaint
             }
 
             // Kiểm tra xem khiếu nại có đang nằm trong thời gian xử lý hay không
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             if (escrow.Expired < now || escrow.CreatedAt > now)
             {
                 _logger.LogWarning("Complaint rejected: Not in processing window. Now = {Now}, CreatedAt = {CreatedAt}, Expired = {Expired}", now, escrow.CreatedAt, escrow.Expired);

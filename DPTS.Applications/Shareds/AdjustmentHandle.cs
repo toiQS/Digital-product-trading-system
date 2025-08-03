@@ -27,7 +27,7 @@ namespace DPTS.Applications.Shareds
         private ServiceResult<ClassifyAdjustmentDto> ClassifyAdjustment(IEnumerable<AdjustmentRule> adjustmentRules)
         {
             _logger.LogInformation("Classifying adjustment rules...");
-            var now = DateTime.Now;
+            var now = DateTime.UtcNow;
             var taxes = new List<AdjustmentRule>();
             var discounts = new List<AdjustmentRule>();
             var platformFees = new List<AdjustmentRule>();

@@ -72,7 +72,7 @@ namespace DPTS.Applications.Seller.Handler.product
             {
                 LogId = Guid.NewGuid().ToString(),
                 Action = "UpdateProductImage",
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 TargetId = store.StoreId,
                 TargetType = "Store"
             };
