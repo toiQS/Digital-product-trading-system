@@ -39,8 +39,8 @@ namespace DPTS.Applications.Buyer.Handles.review
             var result = new ProductReviewDetailDto
             {
                 ReviewId = review.ReviewId,
-                UserId = review.UserId,
-                FullName = profile.FullName ?? "Error",
+                    UserId = review.UserId,
+                    FullName = profile.FullName ?? "Error",
                 AvatarUrl = profile.ImageUrl ?? "Error",
                 Title = review.ReviewTitle,
                 Comment = review.Comment,

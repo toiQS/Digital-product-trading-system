@@ -7,12 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Shareds\Dtos\**" />
+    <Compile Remove="shareds\Dtos\**" />
+    <Compile Remove="shareds\Handlers\**" />
     <Compile Remove="Shareds\Handles\**" />
-    <EmbeddedResource Remove="Shareds\Dtos\**" />
+    <Compile Remove="shareds\Queries\**" />
+    <EmbeddedResource Remove="shareds\Dtos\**" />
+    <EmbeddedResource Remove="shareds\Handlers\**" />
     <EmbeddedResource Remove="Shareds\Handles\**" />
-    <None Remove="Shareds\Dtos\**" />
+    <EmbeddedResource Remove="shareds\Queries\**" />
+    <None Remove="shareds\Dtos\**" />
+    <None Remove="shareds\Handlers\**" />
     <None Remove="Shareds\Handles\**" />
+    <None Remove="shareds\Queries\**" />
   </ItemGroup>
 
   
@@ -37,12 +43,6 @@
 
   <ItemGroup>
     <Service Include="{3259aa49-8aa1-44d3-9025-a0b520596a8c}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="shareds\Dtos\" />
-    <Folder Include="shareds\Handlers\" />
-    <Folder Include="shareds\Queries\" />
   </ItemGroup>
 
 </Project>
