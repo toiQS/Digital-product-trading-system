@@ -7,6 +7,7 @@
         public double RatingOverall { get; set; }
         public int CountReviews { get; set; }
         public string StoreImage { get; set; } = string.Empty;
+        public string StoreId { get; set; } = string.Empty;
         public string StoreName { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public decimal OriginalPrice { get; set; }
