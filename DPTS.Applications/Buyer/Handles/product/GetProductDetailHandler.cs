@@ -104,6 +104,7 @@ namespace DPTS.Applications.Buyer.Handles.product
                 Vote3 = vote3,
                 Vote4 = vote4,
                 Vote5 = vote5,
+                StoreId = store.StoreId
             };
 
             // Xử lý từng đánh giá người dùng
@@ -125,7 +126,7 @@ namespace DPTS.Applications.Buyer.Handles.product
 
                 result.ProductReviews.Add(new ProductReviewIndexDto()
                 {
-                    FullName = profile.FullName ??"Error",
+                    FullName = profile.FullName ?? "Error",
                     Comment = item.Comment,
                     UserName = user.Username,
                     CreatedAt = item.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"),
