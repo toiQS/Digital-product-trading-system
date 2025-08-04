@@ -53,16 +53,12 @@ namespace DPTS.Infrastructures.Repository.Implements
 
         public async Task<IEnumerable<Message>> GetAllByParticipantAsync(
             ParticipantType type,
-            string participantId,
-            int skip = 0,
-            int take = 50)
+            string participantId)
         {
             return await _context.Messages
                 .Where(m => (m.SenderType == type && m.SenderId == participantId) ||
                             (m.ReceiverType == type && m.ReceiverId == participantId))
                 .OrderByDescending(m => m.CreatedAt)
-                .Skip(skip)
-                .Take(take)
                 .ToListAsync();
         }
 

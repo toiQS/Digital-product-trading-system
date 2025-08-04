@@ -23,6 +23,12 @@ namespace DPTS.APIs.Controllers
         }
 
         // -------------------- Chat --------------------
+        [HttpGet("chat-list-recently")]
+        public async Task<IActionResult> GetChatListRecently([FromQuery] GetChatListRecenlyQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
         [HttpGet("chat")]
         public async Task<IActionResult> GetChat([FromQuery] GetChatQuery query)
         {
