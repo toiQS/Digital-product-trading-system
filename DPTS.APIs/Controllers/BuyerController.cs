@@ -96,6 +96,12 @@ namespace DPTS.APIs.Controllers
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
+        [HttpGet("review-detail")]
+        public async Task<IActionResult> GetProductReviewDetail([FromQuery] GetProductReviewDetailQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
 
         // --------------------- Profile ---------------------
         [HttpGet("profile")]
