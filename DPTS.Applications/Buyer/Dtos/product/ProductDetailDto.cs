@@ -6,6 +6,7 @@
         public string ProductName { get; set; } = string.Empty;
         public double RatingOverall { get; set; }
         public int CountReviews { get; set; }
+        public string SellerId { get; set; } = string.Empty;
         public string StoreImage { get; set; } = string.Empty;
         public string StoreId { get; set; } = string.Empty;
         public string StoreName { get; set; } = string.Empty;

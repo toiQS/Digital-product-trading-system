@@ -62,7 +62,12 @@ namespace DPTS.Applications.Buyer.Handles.product
                 _logger.LogError("Không tìm thấy cửa hàng với ID: {StoreId}", product.StoreId);
                 return ServiceResult<ProductDetailDto>.Error("Không tìm thấy thông tin cửa hàng.");
             }
-
+            var seller = await _userRepository.GetByIdAsync(store.UserId);
+            if (seller == null)
+            {
+                _logger.LogError("Không tìm thấy người bán với ID: {SellerId}", store.UserId);
+                return ServiceResult<ProductDetailDto>.Error("Không tìm thấy thông tin người bán.");
+            }
             // Tính toán giảm giá và giá cuối cùng
             var discountAndFinalPriceProduct = await _adjustmentHandle.HandleDiscountAndPriceForProduct(product);
             if (discountAndFinalPriceProduct.Status == StatusResult.Errored)
@@ -104,7 +109,8 @@ namespace DPTS.Applications.Buyer.Handles.product
                 Vote3 = vote3,
                 Vote4 = vote4,
                 Vote5 = vote5,
-                StoreId = store.StoreId
+                StoreId = store.StoreId,
+                SellerId = seller.UserId,
             };
 
             // Xử lý từng đánh giá người dùng
