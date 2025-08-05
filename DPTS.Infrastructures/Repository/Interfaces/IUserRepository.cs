@@ -11,6 +11,7 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task<IEnumerable<User>> GetAllAsync();
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByIdAsync(string userId, bool includeRelated = true);
+        Task<IEnumerable<User>> GetByIdsAsync(List<string> contactIds);
         Task<User?> GetByUsernameAsync(string username);
         Task UpdateAsync(User user);
         Task<bool> UsernameExistsAsync(string username);

@@ -54,6 +54,13 @@ namespace DPTS.Infrastructures.Repository.Implements
             }
         }
 
+        public async Task<IEnumerable<UserProfile>> GetByUserIdsAsync(List<string> value)
+        {
+            var profiles = _context.UserProfiles
+                .Where(p => value.Contains(p.UserId));
+            return await profiles.ToListAsync();
+        }
+
         #endregion
     }
 }

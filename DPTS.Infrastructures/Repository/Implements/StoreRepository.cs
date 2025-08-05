@@ -76,6 +76,13 @@ namespace DPTS.Infrastructures.Repository.Implements
             }
         }
 
+        public async Task<IEnumerable<Store>> GetByIdsAsync(List<string> contactIds)
+        {
+            var query = _context.Stores.Where(s => contactIds.Contains(s.StoreId))
+                                       .OrderByDescending(s => s.CreateAt);
+            return await query.ToListAsync();
+        }
+
         #endregion
     }
 }

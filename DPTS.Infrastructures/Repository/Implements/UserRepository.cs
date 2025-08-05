@@ -97,6 +97,15 @@ namespace DPTS.Infrastructures.Repository.Implements
             }
         }
 
+        public async Task<IEnumerable<User>> GetByIdsAsync(List<string> contactIds)
+        {
+            var query = _context.Users
+                .Where(u => contactIds.Contains(u.UserId))
+                .Include(u => u.Profile)
+                .Include(u => u.Security);
+            return await query.ToListAsync();
+        }
+
         #endregion
     }
 }

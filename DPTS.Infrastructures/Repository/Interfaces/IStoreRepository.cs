@@ -11,6 +11,7 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task<Store?> GetByIdAsync(string storeId);
         Task<IEnumerable<Store>> GetByStatusAsync(StoreStatus status);
         Task<Store?> GetByUserIdAsync(string userId);
+        Task<IEnumerable<Store>> GetByIdsAsync(List<string> contactIds);
         Task UpdateAsync(Store store);
     }
 }

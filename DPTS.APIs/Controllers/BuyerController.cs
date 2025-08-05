@@ -164,7 +164,7 @@ namespace DPTS.APIs.Controllers
 
         // --------------------- Chat ---------------------
         [HttpGet("chat-list-recently")]
-        public async Task<IActionResult> GetChatListRecently([FromQuery] GetChatListRecenlyQuery query)
+        public async Task<IActionResult> GetChatListRecently([FromQuery] GetChatListRecentlyQuery query)
         {
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);

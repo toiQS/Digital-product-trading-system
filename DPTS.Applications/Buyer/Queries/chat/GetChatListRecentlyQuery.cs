@@ -4,7 +4,7 @@ using MediatR;
 
 namespace DPTS.Applications.Buyer.Queries.chat
 {
-    public class GetChatListRecenlyQuery : IRequest<ServiceResult<ContactListDto>>
+    public class GetChatListRecentlyQuery : IRequest<ServiceResult<ContactListDto>>
     {
         public string UserId { get; set; }
     }
