@@ -3,9 +3,12 @@ using DPTS.Applications.Buyer.Queries.payment;
 using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
+using MailKit.Search;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -174,6 +177,7 @@ namespace DPTS.Applications.Buyer.Handles.payment
                 _logger.LogError("Không tìm thấy phương thức thanh toán.");
                 return ServiceResult<string>.Error("Phương thức thanh toán không hợp lệ.");
             }
+            string result = string.Empty;
 
             // 8. Thực hiện thanh toán
             try
@@ -222,59 +226,69 @@ namespace DPTS.Applications.Buyer.Handles.payment
                         WalletId = wallet.WalletId,
                     };
                     wallet.Balance -= order.TotalAmount;
+                    // 11. Ghi log
+                    var log = new Log
+                    {
+                        UserId = user.UserId,
+                        Action = "PaymentSuccess",
+                        CreatedAt = DateTime.UtcNow,
+                        LogId = Guid.NewGuid().ToString(),
+                        TargetId = order.OrderId,
+                        TargetType = "Order"
+                    };
+                    await _logRepository.AddAsync(log);
                     await _walletTransactionRepository.AddAsync(walletTransaction);
                     await _walletRepository.UpdateAsync(wallet);
                     await _orderPaymentRepository.AddAsync(orderPayment);
+                    result = "Thanh toán thành công qua ví.";
                 }
                 else if (paymentMethod != null)
                 {
                     var paymentMethodInfo = await _paymentMethodRepository.GetByIdAsync(paymentMethod.PaymentMethodId);
                     if (paymentMethodInfo.Provider == PaymentProvider.VnPay)
                     {
-                        var vnpay = new VnPayLibrary();
-                        string vnp_Url = _config["Vnpay:BaseUrl"];
-                        string returnUrl = _config["Vnpay:ReturnUrl"];
-                        string tmnCode = _config["Vnpay:TmnCode"];
-                        string hashSecret = _config["Vnpay:HashSecret"];
-                        string orderId = order.OrderId;
-                        string amount = ((int)(order.TotalAmount * 100)).ToString(); // VNPAY yêu cầu đơn vị = VND * 100
+                        var vnp_TmnCode = _config["Vnpay:TmnCode"];
+                        var vnp_HashSecret = _config["Vnpay:HashSecret"];
+                        var vnp_Url = _config["Vnpay:PaymentUrl"];
+                        var vnp_Returnurl = _config["Vnpay:ReturnUrl"];
 
-                        vnpay.AddRequestData("vnp_Version", "2.1.0");
-                        vnpay.AddRequestData("vnp_Command", "pay");
-                        vnpay.AddRequestData("vnp_TmnCode", tmnCode);
-                        vnpay.AddRequestData("vnp_Amount", amount);
-                        vnpay.AddRequestData("vnp_CreateDate", DateTime.UtcNow.ToString("yyyyMMddHHmmss"));
-                        vnpay.AddRequestData("vnp_CurrCode", "VND");
-                        vnpay.AddRequestData("vnp_IpAddr", request.IpAddress);
-                        vnpay.AddRequestData("vnp_Locale", "vn");
-                        vnpay.AddRequestData("vnp_OrderInfo", $"Thanh toan don hang {orderId}");
-                        vnpay.AddRequestData("vnp_OrderType", "other");
-                        vnpay.AddRequestData("vnp_ReturnUrl", returnUrl);
-                        vnpay.AddRequestData("vnp_TxnRef", orderId);
-                        vnpay.AddRequestData("vnp_BankCode", paymentMethodInfo.MaskedAccountNumber);
+                        var vnp_TxnRef = DateTime.UtcNow.Ticks.ToString();
+                        var vnp_Amount = ((int)(order.TotalAmount * 100)).ToString();
 
-                        string paymentUrl = vnpay.CreateRequestUrl(vnp_Url, hashSecret);
-
-                        return ServiceResult<string>.Success(paymentUrl);
+                        var inputData = new Dictionary<string, string>
+                        {
+                            {"vnp_Version", "2.1.0"},
+                            {"vnp_Command", "pay"},
+                            {"vnp_TmnCode", vnp_TmnCode},
+                            {"vnp_Amount", vnp_Amount},
+                            {"vnp_CreateDate", DateTime.UtcNow.ToString("yyyyMMddHHmmss")},
+                            {"vnp_CurrCode", "VND"},
+                            {"vnp_IpAddr", request.IpAddress},
+                            {"vnp_Locale", "vn"},
+                            {"vnp_OrderInfo", $"Thanh toan don hang {order.OrderId}"},
+                            {"vnp_OrderType", "other"},
+                            {"vnp_ReturnUrl", vnp_Returnurl},
+                            {"vnp_TxnRef", vnp_TxnRef}
+                        };
+                        var paymentUrl = VnpayHelper.CreateRequestUrl(inputData, vnp_HashSecret, vnp_Url);
+                        var log = new Log
+                        {
+                            UserId = user.UserId,
+                            Action = "PaymentInitiated",
+                            CreatedAt = DateTime.UtcNow,
+                            LogId = Guid.NewGuid().ToString(),
+                            TargetId = order.OrderId,
+                            TargetType = "Order"
+                        };
+                        await _logRepository.AddAsync(log);
+                        result = "Vui lòng thanh toán tại: " + paymentUrl;
                     }
                     else
                     {
                         return ServiceResult<string>.Error("Cổng thanh toán chưa được hỗ trợ.");
                     }
                 }
-
-
-                // 11. Ghi log
-                var log = new Log
-                {
-                    UserId = user.UserId,
-                    Action = "PaymentSuccess",
-                    CreatedAt = DateTime.UtcNow,
-                    LogId = Guid.NewGuid().ToString(),
-                    TargetId = order.OrderId,
-                    TargetType = "Order"
-                };
-                await _logRepository.AddAsync(log);
+                return ServiceResult<string>.Success(result);
             }
             catch (Exception ex)
             {
@@ -282,7 +296,6 @@ namespace DPTS.Applications.Buyer.Handles.payment
                 return ServiceResult<string>.Error("Thanh toán thất bại. Vui lòng thử lại sau.");
             }
 
-            return ServiceResult<string>.Success("Thanh toán thành công.");
         }
 
         /// <summary>
@@ -296,51 +309,41 @@ namespace DPTS.Applications.Buyer.Handles.payment
             public decimal Amount { get; set; }
         }
     }
-    public class VnPayLibrary
+    public static class VnpayHelper
     {
-        private readonly SortedList<string, string> _requestData = new(new VnPayCompare());
-
-        public void AddRequestData(string key, string value)
+        public static string CreateRequestUrl(Dictionary<string, string> inputData, string secret, string baseUrl)
         {
-            if (!string.IsNullOrEmpty(key) && !string.IsNullOrEmpty(value))
-            {
-                _requestData[key] = value;
-            }
+            var ordered = inputData.OrderBy(k => k.Key);
+            var rawData = BuildRawData(ordered);
+
+            var secureHash = HmacSHA512(secret, rawData);
+
+            inputData["vnp_SecureHashType"] = "HMACSHA512";
+            inputData["vnp_SecureHash"] = secureHash;
+
+            var queryString = string.Join("&", inputData.OrderBy(k => k.Key).Select(kvp =>
+                $"{WebUtility.UrlEncode(kvp.Key)}={WebUtility.UrlEncode(kvp.Value)}"));
+
+            return $"{baseUrl}?{queryString}";
         }
 
-        public string CreateRequestUrl(string baseUrl, string hashSecret)
+        public static string BuildRawData(IEnumerable<KeyValuePair<string, string>> data)
         {
-            var data = new StringBuilder();
-            var query = new StringBuilder();
-            foreach (var kv in _requestData)
-            {
-                data.Append(kv.Key).Append('=').Append(kv.Value).Append('&');
-                query.Append(HttpUtility.UrlEncode(kv.Key)).Append('=').Append(HttpUtility.UrlEncode(kv.Value)).Append('&');
-            }
-
-            // Remove last '&'
-            if (data.Length > 0) data.Length -= 1;
-            if (query.Length > 0) query.Length -= 1;
-
-            string signData = data.ToString();
-            string secureHash = ComputeSha256(hashSecret + signData);
-            return $"{baseUrl}?{query}&vnp_SecureHashType=SHA256&vnp_SecureHash={secureHash}";
+            return string.Join("&", data.Select(kvp =>
+                $"{WebUtility.UrlEncode(kvp.Key)}={WebUtility.UrlEncode(kvp.Value)}"));
         }
 
-        public static string ComputeSha256(string input)
+        public static string BuildRawData(Dictionary<string, string> data)
         {
-            using var sha256 = SHA256.Create();
-            var bytes = Encoding.UTF8.GetBytes(input);
-            var hash = sha256.ComputeHash(bytes);
-            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            return BuildRawData(data.OrderBy(k => k.Key));
         }
 
-        private class VnPayCompare : IComparer<string>
+        public static string HmacSHA512(string key, string inputData)
         {
-            public int Compare(string x, string y)
-            {
-                return string.CompareOrdinal(x, y);
-            }
+            var keyBytes = Encoding.UTF8.GetBytes(key);
+            using var hmac = new HMACSHA512(keyBytes);
+            var hashBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(inputData));
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToUpperInvariant();
         }
     }
 }

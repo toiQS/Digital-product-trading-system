@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.InteropServices.Marshalling;
 
 namespace DPTS.Domains
 {
@@ -26,6 +27,9 @@ namespace DPTS.Domains
 
         [Column("source")]
         public AdjustmentSource Source { get; set; }
+        [Column("source_id")]
+        public string SourceId { get; set; } // id người tạo (admin) id người tạo người thụ hưởng (seller)
+
 
         [Column("is_percentage")]
         public bool IsPercentage { get; set; } = true;

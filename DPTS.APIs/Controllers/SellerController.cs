@@ -194,6 +194,24 @@ namespace DPTS.APIs.Controllers
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
+        [HttpPost("add-adjustment-rule")]
+        public async Task<IActionResult> AddAdjustmentRule([FromBody] AddAdjustmentRuleCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCodeFromResult(result);
+        }
+        [HttpGet("adjustment-rules")]
+        public async Task<IActionResult> GetAdjustmentRules([FromQuery] GetAdjustmentRuleInStoreQuery query)
+        {
+            var result = await _mediator.Send(query);
+            return StatusCodeFromResult(result);
+        }
+        [HttpPut("update-adjustment-rule")]
+        public async Task<IActionResult> UpdateAdjustmentRule([FromBody] UpdateAdjustmentRuleCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return StatusCodeFromResult(result);
+        }
 
         // -------------------- Helper --------------------
         private IActionResult StatusCodeFromResult<T>(ServiceResult<T> result)

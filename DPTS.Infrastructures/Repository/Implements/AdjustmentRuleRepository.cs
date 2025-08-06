@@ -83,6 +83,14 @@ namespace DPTS.Infrastructures.Repository.Implements
             }
         }
 
+        public async Task<IEnumerable<AdjustmentRule>> GetAdjustmentRulesByStoreIdAsync(string storeId)
+        {
+            var result =await _context.AdjustmentRules
+                .Where(r => r.SourceId == storeId && r.Source == AdjustmentSource.Seller)
+                .ToListAsync();
+            return result;
+        }
+
         #endregion
     }
 }
