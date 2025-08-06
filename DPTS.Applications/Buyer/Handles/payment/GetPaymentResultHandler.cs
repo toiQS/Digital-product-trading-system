@@ -3,15 +3,12 @@ using DPTS.Applications.Buyer.Queries.payment;
 using DPTS.Applications.Shareds;
 using DPTS.Domains;
 using DPTS.Infrastructures.Repository.Interfaces;
-using MailKit.Search;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web;
 
 namespace DPTS.Applications.Buyer.Handles.payment
 {
@@ -227,20 +224,20 @@ namespace DPTS.Applications.Buyer.Handles.payment
                     };
                     wallet.Balance -= order.TotalAmount;
                     // 11. Ghi log
-                    var log = new Log
-                    {
-                        UserId = user.UserId,
-                        Action = "PaymentSuccess",
-                        CreatedAt = DateTime.UtcNow,
-                        LogId = Guid.NewGuid().ToString(),
-                        TargetId = order.OrderId,
-                        TargetType = "Order"
-                    };
-                    await _logRepository.AddAsync(log);
-                    await _walletTransactionRepository.AddAsync(walletTransaction);
-                    await _walletRepository.UpdateAsync(wallet);
-                    await _orderPaymentRepository.AddAsync(orderPayment);
-                    result = "Thanh toán thành công qua ví.";
+                        var log = new Log
+                        {
+                            UserId = user.UserId,
+                            Action = "PaymentSuccess",
+                            CreatedAt = DateTime.UtcNow,
+                            LogId = Guid.NewGuid().ToString(),
+                            TargetId = order.OrderId,
+                            TargetType = "Order"
+                        };
+                        await _logRepository.AddAsync(log);
+                        await _walletTransactionRepository.AddAsync(walletTransaction);
+                        await _walletRepository.UpdateAsync(wallet);
+                        await _orderPaymentRepository.AddAsync(orderPayment);
+                        result = "Thanh toán thành công qua ví.";
                 }
                 else if (paymentMethod != null)
                 {

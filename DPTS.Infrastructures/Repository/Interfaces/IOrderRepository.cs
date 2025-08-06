@@ -12,6 +12,7 @@ namespace DPTS.Infrastructures.Repository.Interfaces
         Task<IEnumerable<Order>> GetsAsync(bool includeBuyer = false, bool includeEscrow = false);
         Task<decimal> GetTotalSpentAsync(string buyerId);
         Task<bool> IsPaidAsync(string orderId);
+        Task<bool> MarkAsPaidAsync(string? orderCode);
         Task UpdateAsync(Order order);
     }
 }

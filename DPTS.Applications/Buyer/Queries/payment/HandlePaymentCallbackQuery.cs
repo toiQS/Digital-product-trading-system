@@ -5,10 +5,6 @@ namespace DPTS.Applications.Buyer.Queries.payment
 {
     public class HandlePaymentCallbackQuery : IRequest<ServiceResult<string>>
     {
-        public string vnp_TxnRef { get; set; }
-        public string vnp_ResponseCode { get; set; }
-        public string vnp_SecureHash { get; set; }
-
-       
+        public Dictionary<string, string> QueryData { get; set; }
     }
 }

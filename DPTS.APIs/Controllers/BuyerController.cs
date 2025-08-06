@@ -207,6 +207,18 @@ namespace DPTS.APIs.Controllers
             var result = await _mediator.Send(query);
             return StatusCodeFromResult(result);
         }
+        [HttpGet("handle-payment-callback")]
+        public async Task<IActionResult> Callback()
+        {
+            var queryDict = Request.Query.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+
+            var result = await _mediator.Send(new HandlePaymentCallbackQuery
+            {
+                QueryData = queryDict
+            });
+
+            return Ok(result);
+        }
 
         // --------------------- Wallet ---------------------
         [HttpGet("wallet")]

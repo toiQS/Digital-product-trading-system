@@ -117,6 +117,13 @@ namespace DPTS.Infrastructures.Repository.Implements
             return await BuildBaseQuery(includeBuyer, includeEscrow).ToListAsync();
         }
 
+        public async Task<bool> MarkAsPaidAsync(string? orderCode)
+        {
+           return await _context.Orders
+                .Where(o => o.OrderId == orderCode)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(o => o.IsPaid, true)) > 0;
+        }
+
         #endregion
     }
 }
